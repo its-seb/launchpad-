@@ -1,15 +1,22 @@
-import React, { Component } from "react";
-import { Container, Button, Row, Col, Card } from "react-bootstrap";
+import React, { useState } from "react";
+import { Container, Button, Row, Col, Card, Modal } from "react-bootstrap";
 import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
 
 const AppContent = () => {
+  const [show, setShow] = useState(false);
+  const handleShow = () => setShow(true);
+  const handleClose = () => setShow(false);
+
   return (
     <div style={{ height: "calc(100vh - 91px)" }}>
       <Container style={{ padding: "25px" }}>
         <div className={AppContentStyle.sectionHeader}>
           <span style={{ float: "left" }}>Collections</span>
-          <button className={AppContentStyle.btnAddContract}>
+          <button
+            className={AppContentStyle.btnAddContract}
+            onClick={handleShow}
+          >
             New Collection
           </button>
         </div>
@@ -68,8 +75,19 @@ const AppContent = () => {
           </Row>
         </div>
       </Container>
-      <Container style={{ padding: "0 25px" }}>
-        <NewCollection />
+      <Modal show={show} onHide={handleClose}>
+        <NewCollection modalProps={[show, setShow]} />
+      </Modal>
+      <Container style={{ padding: "25px" }}>
+        <div className={AppContentStyle.sectionHeader}>
+          <span style={{ float: "left" }}>Upload Files to IPFS Storage</span>
+          <button
+            className={AppContentStyle.btnAddContract}
+            onClick={handleShow}
+          >
+            Configure API
+          </button>
+        </div>
       </Container>
     </div>
   );

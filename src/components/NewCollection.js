@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import "./global.css";
 import IconService from "icon-sdk-js";
@@ -8,7 +8,11 @@ import ICONexConnection, {
 } from "./utils/interact.js";
 
 const { IconConverter, IconBuilder } = IconService;
-const NewCollection = () => {
+const NewCollection = (props) => {
+  //modal things
+  const [show, setShow] = props.modalProps;
+
+  //contract
   const connection = new ICONexConnection();
   const handleDeployContract = async () => {
     //check if user address is set:
@@ -69,6 +73,8 @@ const NewCollection = () => {
       let rpcResponse = await connection.getJsonRpc(payload);
       console.log(rpcResponse);
       localStorage.setItem("CONTRACT_ADDRESS", rpcResponse["result"]);
+      setShow(false);
+      alert("Deployed successfully!");
     } catch (e) {
       alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
@@ -76,8 +82,17 @@ const NewCollection = () => {
   };
 
   return (
-    <div style={{ padding: "0 25px" }}>
-      <Form.Floating className="mb-3">
+    <div style={{ padding: "25px 25px" }}>
+      <span
+        style={{
+          fontSize: "larger",
+          fontWeight: "bold",
+          color: "#525252",
+        }}
+      >
+        New Collection
+      </span>
+      <Form.Floating className="mb-3" style={{ marginTop: "15px" }}>
         <Form.Control
           id="tbCollectionName"
           type="text"
