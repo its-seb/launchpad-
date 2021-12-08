@@ -1,0 +1,33 @@
+.sectionHeader {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  margin: auto 25px;
+  font-size: larger;
+  font-weight: bold;
+  color: #525252;
+  text-align: right;
+}
+
+.contractCard {
+  height: 100px;
+  border-radius: 1.2rem !important;
+}
+
+.btnAddContract {
+  background: white;
+  color: #7030a0;
+  border-color: #7030a0;
+  border-radius: 5rem;
+  border: 1px dashed;
+  padding: 4px 8px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.btnAddContract:hover,
+.btnAddContract:active,
+.btnAddContract:focus {
+  background: #5d2985;
+  border-color: #5d2985;
+  color: white;
+}

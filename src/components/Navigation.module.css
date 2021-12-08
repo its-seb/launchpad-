@@ -1,0 +1,12 @@
+.btnWallet {
+  background: white;
+  color: #7030a0;
+  border-color: #7030a0;
+}
+
+.btnWallet:hover,
+.btnWallet:active,
+.btnWallet:focus {
+  background: #5d2985;
+  border-color: #5d2985;
+}
