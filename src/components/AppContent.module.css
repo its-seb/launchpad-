@@ -14,14 +14,16 @@
 }
 
 .btnAddContract {
-  background: white;
-  color: #7030a0;
+  background-color: #7030a0;
+  color: white;
+  border: 1px solid #7030a0;
   border-color: #7030a0;
-  border-radius: 5rem;
-  border: 1px dashed;
+  border-radius: 0.3rem;
   padding: 4px 8px;
   font-size: 12px;
+  font-weight: bold;
   vertical-align: middle;
+  margin-bottom: 3.5px;
 }
 
 .btnAddContract:hover,
