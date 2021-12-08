@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import { Container, Button, Row, Col, Card, Modal } from "react-bootstrap";
 import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
+import PinataSetting from "./PinataSetting.js";
 
 const AppContent = () => {
-  const [show, setShow] = useState(false);
-  const handleShow = () => setShow(true);
-  const handleClose = () => setShow(false);
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
+  const handleShowCollectionModal = () => setShowCollectionModal(true);
+  const handleCloseCollectionModal = () => setShowCollectionModal(false);
+
+  const [showPinataModal, setShowPinataModal] = useState(false);
+  const handleShowPinataModal = () => setShowPinataModal(true);
+  const handleClosePinataModal = () => setShowPinataModal(false);
 
   return (
     <div style={{ height: "calc(100vh - 91px)" }}>
@@ -15,7 +20,7 @@ const AppContent = () => {
           <span style={{ float: "left" }}>Collections</span>
           <button
             className={AppContentStyle.btnAddContract}
-            onClick={handleShow}
+            onClick={handleShowCollectionModal}
           >
             New Collection
           </button>
@@ -75,20 +80,25 @@ const AppContent = () => {
           </Row>
         </div>
       </Container>
-      <Modal show={show} onHide={handleClose}>
-        <NewCollection modalProps={[show, setShow]} />
+      <Modal show={showCollectionModal} onHide={handleCloseCollectionModal}>
+        <NewCollection
+          modalProps={[showCollectionModal, setShowCollectionModal]}
+        />
       </Modal>
       <Container style={{ padding: "25px" }}>
         <div className={AppContentStyle.sectionHeader}>
           <span style={{ float: "left" }}>Upload Files to IPFS Storage</span>
           <button
             className={AppContentStyle.btnAddContract}
-            onClick={handleShow}
+            onClick={handleShowPinataModal}
           >
             Configure API
           </button>
         </div>
       </Container>
+      <Modal show={showPinataModal} onHide={handleClosePinataModal}>
+        <PinataSetting modalProps={[showPinataModal, setShowPinataModal]} />
+      </Modal>
     </div>
   );
 };

@@ -1,5 +1,7 @@
 #tbCollectionName,
-#tbCollectionSymbol {
+#tbCollectionSymbol,
+#tbPinataSecret,
+#tbPinataKey {
   color: #7030a0;
   border: 1px solid #7030a0;
 }
@@ -7,14 +9,19 @@
 #tbCollectionSymbol:focus,
 #tbCollectionSymbol:active,
 #tbCollectionName:focus,
-#tbCollectionSymbol:active {
+#tbCollectionSymbol:active,
+#tbPinataSecret:focus,
+#tbPinataSecret:active,
+#tbPinataKey:focus,
+#tbPinataKey:active {
   color: #7030a0;
   border: 2px solid #7030a0;
   outline: #7030a0;
   box-shadow: 0 0 0 #7030a0;
 }
 
-#btnDeploy {
+#btnDeploy,
+#btnSavePinata {
   background-color: #7030a0;
   color: white;
   border: 1px solid #7030a0;
@@ -25,7 +32,9 @@
 
 #btnDeploy:hover,
 #btnDeploy:active,
-#btnDeploy:focus {
+#btnDeploy:focus #btnSavePinata:hover,
+#btnSavePinata:active,
+#btnSavePinata:focus {
   background: #5d2985;
   border-color: #5d2985;
   color: white;

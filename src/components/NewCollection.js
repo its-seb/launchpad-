@@ -10,7 +10,7 @@ import ICONexConnection, {
 const { IconConverter, IconBuilder } = IconService;
 const NewCollection = (props) => {
   //modal things
-  const [show, setShow] = props.modalProps;
+  const [showCollectionModal, setShowCollectionModal] = props.modalProps;
 
   //contract
   const connection = new ICONexConnection();
@@ -73,7 +73,7 @@ const NewCollection = (props) => {
       let rpcResponse = await connection.getJsonRpc(payload);
       console.log(rpcResponse);
       localStorage.setItem("CONTRACT_ADDRESS", rpcResponse["result"]);
-      setShow(false);
+      setShowCollectionModal(false);
       alert("Deployed successfully!");
     } catch (e) {
       alert("User cancelled transaction");
