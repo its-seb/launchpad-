@@ -28,12 +28,7 @@ const NewCollection = () => {
     const collectionSymbol =
       document.getElementById("tbCollectionSymbol").value;
 
-    if (
-      collectionName == null ||
-      collectionName == "" ||
-      collectionSymbol == null ||
-      collectionSymbol == ""
-    ) {
+    if (collectionName || collectionSymbol) {
       alert("Please enter required fields");
       return;
     }
