@@ -3,6 +3,7 @@ import { Container, Button, Row, Col, Card, Modal } from "react-bootstrap";
 import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
 import PinataSetting from "./PinataSetting.js";
+import Dropzone from "./Dropzone.js";
 
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -94,6 +95,9 @@ const AppContent = () => {
           >
             Configure API
           </button>
+        </div>
+        <div style={{ padding: "0 25px" }}>
+          <Dropzone />
         </div>
       </Container>
       <Modal show={showPinataModal} onHide={handleClosePinataModal}>
