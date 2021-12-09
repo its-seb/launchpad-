@@ -1,10 +1,32 @@
 import IconService from "icon-sdk-js";
+// import { add0xPrefix } from "icon-sdk-js/build/data/Hexadecimal";
 
 const { IconConverter } = IconService;
 
 class ICONexConnection {
+
   getWalletAddress() {
-    return this.ICONexRequest("REQUEST_ADDRESS");
+    let wallet_address = this.ICONexRequest("REQUEST_ADDRESS");
+    return wallet_address
+  }
+
+  async retrieve_all_user_transaction(wallet_address) {
+    let page = 1
+    let url_with_address = 'https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=' + wallet_address
+    try {
+      const responsePromise = await fetch(
+        url_with_address,
+        {
+          method: "GET",
+        }
+      );
+      const responseJSON = await responsePromise.json();
+
+      console.log(responseJSON.data);
+    } catch (err) {
+      console.error("FETCH:", err);
+      throw err;
+    }
   }
 
   getJsonRpc(jsonRpcQuery) {
@@ -24,6 +46,7 @@ class ICONexConnection {
   ICONexRequest(requestType, payload) {
     return new Promise((resolve, reject) => {
       function eventHandler(event) {
+
         const { payload } = event.detail;
         window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
         resolve(payload);
@@ -38,6 +61,7 @@ class ICONexConnection {
           },
         })
       );
+
     });
   }
 }

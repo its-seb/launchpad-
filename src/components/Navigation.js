@@ -11,6 +11,7 @@ const Navigation = () => {
   const connection = new ICONexConnection();
   const handleWalletClickEvent = async () => {
     walletAddress = await connection.getWalletAddress();
+    connection.retrieve_all_user_transaction(walletAddress);
     const connectionButton = document.getElementById("selectWallet");
 
     if (walletAddress == "undefined" || walletAddress == null) {

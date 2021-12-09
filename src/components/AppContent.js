@@ -14,6 +14,9 @@ const AppContent = () => {
   const handleShowPinataModal = () => setShowPinataModal(true);
   const handleClosePinataModal = () => setShowPinataModal(false);
 
+  
+
+
   return (
     <div style={{ height: "calc(100vh - 91px)" }}>
       <Container style={{ padding: "25px" }}>
@@ -81,11 +84,13 @@ const AppContent = () => {
           </Row>
         </div>
       </Container>
+
       <Modal show={showCollectionModal} onHide={handleCloseCollectionModal}>
         <NewCollection
           modalProps={[showCollectionModal, setShowCollectionModal]}
         />
       </Modal>
+
       <Container style={{ padding: "25px" }}>
         <div className={AppContentStyle.sectionHeader}>
           <span style={{ float: "left" }}>Upload Files to IPFS Storage</span>
