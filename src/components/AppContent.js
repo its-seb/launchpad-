@@ -4,8 +4,6 @@ import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
 import PinataSetting from "./PinataSetting.js";
 import Dropzone from "./Dropzone.js";
-import Navigation from "./Navigation.js";
-
 
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -75,8 +73,8 @@ const AppContent = () => {
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}
-                  id="contract_address">
-
+                >
+                  hxbd1375315c7732779edaa4c3903ffc9b93e82ca3
                 </span>
               </Card>
             </Col>
