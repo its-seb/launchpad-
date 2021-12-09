@@ -12,11 +12,14 @@ const Navigation = () => {
   const handleWalletClickEvent = async () => {
     walletAddress = await connection.getWalletAddress();
     const connectionButton = document.getElementById("selectWallet");
+    const contract_address = document.getElementById("contract_address");
+
 
     if (walletAddress == "undefined" || walletAddress == null) {
       connectionButton.innerHTML = "Connect Wallet";
     } else {
       connectionButton.innerHTML = `Connected to ${walletAddress}`;
+      contract_address.innerHTML = `${walletAddress}`;
       localStorage.setItem("USER_WALLET_ADDRESS", walletAddress);
     }
   };
