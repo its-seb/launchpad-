@@ -1,9 +1,13 @@
+import "./app_content.css";
 import React, { useState } from "react";
 import { Container, Button, Row, Col, Card, Modal } from "react-bootstrap";
 import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
 import PinataSetting from "./PinataSetting.js";
 import Dropzone from "./Dropzone.js";
+import "./utils/interact";
+import ICONexConnection from "./utils/interact";
+
 
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -13,10 +17,26 @@ const AppContent = () => {
   const [showPinataModal, setShowPinataModal] = useState(false);
   const handleShowPinataModal = () => setShowPinataModal(true);
   const handleClosePinataModal = () => setShowPinataModal(false);
+  const [contractInfo, setContractInfo] = useState([]);
+  const getUserTransaction = async () => {
+    const connection = new ICONexConnection;
+    let contract_xinfo = await connection.retrieve_all_user_transaction("hxbd1375315c7732779edaa4c3903ffc9b93e82ca3");
+    console.log(contract_xinfo)
 
-  
+    //localStorage.getItem("WALLET_ADDRESS");
+    // return contract_xinfo;
+    // setContractInfo(contract_xinfo);
+    // return contract_xinfo;
+  }
+  // const connection = new ICONexConnection;
+  // let contract_xinfo = connection.retrieve_all_user_transaction("hxbd1375315c7732779edaa4c3903ffc9b93e82ca3"); //localStorage.getItem("WALLET_ADDRESS");
+  // contract_xinfo.then(function (result) {
+  //   return result
+  // })
+  // console.log(contract_xinfo)
 
 
+  // getUserTransaction();
   return (
     <div style={{ height: "calc(100vh - 91px)" }}>
       <Container style={{ padding: "25px" }}>
@@ -29,58 +49,54 @@ const AppContent = () => {
             New Collection
           </button>
         </div>
-        <div style={{ padding: "0 25px" }}>
-          <Row>
-            <Col>
-              <Card style={{ border: "1px solid #7030a0" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    paddingLeft: "12px",
-                    paddingTop: "5px",
-                    paddingRight: "12px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: "1.5rem",
-                      color: "#525252",
-                    }}
-                  >
-                    Billy
+        <div style={{ padding: "0 25px", border: "1px solid #7030a0" }}>
+          <Row id="contract_display">
+
+            {
+              contractInfo.map(info =>
+                <Col xs={6} md={4} style={{ marginBottom: "18px" }}>
+                  <Card id="card_style">
+                    <div id="card_div_style">
+                      <span id="card_div_span_style">
+                        {info.name}
+                      </span>
+                      <div id="card_div_div_style">
+                        <label id="card_div_label_style">
+                          {info.symbol}
+                        </label>
+                      </div>
+                    </div>
+                    <span id="card_div_div_span_style">
+                      {info.contractAddress}
+                    </span>
+                    <a href="www.google.com" className="stretched-link"></a>
+                  </Card>
+                </Col>
+
+              )
+            }
+
+
+            {/* <Col xs={6} md={4} style={{ marginBottom: "18px" }}>
+              <Card id="card_style">
+                <div id="card_div_style">
+                  <span id="card_div_span_style">
+                    {contract_info.name}
                   </span>
-                  <div style={{ width: "100%", textAlign: "right" }}>
-                    <label
-                      style={{
-                        verticalAlign: "sub",
-                        backgroundColor: "#7030a0",
-                        color: "white",
-                        paddingLeft: "8px",
-                        paddingRight: "8px",
-                        borderRadius: "0.5rem",
-                      }}
-                    >
-                      Bill
+                  <div id="card_div_div_style">
+                    <label id="card_div_label_style">
+                      {contract_info.symbol}
                     </label>
                   </div>
                 </div>
-                <span
-                  style={{
-                    padding: "5px 15px 10px 15px",
-                    textAlign: "left",
-                    fontWeight: "bold",
-                    color: "#525252",
-                    fontSize: "12px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  hxbd1375315c7732779edaa4c3903ffc9b93e82ca3
+                <span id="card_div_div_span_style">
+                  {info.contractAddress}
                 </span>
+                <a href="www.google.com" className="stretched-link"></a>
               </Card>
-            </Col>
+            </Col> */}
+
+
           </Row>
         </div>
       </Container>

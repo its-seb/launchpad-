@@ -1,0 +1,41 @@
+#card_style{
+    border: 1px solid #7030a0;
+}
+
+#card_div_style{
+    display: flex;
+    padding-left: 12px;
+    padding-top: 5px;
+    padding-right: 12px;
+}
+
+#card_div_span_style{
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #525252;
+}
+
+#card_div_div_style{
+    width: 100%;
+    text-align: right;
+}
+
+#card_div_label_style{
+    vertical-align: sub;
+    background-color: #7030a0;
+    color: white;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 0.5rem;
+}
+
+#card_div_div_span_style{
+    padding: 5px 15px 10px 15px;
+    text-align: left;
+    font-weight: bold;
+    color: #525252;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
