@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./App.css";
-//import Testconnection from "./components/Testconnection.js";
 import AppContent from "./components/AppContent.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navigation from "./components/Navigation.js";

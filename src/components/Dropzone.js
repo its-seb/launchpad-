@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Col, Row } from "react-bootstrap";
+import { Col, Row, Button } from "react-bootstrap";
 import "./global.css";
 
 class Dropzone extends Component {
@@ -8,7 +8,10 @@ class Dropzone extends Component {
     super(props);
     this.state = {
       file: this.blobData,
+      pinataAuthenticated: "hello",
     };
+    this.pinataKey = localStorage.getItem("pinataKey");
+    this.pinataSecret = localStorage.getItem("pinataSecret");
   }
 
   handleDropEvent = (event) => {
@@ -23,10 +26,16 @@ class Dropzone extends Component {
     this.setState({ file: this.blobData });
   };
 
+  //to do later; drag and drop for now
   handleBrowseFiles = (event) => {
-    //  console.log(fileUploader.current);
-    // fileUploader.current.click();
+    //this.fileUploader.click();
     event.preventDefault();
+  };
+
+  handleUploadFiles = () => {
+    if (this.blobData.length == 0) {
+      alert("no files found, please upload file");
+    }
   };
 
   render() {
@@ -47,8 +56,10 @@ class Dropzone extends Component {
           onClick={this.handleBrowseFiles}
         >
           <span style={{ color: "#5d2985" }}>drag & drop files</span>
-
-          <div id="gallery" style={{ paddingTop: "25px" }}>
+          <div
+            id="gallery"
+            style={{ paddingTop: this.blobData.length == 0 ? "0px" : "25px" }}
+          >
             <Row>
               {(this.blobData || []).map((data, i) => (
                 <Col key={i} xs={2} style={{ marginBottom: "15px" }}>
@@ -59,9 +70,12 @@ class Dropzone extends Component {
                         width: "100%",
                         display: "block",
                         margin: "auto",
+                        border: "1px solid #c9c9c9",
                       }}
                     ></img>
-                    <span>{data.name} </span>
+                    <span style={{ fontWeight: "bold", fontSize: "12px" }}>
+                      {data.name}
+                    </span>
                   </div>
                 </Col>
               ))}
@@ -71,10 +85,17 @@ class Dropzone extends Component {
         <input
           type="file"
           id="files"
+          ref={(input) => (this.fileUploader = input)}
           style={{ display: "none" }}
           multiple
           accept="image/png, image/jpeg"
         ></input>
+        <Button
+          style={{ float: "right", marginTop: "15px" }}
+          onClick={this.handleUploadFiles}
+        >
+          Upload
+        </Button>
       </>
     );
   }

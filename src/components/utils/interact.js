@@ -90,7 +90,7 @@ export async function estimateStepsforDeployment(from, content, params) {
   };
   try {
     const responsePromise = await fetch(
-      "https://sejong.net.solidwallet.io/api/v3d",
+      "https://sejong.net.solidwallet.io/api/v3d", //remember to throw everything into const file
       {
         method: "POST",
         body: JSON.stringify(txObj),
