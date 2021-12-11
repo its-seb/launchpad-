@@ -18,27 +18,6 @@ class Dropzone extends Component {
     this.pinataSecret = localStorage.getItem("pinataSecret");
   }
 
-  handleDropEvent = async (event) => {
-    event.preventDefault();
-    const files = event.dataTransfer.files;
-    console.log("event", event);
-    console.log("datatransfer", event.dataTransfer.files);
-    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      //console.log(files[fileIndex]);
-      const imgBlob = URL.createObjectURL(files[fileIndex]);
-      let blobObj = await fetch(imgBlob).then((r) => r.blob());
-      this.blobData.push({
-        name: files[fileIndex].name,
-        blob: imgBlob,
-        blobObj: blobObj,
-      });
-      //console.log(this.blobData);
-      //console.log(files[fileIndex]);
-    }
-    this.setState({ file: this.blobData });
-  };
-
-  //to do later; drag and drop for now
   handleBrowseFiles = (event) => {
     this.fileUploader.click();
     event.preventDefault();
@@ -49,87 +28,8 @@ class Dropzone extends Component {
       alert("no files found, please upload file");
     }
 
-    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
     let data = new FormData();
-    var reader = new FileReader();
     for (var i = 0; i < this.blobData.length; i++) {
-      data.append("file", this.blobData[i].blobObj, { filepath: "" });
-    }
-
-    data.append("wrapWithDirectory", "false");
-    console.log(data);
-
-    axios
-      .post(pinataEndpoint, data, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: "295a526cef20b63d813c",
-          pinata_secret_api_key:
-            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
-        },
-      })
-      .then((res) => {
-        console.log(res);
-      });
-
-    // fetch(pinataEndpoint, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-    //     pinata_api_key: "295a526cef20b63d813c",
-    //     pinata_secret_api_key:
-    //       "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
-    //   },
-    //   body: JSON.stringify({
-    //     data,
-    //   }),
-    // }).then((response) => {
-    //   console.log(response);
-    // });
-    // console.log(data);
-    const uploadTest = async () => {
-      let data = new FormData();
-      var reader = new FileReader();
-      for (var i = 0; i < this.blobData.length; i++) {
-        //fetch(this.blobData[i].blob, { method: "GET" }).then((response) =>
-        //  console.log(response.body)
-        //);
-        reader.readAsArrayBuffer(this.blobData[i].blob);
-        reader.onloadend = () => {
-          console.log(reader.result);
-        };
-      }
-      // const responsePromise = await fetch(
-      //   pinataEndpoint, //remember to throw everything into const file
-      //   {
-      //     method: "POST",
-      //     body: JSON.stringify(txObj),
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //   }
-      // );
-    };
-  };
-
-  handleDropFolder = async (event) => {
-    event.preventDefault();
-    const files = event.target.files;
-    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      const imgBlob = URL.createObjectURL(files[fileIndex]);
-      let blobObj = await fetch(imgBlob).then((r) => r.blob());
-      this.blobData.push({
-        name: files[fileIndex].name,
-        blob: imgBlob,
-        blobObj: blobObj,
-        dataPath: files[fileIndex].webkitRelativePath,
-        dataFile: files[fileIndex],
-      });
-    }
-
-    let data = new FormData();
-    for (var i = 0; i < files.length; i++) {
       data.append(`file`, this.blobData[i].dataFile);
     }
 
@@ -150,6 +50,21 @@ class Dropzone extends Component {
       });
   };
 
+  handleDropFolder = async (event) => {
+    event.preventDefault();
+    const files = event.target.files;
+    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      const imgBlob = URL.createObjectURL(files[fileIndex]);
+      this.blobData.push({
+        name: files[fileIndex].name,
+        blob: imgBlob,
+        dataFile: files[fileIndex],
+      });
+    }
+
+    this.setState({ file: this.blobData });
+  };
+
   render() {
     return (
       <>
@@ -160,10 +75,6 @@ class Dropzone extends Component {
             borderRadius: "0.25rem",
             maxHeight: "400px",
             overflowY: "auto",
-          }}
-          onDrop={this.handleDropEvent} //this.handleDropEvent (original)
-          onDragOver={(event) => {
-            event.preventDefault();
           }}
           onClick={this.handleBrowseFiles}
         >
