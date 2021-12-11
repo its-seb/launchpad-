@@ -75,7 +75,7 @@ const NewCollection = (props) => {
       localStorage.setItem("CONTRACT_ADDRESS", rpcResponse["result"]);
       setShowCollectionModal(false);
       alert("Deployed successfully!");
-      window.location.reload();
+      window.location.reload(); // notworking
     } catch (e) {
       alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)

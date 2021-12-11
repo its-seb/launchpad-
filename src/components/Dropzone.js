@@ -20,31 +20,66 @@ class Dropzone extends Component {
     event.preventDefault();
   };
 
-  handleUploadFiles = () => {
-    if (this.blobData.length == 0) {
+  handleUploadFiles = async () => {
+    if (this.uploadedFiles.length == 0) {
       alert("no files found, please upload file");
     }
 
     let data = new FormData();
-    for (var i = 0; i < this.blobData.length; i++) {
-      data.append(`file`, this.blobData[i].dataFile);
+    for (var i = 0; i < this.uploadedFiles.length; i++) {
+      data.append(
+        `file`,
+        this.uploadedFiles[i].dataFile,
+        `file/${this.uploadedFiles[i].name}`
+      );
     }
 
-    // const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
-    // axios
-    //   .post(pinataEndpoint, data, {
-    //     maxContentLength: "Infinity",
-    //     headers: {
-    //       "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-    //       pinata_api_key: "295a526cef20b63d813c",
-    //       pinata_secret_api_key:
-    //         "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
-    //     },
-    //   })
-    //   .then((res) => {
-    //     console.log(res);
-    //     console.log(data.toString());
-    //   });
+    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    let response = await axios
+      .post(pinataEndpoint, data, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+          pinata_api_key: "295a526cef20b63d813c",
+          pinata_secret_api_key:
+            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
+        },
+      })
+      .then((res) => {
+        console.log("file", res);
+        console.log(data.toString());
+        return res;
+      });
+
+    const ipfsHash = response.data.IpfsHash;
+    const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
+    let mdata = new FormData();
+    for (var i = 0; i < this.uploadedFiles.length; i++) {
+      //create metadata file
+      const mdataContent = {
+        image: `${ipfsGateway}/${this.uploadedFiles[i].name}`,
+      };
+      const mdataFile = new File([JSON.stringify(mdataContent)], `${i}.json`, {
+        type: "application/json",
+      });
+      mdata.append(`file`, mdataFile, `mdata/${i}.json`);
+    }
+
+    let mresponse = await axios
+      .post(pinataEndpoint, mdata, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+          pinata_api_key: "295a526cef20b63d813c",
+          pinata_secret_api_key:
+            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
+        },
+      })
+      .then((res) => {
+        console.log("metadata", res);
+        console.log(data.toString());
+        return res;
+      });
   };
 
   handleDropFiles = async (event) => {
@@ -137,7 +172,7 @@ class Dropzone extends Component {
           }}
           onClick={this.handleBrowseFiles}
         >
-          <span style={{ color: "#5d2985" }}>browse folder</span>
+          <span style={{ color: "#5d2985" }}>drag and drop files</span>
           <div
             id="gallery"
             style={{
