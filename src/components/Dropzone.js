@@ -3,8 +3,6 @@ import { Col, Row, Button } from "react-bootstrap";
 import "./global.css";
 import FormData from "form-data";
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
 
 class Dropzone extends Component {
   blobData = [];
@@ -33,6 +31,55 @@ class Dropzone extends Component {
       data.append(`file`, this.blobData[i].dataFile);
     }
 
+    // const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    // axios
+    //   .post(pinataEndpoint, data, {
+    //     maxContentLength: "Infinity",
+    //     headers: {
+    //       "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+    //       pinata_api_key: "295a526cef20b63d813c",
+    //       pinata_secret_api_key:
+    //         "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
+    //     },
+    //   })
+    //   .then((res) => {
+    //     console.log(res);
+    //     console.log(data.toString());
+    //   });
+  };
+
+  handleDropFolder = async (event) => {
+    event.preventDefault();
+    const files = event.target.files;
+
+    const ipfsHash = "QmVQnSoCbCCTodGMhmnXWUb3sb7jAHQv5Z4S1ktzNdxzjz";
+    const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
+
+    const metaData = [];
+    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      const imgBlob = URL.createObjectURL(files[fileIndex]);
+      this.blobData.push({
+        name: files[fileIndex].name,
+        blob: imgBlob,
+        dataFile: files[fileIndex],
+      });
+      metaData.push({
+        image: `${ipfsGateway}/${files[fileIndex].name}`,
+      });
+    }
+    console.log(metaData);
+
+    let data = new FormData();
+    const testFile = new File([JSON.stringify(metaData[0])], "0.json", {
+      type: "application/json",
+    });
+    const testFile2 = new File([JSON.stringify(metaData[0])], "1.json", {
+      type: "application/json",
+    });
+    data.append(`file`, testFile, { filepath: `./${testFile.name}` });
+    data.append(`file`, testFile2, { filepath: `./${testFile.name}` });
+
+    console.log(testFile);
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
     axios
       .post(pinataEndpoint, data, {
@@ -48,19 +95,6 @@ class Dropzone extends Component {
         console.log(res);
         console.log(data.toString());
       });
-  };
-
-  handleDropFolder = async (event) => {
-    event.preventDefault();
-    const files = event.target.files;
-    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      const imgBlob = URL.createObjectURL(files[fileIndex]);
-      this.blobData.push({
-        name: files[fileIndex].name,
-        blob: imgBlob,
-        dataFile: files[fileIndex],
-      });
-    }
 
     this.setState({ file: this.blobData });
   };
