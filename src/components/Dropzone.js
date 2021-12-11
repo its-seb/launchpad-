@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import { Col, Row, Button } from "react-bootstrap";
 import "./global.css";
+import FormData from "form-data";
 const axios = require("axios");
 const fs = require("fs");
+const path = require("path");
 
 class Dropzone extends Component {
   blobData = [];
@@ -113,14 +115,8 @@ class Dropzone extends Component {
 
   handleDropFolder = async (event) => {
     event.preventDefault();
-    console.log("event", event);
-    console.log("event.target", event.target);
-    console.log("event.target.files", event.target.files);
-    const src = "./testfolder";
     const files = event.target.files;
-
     for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      //console.log(files[fileIndex]);
       const imgBlob = URL.createObjectURL(files[fileIndex]);
       let blobObj = await fetch(imgBlob).then((r) => r.blob());
       this.blobData.push({
@@ -128,19 +124,14 @@ class Dropzone extends Component {
         blob: imgBlob,
         blobObj: blobObj,
         dataPath: files[fileIndex].webkitRelativePath,
+        dataFile: files[fileIndex],
       });
-      //console.log(this.blobData);
-      //console.log(files[fileIndex]);
     }
 
     let data = new FormData();
     for (var i = 0; i < files.length; i++) {
-      data.append("file", this.blobData[i].blobObj, {
-        filepath: this.blobData[i].dataPath,
-      });
+      data.append(`file`, this.blobData[i].dataFile);
     }
-
-    console.log(data);
 
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
     axios
@@ -155,18 +146,8 @@ class Dropzone extends Component {
       })
       .then((res) => {
         console.log(res);
+        console.log(data.toString());
       });
-
-    // recursive.readdirr(src, function (err, dirs, files) {
-    //   let data = new FormData();
-    //   files.forEach((file) => {
-    //     //for each file stream, we need to include the correct relative file path
-    //     console.log(file);
-    //     data.append(`file`, fs.createReadStream(file), {
-    //       filepath: basePathConverter(src, file),
-    //     });
-    //   });
-    // });
   };
 
   render() {
