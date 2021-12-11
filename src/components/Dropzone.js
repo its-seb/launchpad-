@@ -1,3 +1,4 @@
+import "./app_content.css";
 import React, { Component } from "react";
 import { Col, Row, Button } from "react-bootstrap";
 import "./global.css";
@@ -27,12 +28,15 @@ class Dropzone extends Component {
 
     let data = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
+      console.log(this.uploadedFiles[i]);
       data.append(
         `file`,
         this.uploadedFiles[i].dataFile,
         `file/${this.uploadedFiles[i].name}`
       );
     }
+
+
 
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
     let response = await axios
@@ -149,6 +153,25 @@ class Dropzone extends Component {
   //   this.setState({ file: this.blobData });
   // };
 
+  remove_file(file_index) {
+    // console.log(file_index)
+    // console.log(this.uploadedFiles)
+
+    // this.uploadedFiles.splice(file_index, 1)
+    let updated_uploadedFile = [];
+    for (let i = 0; i < this.uploadedFiles.length; i++) {
+      if (i != file_index.i) {
+        updated_uploadedFile.push(this.uploadedFiles[i])
+      }
+    }
+    // console.log(updated_uploadedFile)
+    this.uploadedFiles = updated_uploadedFile;
+    this.setState({ file: this.uploadedFiles });
+    // console.log(this.uploadedFiles)
+
+
+  }
+
   render() {
     return (
       <>
@@ -170,19 +193,19 @@ class Dropzone extends Component {
           onDragLeave={(e) => {
             e.preventDefault();
           }}
-          onClick={this.handleBrowseFiles}
+        // onClick={this.handleBrowseFiles}
         >
           <span style={{ color: "#5d2985" }}>drag and drop files</span>
           <div
             id="gallery"
             style={{
-              paddingTop: this.uploadedFiles.length == 0 ? "0px" : "25px",
+              paddingTop: this.uploadedFiles.length == 0 ? "0px" : "5px",
             }}
           >
             <Row>
               {(this.uploadedFiles || []).map((data, i) => (
-                <Col key={i} xs={2} style={{ marginBottom: "15px" }}>
-                  <div style={{ padding: "5px" }}>
+                <Col key={i} xs={2} style={{ marginBottom: "10px" }}>
+                  <div style={{ padding: "5px", position: "relative" }}>
                     <img
                       src={data.blob}
                       style={{
@@ -192,6 +215,7 @@ class Dropzone extends Component {
                         border: "1px solid #c9c9c9",
                       }}
                     ></img>
+                    <i className="fa fa-times-circle" style={{ fontSize: "30px", color: "red", position: "absolute", top: "0px", right: "-1px" }} onClick={e => this.remove_file({ i })}></i>
                     <span style={{ fontWeight: "bold", fontSize: "12px" }}>
                       {data.name}
                     </span>
