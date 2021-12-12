@@ -11,6 +11,7 @@ const { IconConverter, IconBuilder } = IconService;
 const NewCollection = (props) => {
   //modal things
   const [showCollectionModal, setShowCollectionModal] = props.modalProps;
+  const [contractInfoLength, setContractInfoLen] = props.usertxFunc;
   //contract
   const connection = new ICONexConnection();
   const handleDeployContract = async () => {
@@ -75,7 +76,7 @@ const NewCollection = (props) => {
       setShowCollectionModal(false);
       alert("Deployed successfully!");
 
-      props.usertxFunc(); // usertxFunc
+      setContractInfoLen(setContractInfoLen + 1);
     } catch (e) {
       alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
