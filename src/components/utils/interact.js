@@ -1,31 +1,27 @@
 import IconService from "icon-sdk-js";
 import "../app_content.css";
 
-
 // import { add0xPrefix } from "icon-sdk-js/build/data/Hexadecimal";
 
 const { IconConverter } = IconService;
 
 class ICONexConnection {
-
   getWalletAddress() {
     let wallet_address = this.ICONexRequest("REQUEST_ADDRESS");
-    return wallet_address
+    return wallet_address;
   }
-
 
   async retrieve_all_user_transaction(wallet_address) {
     let page = 1;
-    let url_with_address = 'https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=' + 'hxbd1375315c7732779edaa4c3903ffc9b93e82ca3';
+    let url_with_address =
+      "https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=" +
+      "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3";
     let contract_container = [];
 
     try {
-      const responsePromise = await fetch(
-        url_with_address,
-        {
-          method: "GET",
-        }
-      );
+      const responsePromise = await fetch(url_with_address, {
+        method: "GET",
+      });
       const responseJSON = await responsePromise.json();
 
       let list_size_per_page = responseJSON.listSize;
@@ -35,62 +31,55 @@ class ICONexConnection {
       let total_page = total_transaction_size / 100;
       if (total_page > Math.floor(total_page)) {
         total_page = Math.floor(total_page) + 1;
-      }
-      else if (total_page < 1) {
+      } else if (total_page < 1) {
         total_page = 1;
       }
 
       for (let page = 0; page < total_page; page++) {
-        let url_with_address = `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${page + 1}&count=100&address=` + `hxbd1375315c7732779edaa4c3903ffc9b93e82ca3`
+        let url_with_address =
+          `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${
+            page + 1
+          }&count=100&address=` + `hxbd1375315c7732779edaa4c3903ffc9b93e82ca3`;
         try {
-          const responsePromise = await fetch(
-            url_with_address,
-            {
-              method: "GET",
-            }
-          );
+          const responsePromise = await fetch(url_with_address, {
+            method: "GET",
+          });
           const responseJSON = await responsePromise.json();
           let all_transactions = responseJSON.data;
           for (let transaction of all_transactions) {
             if (transaction.txType == 3) {
-              contract_container.push(transaction.txHash)
+              contract_container.push(transaction.txHash);
             }
           }
-        }
-        catch (err) {
+        } catch (err) {
           console.error("FETCH:", err);
           throw err;
         }
       }
-
     } catch (err) {
       console.error("FETCH:", err);
       throw err;
     }
 
-
     let contract_display = [];
     for (let contract_address of contract_container) {
-      let url_to_transaction = `https://sejong.tracker.solidwallet.io/v3/transaction/txDetail?txHash=` + contract_address;
+      let url_to_transaction =
+        `https://sejong.tracker.solidwallet.io/v3/transaction/txDetail?txHash=` +
+        contract_address;
       try {
-        let responsePromise = await fetch(
-          url_to_transaction,
-          {
-            method: "GET",
-          })
-          .then((response) => {
-            return response.json()
-          }
-          );
+        let responsePromise = await fetch(url_to_transaction, {
+          method: "GET",
+        }).then((response) => {
+          return response.json();
+        });
 
         let contract_info = JSON.parse(responsePromise.data.dataString);
         contract_display.push({
           name: contract_info.params._name,
           symbol: contract_info.params._symbol,
           contractAddress: responsePromise.data.targetContractAddr,
-        })
-      }
-      catch (err) {
+        });
+      } catch (err) {
         console.error("FETCH:", err);
         throw err;
       }
@@ -99,7 +88,6 @@ class ICONexConnection {
     return contract_display;
     //document.getElementById("contract_display").innerHTML = contract_display;
     //console.log(contract_display)
-
   }
 
   getJsonRpc(jsonRpcQuery) {
@@ -119,7 +107,6 @@ class ICONexConnection {
   ICONexRequest(requestType, payload) {
     return new Promise((resolve, reject) => {
       function eventHandler(event) {
-
         const { payload } = event.detail;
         window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
         resolve(payload);
@@ -134,7 +121,6 @@ class ICONexConnection {
           },
         })
       );
-
     });
   }
 }

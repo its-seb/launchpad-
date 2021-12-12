@@ -62,3 +62,11 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #2e1442;
 }
+
+#pbUpload {
+  background-color: #e8cbff;
+}
+
+#pbUpload > div {
+  background-color: #7030a0;
+}

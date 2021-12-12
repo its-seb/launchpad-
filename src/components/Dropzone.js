@@ -1,6 +1,6 @@
 import "./app_content.css";
 import React, { Component } from "react";
-import { Col, Row, Button } from "react-bootstrap";
+import { Col, Row, Button, ProgressBar, Modal } from "react-bootstrap";
 import "./global.css";
 const axios = require("axios");
 
@@ -11,10 +11,27 @@ class Dropzone extends Component {
     this.state = {
       file: this.uploadedFiles,
       pinataAuthenticated: "hello",
+      pinningImageProgress: 0,
+      generatingJsonProgress: 0,
+      pinningJsonProgress: 0,
+      totalProgress: 0,
+      show: false,
+      uploadMessage: "",
     };
     this.pinataKey = localStorage.getItem("pinataKey");
     this.pinataSecret = localStorage.getItem("pinataSecret");
+
+    this.showUploadModal = this.showUploadModal.bind(this);
+    // this.hideUploadModal = this.hideUploadModal.bind(this);
   }
+
+  showUploadModal = () => {
+    this.setState({ show: true });
+  };
+
+  hideUploadModal = () => {
+    this.setState({ show: false });
+  };
 
   handleBrowseFiles = (event) => {
     this.fileUploader.click();
@@ -26,6 +43,10 @@ class Dropzone extends Component {
       alert("no files found, please upload file");
     }
 
+    this.showUploadModal();
+
+    //step 1 - pin image
+    this.setState({ uploadMessage: "Uploading image file..." });
     let data = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
       console.log(this.uploadedFiles[i]);
@@ -35,8 +56,6 @@ class Dropzone extends Component {
         `file/${this.uploadedFiles[i].name}`
       );
     }
-
-
 
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
     let response = await axios
@@ -48,18 +67,35 @@ class Dropzone extends Component {
           pinata_secret_api_key:
             "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
         },
+        onUploadProgress: (progressEvent) => {
+          const { loaded, total } = progressEvent;
+          console.log("total", total);
+          const currentProgress = Math.round(((loaded * 100) / total) * 0.5);
+
+          console.log("current progress for ", currentProgress);
+          this.setState({
+            pinningImageProgress: currentProgress,
+            totalProgress: currentProgress,
+          });
+        },
       })
       .then((res) => {
         console.log("file", res);
         console.log(data.toString());
+        this.setState({
+          pinningImageProgress: 60,
+          totalProgress: 60,
+        });
         return res;
       });
 
+    //step 2 - generate meta data json file
+
+    this.setState({ uploadMessage: "Generating metadata file..." });
     const ipfsHash = response.data.IpfsHash;
     const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
     let mdata = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
-      //create metadata file
       const mdataContent = {
         image: `${ipfsGateway}/${this.uploadedFiles[i].name}`,
       };
@@ -67,8 +103,18 @@ class Dropzone extends Component {
         type: "application/json",
       });
       mdata.append(`file`, mdataFile, `mdata/${i}.json`);
+      const currentProgress = Math.round(
+        ((i + 1) / this.uploadedFiles.length) * 20
+      );
+      this.setState({
+        generatingJsonProgress: currentProgress,
+        totalProgress: this.state.pinningImageProgress + currentProgress,
+      });
+      console.log("current prog at generating json", currentProgress);
     }
 
+    //step 3 - pin json file
+    this.setState({ uploadMessage: "Uploading metadata file..." });
     let mresponse = await axios
       .post(pinataEndpoint, mdata, {
         maxContentLength: "Infinity",
@@ -78,12 +124,40 @@ class Dropzone extends Component {
           pinata_secret_api_key:
             "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
         },
+        onUploadProgress: (progressEvent) => {
+          console.log(progressEvent);
+          const { loaded, total } = progressEvent;
+          console.log("total", total);
+          console.log("loaded", loaded);
+          const currentProgress = Math.round(((loaded * 100) / total) * 0.15);
+
+          console.log("current prog at pinning meta", currentProgress);
+          const newTotalProgress =
+            this.state.pinningImageProgress +
+            this.state.generatingJsonProgress +
+            currentProgress;
+          console.log("new total prog", newTotalProgress);
+          this.setState({
+            pinningJsonProgress: currentProgress,
+            totalProgress:
+              this.state.pinningImageProgress +
+              this.state.generatingJsonProgress +
+              currentProgress,
+          });
+        },
       })
       .then((res) => {
         console.log("metadata", res);
         console.log(data.toString());
+        this.setState({
+          pinningJsonProgress: 20,
+          totalProgress: 100,
+        });
         return res;
       });
+
+    //this.hideUploadModal();
+    alert("upload complete");
   };
 
   handleDropFiles = async (event) => {
@@ -154,22 +228,14 @@ class Dropzone extends Component {
   // };
 
   remove_file(file_index) {
-    // console.log(file_index)
-    // console.log(this.uploadedFiles)
-
-    // this.uploadedFiles.splice(file_index, 1)
     let updated_uploadedFile = [];
     for (let i = 0; i < this.uploadedFiles.length; i++) {
       if (i != file_index.i) {
-        updated_uploadedFile.push(this.uploadedFiles[i])
+        updated_uploadedFile.push(this.uploadedFiles[i]);
       }
     }
-    // console.log(updated_uploadedFile)
     this.uploadedFiles = updated_uploadedFile;
     this.setState({ file: this.uploadedFiles });
-    // console.log(this.uploadedFiles)
-
-
   }
 
   render() {
@@ -193,7 +259,7 @@ class Dropzone extends Component {
           onDragLeave={(e) => {
             e.preventDefault();
           }}
-        // onClick={this.handleBrowseFiles}
+          // onClick={this.handleBrowseFiles}
         >
           <span style={{ color: "#5d2985" }}>drag and drop files</span>
           <div
@@ -215,7 +281,18 @@ class Dropzone extends Component {
                         border: "1px solid #c9c9c9",
                       }}
                     ></img>
-                    <i className="fa fa-times-circle" style={{ fontSize: "30px", color: "red", position: "absolute", top: "0px", right: "-1px" }} onClick={e => this.remove_file({ i })}></i>
+                    <i
+                      className="fa fa-times-circle"
+                      style={{
+                        fontSize: "25px",
+                        color: "red",
+                        position: "absolute",
+                        top: "0px",
+                        right: "-1px",
+                        opacity: "0.6",
+                      }}
+                      onClick={(e) => this.remove_file({ i })}
+                    ></i>
                     <span style={{ fontWeight: "bold", fontSize: "12px" }}>
                       {data.name}
                     </span>
@@ -241,6 +318,26 @@ class Dropzone extends Component {
         >
           Upload
         </Button>
+        <Modal show={this.state.show}>
+          <div style={{ padding: "25px 25px" }}>
+            <span
+              style={{
+                fontSize: "larger",
+                fontWeight: "bold",
+                color: "#525252",
+              }}
+            >
+              {this.state.uploadMessage}
+            </span>
+            <ProgressBar
+              id="pbUpload"
+              animated
+              style={{ marginTop: "15px" }}
+              now={this.state.totalProgress}
+              label={`${this.state.totalProgress}%`}
+            ></ProgressBar>
+          </div>
+        </Modal>
       </>
     );
   }

@@ -8,7 +8,6 @@ import Dropzone from "./Dropzone.js";
 import "./utils/interact";
 import ICONexConnection from "./utils/interact";
 
-
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const handleShowCollectionModal = () => setShowCollectionModal(true);
@@ -18,11 +17,12 @@ const AppContent = () => {
   const handleShowPinataModal = () => setShowPinataModal(true);
   const handleClosePinataModal = () => setShowPinataModal(false);
   const [contractInfo, setContractInfo] = useState([]);
-  const [test, settest] = useState('');
 
   const getUserTransaction = async () => {
-    const connection = new ICONexConnection;
-    let contract_xinfo = await connection.retrieve_all_user_transaction("hxbd1375315c7732779edaa4c3903ffc9b93e82ca3");
+    const connection = new ICONexConnection();
+    let contract_xinfo = await connection.retrieve_all_user_transaction(
+      "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3"
+    );
     // console.log(contract_xinfo)
     // return contract_xinfo
     // console.log(contract_xinfo)
@@ -31,12 +31,11 @@ const AppContent = () => {
     // return contract_xinfo;
     setContractInfo(contract_xinfo);
     // return contract_xinfo;
-  }
+  };
 
   useEffect(() => {
-    getUserTransaction()
-  }, [])
-
+    getUserTransaction();
+  }, []);
 
   return (
     <div style={{ height: "calc(100vh - 91px)" }}>
@@ -50,33 +49,29 @@ const AppContent = () => {
             New Collection
           </button>
         </div>
-        <div style={{ padding: "0 25px"}}>
+        <div style={{ padding: "0 25px" }}>
           <Row>
-
-            {
-              contractInfo.map(info =>
-                <Col xs={6} md={4} style={{ marginBottom: "18px" }}>
-                  <Card id="card_style">
-                    <div id="card_div_style">
-                      <span id="card_div_span_style">
-                        {info.name}
-                      </span>
-                      <div id="card_div_div_style">
-                        <label id="card_div_label_style">
-                          {info.symbol}
-                        </label>
-                      </div>
+            {contractInfo.map((info) => (
+              <Col
+                xs={6}
+                md={4}
+                style={{ marginBottom: "18px" }}
+                key={info.contractAddress}
+              >
+                <Card id="card_style">
+                  <div id="card_div_style">
+                    <span id="card_div_span_style">{info.name}</span>
+                    <div id="card_div_div_style">
+                      <label id="card_div_label_style">{info.symbol}</label>
                     </div>
-                    <span id="card_div_div_span_style">
-                      {info.contractAddress}
-                    </span>
-                    <a href= "www.google.com" className="stretched-link"></a>
-                  </Card>
-                </Col>
-
-              )
-            }
-
+                  </div>
+                  <span id="card_div_div_span_style">
+                    {info.contractAddress}
+                  </span>
+                  <a href="www.google.com" className="stretched-link"></a>
+                </Card>
+              </Col>
+            ))}
           </Row>
         </div>
       </Container>
