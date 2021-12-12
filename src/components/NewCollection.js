@@ -23,7 +23,7 @@ const NewCollection = (props) => {
     const contractContent = await fetchContractContent(
       "https://raw.githubusercontent.com/OpenDevICON/token-score-factory/master/zips/owner_burnable_irc3.zip"
     );
-    console.log(contractContent);
+    //    console.log(contractContent);
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
 
     //remember to sanitize input-> allow alphanumeric only
@@ -75,11 +75,7 @@ const NewCollection = (props) => {
       setShowCollectionModal(false);
       alert("Deployed successfully!");
 
-      let contract_xinfo = await connection.retrieve_all_user_transaction(
-        "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3"
-      );
-      props.testProps(contract_xinfo);
-      //window.location.reload(); // notworking
+      props.usertxFunc(); // usertxFunc
     } catch (e) {
       alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)

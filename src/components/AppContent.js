@@ -7,6 +7,7 @@ import PinataSetting from "./PinataSetting.js";
 import Dropzone from "./Dropzone.js";
 import "./utils/interact";
 import ICONexConnection from "./utils/interact";
+import cfg from "../config.json";
 
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -21,16 +22,12 @@ const AppContent = () => {
   const getUserTransaction = async () => {
     const connection = new ICONexConnection();
     let contract_xinfo = await connection.retrieve_all_user_transaction(
-      "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3"
+      cfg.LOCAL_WALLET_ADDRESS //localStorage.getItem("WALLET_ADDRESS");
     );
-    // console.log(contract_xinfo)
-    // return contract_xinfo
-    // console.log(contract_xinfo)
 
-    //localStorage.getItem("WALLET_ADDRESS");
-    // return contract_xinfo;
     setContractInfo(contract_xinfo);
-    // return contract_xinfo;
+    console.log(contractInfo.length);
+    console.log("xinfo", contract_xinfo.length);
   };
 
   useEffect(() => {
@@ -79,7 +76,7 @@ const AppContent = () => {
       <Modal show={showCollectionModal} onHide={handleCloseCollectionModal}>
         <NewCollection
           modalProps={[showCollectionModal, setShowCollectionModal]}
-          testProps={getUserTransaction}
+          usertxFunc={getUserTransaction}
         />
       </Modal>
 

@@ -1,7 +1,6 @@
 import IconService from "icon-sdk-js";
 import "../app_content.css";
-
-// import { add0xPrefix } from "icon-sdk-js/build/data/Hexadecimal";
+import cfg from "./../../config.json";
 
 const { IconConverter } = IconService;
 
@@ -15,7 +14,7 @@ class ICONexConnection {
     let page = 1;
     let url_with_address =
       "https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=" +
-      "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3";
+      cfg.LOCAL_WALLET_ADDRESS;
     let contract_container = [];
 
     try {
@@ -39,7 +38,7 @@ class ICONexConnection {
         let url_with_address =
           `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${
             page + 1
-          }&count=100&address=` + `hxbd1375315c7732779edaa4c3903ffc9b93e82ca3`;
+          }&count=100&address=` + cfg.LOCAL_WALLET_ADDRESS;
         try {
           const responsePromise = await fetch(url_with_address, {
             method: "GET",

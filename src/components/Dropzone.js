@@ -2,6 +2,7 @@ import "./app_content.css";
 import React, { Component } from "react";
 import { Col, Row, Button, ProgressBar, Modal } from "react-bootstrap";
 import "./global.css";
+import cfg from "../config.json";
 const axios = require("axios");
 
 class Dropzone extends Component {
@@ -63,9 +64,8 @@ class Dropzone extends Component {
         maxContentLength: "Infinity",
         headers: {
           "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: "295a526cef20b63d813c",
-          pinata_secret_api_key:
-            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
+          pinata_api_key: cfg.PINATA_API_KEY,
+          pinata_secret_api_key: cfg.PINATA_API_SECRET,
         },
         onUploadProgress: (progressEvent) => {
           const { loaded, total } = progressEvent;
@@ -120,9 +120,8 @@ class Dropzone extends Component {
         maxContentLength: "Infinity",
         headers: {
           "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: "295a526cef20b63d813c",
-          pinata_secret_api_key:
-            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
+          pinata_api_key: cfg.PINATA_API_KEY,
+          pinata_secret_api_key: cfg.PINATA_API_SECRET,
         },
         onUploadProgress: (progressEvent) => {
           console.log(progressEvent);
