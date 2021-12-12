@@ -79,6 +79,7 @@ const AppContent = () => {
       <Modal show={showCollectionModal} onHide={handleCloseCollectionModal}>
         <NewCollection
           modalProps={[showCollectionModal, setShowCollectionModal]}
+          testProps={getUserTransaction}
         />
       </Modal>
 

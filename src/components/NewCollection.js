@@ -11,7 +11,6 @@ const { IconConverter, IconBuilder } = IconService;
 const NewCollection = (props) => {
   //modal things
   const [showCollectionModal, setShowCollectionModal] = props.modalProps;
-
   //contract
   const connection = new ICONexConnection();
   const handleDeployContract = async () => {
@@ -75,7 +74,12 @@ const NewCollection = (props) => {
       localStorage.setItem("CONTRACT_ADDRESS", rpcResponse["result"]);
       setShowCollectionModal(false);
       alert("Deployed successfully!");
-      window.location.reload(); // notworking
+
+      let contract_xinfo = await connection.retrieve_all_user_transaction(
+        "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3"
+      );
+      props.testProps(contract_xinfo);
+      //window.location.reload(); // notworking
     } catch (e) {
       alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
