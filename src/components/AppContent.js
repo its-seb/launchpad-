@@ -5,7 +5,7 @@ import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
 import PinataSetting from "./PinataSetting.js";
 import Dropzone from "./Dropzone.js";
-import "./utils/interact";
+import "./utils/interact.js";
 import ICONexConnection from "./utils/interact";
 import cfg from "../config.json";
 import Dexie from "dexie";
@@ -20,7 +20,6 @@ const AppContent = () => {
   const handleClosePinataModal = () => setShowPinataModal(false);
   const [contractInfo, setContractInfo] = useState([]);
   const [contractInfoLength, setContractInfoLen] = useState(0);
-
   const connection = new ICONexConnection();
 
   var db = new Dexie("contracts_deployed");
@@ -106,13 +105,13 @@ const AppContent = () => {
         <div style={{ padding: "0 25px" }}>
           <Row>
             {contractInfo.map((info) => (
-              <Col
+              <Col 
                 xs={6}
                 md={4}
                 style={{ marginBottom: "18px" }}
-                key={info.contractAddress}
+                key={info.contractAddress} onClick = {() => connection.interact_with_contract(info.contractAddress)}
               >
-                <Card id="card_style">
+                <Card id="card_style" type="button">
                   <div id="card_div_style">
                     <span id="card_div_span_style">{info.name}</span>
                     <div id="card_div_div_style">
@@ -122,7 +121,7 @@ const AppContent = () => {
                   <span id="card_div_div_span_style">
                     {info.contractAddress}
                   </span>
-                  <a href="www.google.com" className="stretched-link"></a>
+                  {/* <a href="" className="stretched-link" onClick={() => {console.log("hi")}}></a> */}
                 </Card>
               </Col>
             ))}
