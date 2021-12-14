@@ -6,14 +6,25 @@ import { fetchContractContent } from "./utils/fetchContractContent.js";
 import ICONexConnection, {
   estimateStepsforDeployment,
 } from "./utils/interact.js";
+import Dexie from "dexie";
+import cfg from "../config.json";
 
 const { IconConverter, IconBuilder } = IconService;
+
 const NewCollection = (props) => {
   //modal things
   const [showCollectionModal, setShowCollectionModal] = props.modalProps;
   const [contractInfoLength, setContractInfoLen] = props.usertxFunc;
   //contract
   const connection = new ICONexConnection();
+  var db = new Dexie("contracts_deployed");
+  db.version(1).stores({
+    contracts: "contractAddress, walletAddress, name, symbol",
+  });
+  db.open().catch((error) => {
+    console.log("error", error);
+  });
+  console.log(db);
   const handleDeployContract = async () => {
     //check if user address is set:
     if (localStorage.getItem("USER_WALLET_ADDRESS") == null) {
@@ -22,7 +33,7 @@ const NewCollection = (props) => {
     }
 
     const contractContent = await fetchContractContent(
-      "https://raw.githubusercontent.com/OpenDevICON/token-score-factory/master/zips/owner_burnable_irc3.zip"
+      "https://gateway.pinata.cloud/ipfs/QmZd7Q9uYXi7jTiJiVQnZxpQx4bwVAinNjSFn7ARXroc94"
     );
     //    console.log(contractContent);
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
@@ -73,12 +84,27 @@ const NewCollection = (props) => {
       let rpcResponse = await connection.getJsonRpc(payload);
       console.log(rpcResponse);
       localStorage.setItem("CONTRACT_ADDRESS", rpcResponse["result"]);
+      //update indexedDB
+      db.contracts
+        .add({
+          contractAddress: rpcResponse["result"],
+          walletAddress: cfg.LOCAL_WALLET_ADDRESS,
+          name: collectionName,
+          symbol: collectionSymbol,
+        })
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+
       setShowCollectionModal(false);
       alert("Deployed successfully!");
 
       setContractInfoLen(setContractInfoLen + 1);
     } catch (e) {
-      alert("User cancelled transaction");
+      //alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
     }
   };

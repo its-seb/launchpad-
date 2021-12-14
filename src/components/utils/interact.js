@@ -1,92 +1,101 @@
 import IconService from "icon-sdk-js";
 import "../app_content.css";
+import axios from "axios";
 import cfg from "./../../config.json";
 
-const { IconConverter } = IconService;
+const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 class ICONexConnection {
+  constructor() {
+    this.provider = new HttpProvider(
+      "https://sejong.net.solidwallet.io/api/v3"
+    );
+    this.iconService = new IconService(this.provider);
+  }
   getWalletAddress() {
     let wallet_address = this.ICONexRequest("REQUEST_ADDRESS");
     return wallet_address;
   }
 
-  async retrieve_all_user_transaction(wallet_address) {
-    let page = 1;
-    let url_with_address =
-      "https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=" +
-      cfg.LOCAL_WALLET_ADDRESS;
-    let contract_container = [];
+  async getLaunchpadContracts(walletAddress) {
+    let urlTransactionList = `https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=${walletAddress}`;
+    let contractContainer = [];
+    let response = await axios.get(urlTransactionList).then((res) => {
+      return res.data;
+    });
 
-    try {
-      const responsePromise = await fetch(url_with_address, {
-        method: "GET",
+    let totalPages = response.totalSize / 100;
+    if (totalPages > Math.floor(totalPages)) {
+      totalPages = Math.floor(totalPages) + 1;
+    } else if (totalPages < 1) {
+      totalPages = 1;
+    }
+
+    //filter tx to get contracts
+    console.log("total pages", totalPages);
+    for (var page = 0; page < totalPages; page++) {
+      let urlCurrentPage = `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${
+        page + 1
+      }&count=100&address=${walletAddress}`;
+      const pageResponse = await axios.get(urlCurrentPage).then((res) => {
+        return res.data;
       });
-      const responseJSON = await responsePromise.json();
 
-      let list_size_per_page = responseJSON.listSize;
-      let total_transaction_size = responseJSON.totalSize;
-      let transactions = responseJSON.data;
-
-      let total_page = total_transaction_size / 100;
-      if (total_page > Math.floor(total_page)) {
-        total_page = Math.floor(total_page) + 1;
-      } else if (total_page < 1) {
-        total_page = 1;
-      }
-
-      for (let page = 0; page < total_page; page++) {
-        let url_with_address =
-          `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${
-            page + 1
-          }&count=100&address=` + cfg.LOCAL_WALLET_ADDRESS;
-        try {
-          const responsePromise = await fetch(url_with_address, {
-            method: "GET",
-          });
-          const responseJSON = await responsePromise.json();
-          let all_transactions = responseJSON.data;
-          for (let transaction of all_transactions) {
-            if (transaction.txType == 3) {
-              contract_container.push(transaction.txHash);
-            }
-          }
-        } catch (err) {
-          console.error("FETCH:", err);
-          throw err;
+      let transactions = pageResponse.data;
+      for (let transaction of transactions) {
+        if (transaction.txType == "3") {
+          contractContainer.push(transaction.targetContractAddr);
         }
       }
-    } catch (err) {
-      console.error("FETCH:", err);
-      throw err;
     }
 
-    let contract_display = [];
-    for (let contract_address of contract_container) {
-      let url_to_transaction =
-        `https://sejong.tracker.solidwallet.io/v3/transaction/txDetail?txHash=` +
-        contract_address;
-      try {
-        let responsePromise = await fetch(url_to_transaction, {
-          method: "GET",
-        }).then((response) => {
-          return response.json();
+    //filter contracts to get isLaunchpad
+    //console.log("contract contrainer", contractContainer);
+    let contractDisplayed = [];
+    for (let contractAddress of contractContainer) {
+      let shouldDisplay = await this.deployedByLaunchpad(contractAddress);
+      console.log("should", contractAddress, shouldDisplay);
+      if (shouldDisplay == true) {
+        //get contract_info
+        let contractResponse = await axios
+          .get(
+            `https://sejong.tracker.solidwallet.io/v3/contract/info?addr=${contractAddress}`
+          )
+          .then((res) => {
+            return res.data;
+          });
+        //console.log(contractResponse);
+        contractDisplayed.push({
+          name: contractResponse.data.tokenName,
+          symbol: contractResponse.data.symbol,
+          contractAddress: contractAddress,
         });
-
-        let contract_info = JSON.parse(responsePromise.data.dataString);
-        contract_display.push({
-          name: contract_info.params._name,
-          symbol: contract_info.params._symbol,
-          contractAddress: responsePromise.data.targetContractAddr,
-        });
-      } catch (err) {
-        console.error("FETCH:", err);
-        throw err;
       }
     }
-    // console.log("contract_display", contract_display);
-    return contract_display;
-    //document.getElementById("contract_display").innerHTML = contract_display;
-    //console.log(contract_display)
+    return contractDisplayed;
+  }
+
+  async deployedByLaunchpad(contractAddress) {
+    //check if its deployed by launchpad
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(contractAddress)
+      .method("createdByLaunchpad")
+      .build();
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        console.log("success");
+        return response;
+      })
+      .catch((error) => {
+        Promise.resolve({ error });
+        //console.log(error);
+        return "0x0";
+      });
+    return result;
   }
 
   getJsonRpc(jsonRpcQuery) {

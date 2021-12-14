@@ -1,6 +1,6 @@
 import "./app_content.css";
 import React, { useState, useEffect, useReducer } from "react";
-import { Container, Button, Row, Col, Card, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Modal } from "react-bootstrap";
 import AppContentStyle from "./AppContent.module.css";
 import NewCollection from "./NewCollection.js";
 import PinataSetting from "./PinataSetting.js";
@@ -8,7 +8,7 @@ import Dropzone from "./Dropzone.js";
 import "./utils/interact";
 import ICONexConnection from "./utils/interact";
 import cfg from "../config.json";
-import axios from "axios";
+import Dexie from "dexie";
 
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -21,83 +21,74 @@ const AppContent = () => {
   const [contractInfo, setContractInfo] = useState([]);
   const [contractInfoLength, setContractInfoLen] = useState(0);
 
-  const getUserTransaction = async () => {
-    const connection = new ICONexConnection();
+  const connection = new ICONexConnection();
 
-    let url_with_address =
-      "https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=" +
-      cfg.LOCAL_WALLET_ADDRESS;
-    let contract_container = [];
-    let response = await axios.get(url_with_address).then((res) => {
-      return res.data;
-    });
-    let totalTransactions = response.totalSize;
-    let totalPages = totalTransactions / 100;
-    if (totalPages > Math.floor(totalPages)) {
-      totalPages = Math.floor(totalPages) + 1;
-    } else if (totalPages < 1) {
-      totalPages = 1;
-    }
+  var db = new Dexie("contracts_deployed");
+  db.version(1).stores({
+    contracts: "contractAddress, walletAddress, name, symbol",
+  });
+  db.open().catch((error) => {
+    console.log("error", error);
+  });
+  console.log("app content", db.contracts);
 
-    for (let page = 0; page < totalPages; page++) {
-      url_with_address =
-        `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${
-          page + 1
-        }&count=100&address=` + cfg.LOCAL_WALLET_ADDRESS;
-
-      const pageResponse = await axios.get(url_with_address).then((res) => {
-        return res.data;
+  const getContractInfo = async () => {
+    //check indexedDB data; if exists, pull contract info, else fallback
+    const contractsCount = await db.contracts
+      .where({
+        walletAddress: cfg.LOCAL_WALLET_ADDRESS,
+      })
+      .count((count) => {
+        return count;
       });
 
-      let transactions = pageResponse.data;
-      for (let transaction of transactions) {
-        if (transaction.txType == 3) {
-          contract_container.push(transaction.txHash);
-        }
+    //if no contracts found in db, fallback to txlist for confirmation
+    if (contractsCount == 0) {
+      let contractDisplay = await connection.getLaunchpadContracts(
+        cfg.LOCAL_WALLET_ADDRESS
+      );
+
+      //prepare statement for bulk add to db.contracts
+      var contractsToCommit = [];
+      console.log(contractDisplay);
+      for (let contract of contractDisplay) {
+        contractsToCommit.push({
+          contractAddress: contract.contractAddress,
+          walletAddress: cfg.LOCAL_WALLET_ADDRESS,
+          name: contract.name,
+          symbol: contract.symbol,
+        });
       }
+
+      db.contracts
+        .bulkAdd(contractsToCommit)
+        .then((lastKey) => {
+          console.log("last key added:", lastKey);
+        })
+        .catch(Dexie.BulkError, (e) => {
+          console.error(
+            "Some contracts did not succeed. However, " +
+              contractDisplay.length -
+              e.failures.length +
+              " contracts was added successfully"
+          );
+        });
     }
 
-    let contractDisplay = [];
-    for (let contractAddress of contract_container) {
-      let url_to_transaction =
-        `https://sejong.tracker.solidwallet.io/v3/transaction/txDetail?txHash=` +
-        contractAddress;
+    //query indexedDB to pull out all deployed contracts
+    const contractsDeployed = await db.contracts
+      .where({
+        walletAddress: cfg.LOCAL_WALLET_ADDRESS,
+      })
+      .toArray();
+    setContractInfo(contractsDeployed);
+    setContractInfoLen(contractsDeployed.length);
 
-      let txResponses = await axios.get(url_to_transaction).then((res) => {
-        return res.data;
-      });
-      //console.log(txResponses);
-      let contractInfo = JSON.parse(txResponses.data.dataString);
-      contractDisplay.push({
-        name: contractInfo.params._name,
-        symbol: contractInfo.params._symbol,
-        contractAddress: txResponses.data.targetContractAddr,
-      });
-    }
-    console.log(contractDisplay.length);
-    setContractInfoLen(contractDisplay.length);
-    // console.log("contract_display", contract_display);
-    setContractInfo(contractDisplay);
-    return contractDisplay;
-
-    //document.getElementById("contract_display").innerHTML = contract_display;
-    //console.log(contract_display)
-
-    // let contract_xinfo = await connection.retrieve_all_user_transaction(
-    //   cfg.LOCAL_WALLET_ADDRESS //localStorage.getItem("WALLET_ADDRESS");
-    // );
-
-    // setContractInfo(contract_xinfo);
-    // console.log(contractInfo.length);
-    // console.log("xinfo", contract_xinfo.length);
+    return contractsDeployed;
   };
 
   useEffect(() => {
-    async function fetchMyAPI() {
-      await getUserTransaction();
-    }
-    fetchMyAPI();
-    //console.log("use effect", contractInfoLength);
+    getContractInfo();
   }, [contractInfoLength]);
 
   return (
