@@ -34,12 +34,45 @@ class ICONexConnection {
     //   .build()
   }
 
+  async testMint(contractAddress) {
+    const txObj = new IconBuilder.CallTransactionBuilder()
+      .from(cfg.LOCAL_WALLET_ADDRESS)
+      .to(contractAddress)
+      .stepLimit(IconConverter.toBigNumber(2000000))
+      .nid("0x53")
+      .nonce(IconConverter.toBigNumber(1))
+      .version(IconConverter.toBigNumber(3)) //constant
+      .timestamp(new Date().getTime() * 1000)
+      .method("_mint")
+      .params({
+        _owner: cfg.LOCAL_WALLET_ADDRESS,
+        _id: "1",
+        _supply: "1",
+        _uri: "google.com",
+      })
+      .build();
+
+    const payload = {
+      jsonrpc: "2.0",
+      method: "icx_sendTransaction",
+      id: 6639,
+      params: IconConverter.toRawTransaction(txObj),
+    };
+
+    let rpcResponse = await this.getJsonRpc(payload);
+    console.log(rpcResponse);
+  }
+
   async getLaunchpadContracts(walletAddress) {
     let urlTransactionList = `https://sejong.tracker.solidwallet.io/v3/address/txList?page=1&count=100&address=${walletAddress}`;
     let contractContainer = [];
     let response = await axios.get(urlTransactionList).then((res) => {
       return res.data;
     });
+
+    if (response.data == null) {
+      return []; //no tx found
+    }
 
     let totalPages = response.totalSize / 100;
     if (totalPages > Math.floor(totalPages)) {
@@ -81,7 +114,7 @@ class ICONexConnection {
           .then((res) => {
             return res.data;
           });
-        //console.log(contractResponse);
+        console.log("contractResponse", contractResponse);
         contractDisplayed.push({
           name: contractResponse.data.tokenName,
           symbol: contractResponse.data.symbol,
@@ -119,10 +152,10 @@ class ICONexConnection {
     return this.ICONexRequest("REQUEST_JSON-RPC", jsonRpcQuery);
   }
 
-  callTransaction(txObj) {
+  makeJsonRpcCall(txObj, txMethod) {
     const jsonRpcQuery = {
       jsonrpc: "2.0",
-      method: "icx_sendTransaction",
+      method: txMethod,
       params: IconConverter.toRawTransaction(txObj),
       id: 1234,
     };
@@ -160,7 +193,7 @@ export async function estimateStepsforDeployment(from, content, params) {
     params: {
       version: "0x3",
       from,
-      to: "cx0000000000000000000000000000000000000000", //selectedNetworkData.CONTRACT_DEPLOY_ADDRESS,
+      to: cfg.ZERO_ADDRESS, //selectedNetworkData.CONTRACT_DEPLOY_ADDRESS,
       timestamp,
       nid: "0x53", //0x53 for sejong ; selectedNetworkData.NID,
       nonce: "0x1",

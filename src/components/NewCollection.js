@@ -8,8 +8,9 @@ import ICONexConnection, {
 } from "./utils/interact.js";
 import Dexie from "dexie";
 import cfg from "../config.json";
+import axios from "axios";
 
-const { IconConverter, IconBuilder } = IconService;
+const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 const NewCollection = (props) => {
   //modal things
@@ -24,7 +25,6 @@ const NewCollection = (props) => {
   db.open().catch((error) => {
     console.log("error", error);
   });
-  console.log(db);
   const handleDeployContract = async () => {
     //check if user address is set:
     if (localStorage.getItem("USER_WALLET_ADDRESS") == null) {
@@ -36,7 +36,7 @@ const NewCollection = (props) => {
       "https://gateway.pinata.cloud/ipfs/QmZd7Q9uYXi7jTiJiVQnZxpQx4bwVAinNjSFn7ARXroc94"
     );
     //    console.log(contractContent);
-    const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
+    const walletAddress = cfg.LOCAL_WALLET_ADDRESS; //localStorage.getItem("USER_WALLET_ADDRESS");
 
     //remember to sanitize input-> allow alphanumeric only
     const collectionName = document.getElementById("tbCollectionName").value;
@@ -62,7 +62,7 @@ const NewCollection = (props) => {
     const txObj = new IconBuilder.DeployTransactionBuilder()
       .nid("0x53") //0x53 for sejong - https://www.icondev.io/introduction/the-icon-network/testnet
       .from(walletAddress)
-      .to("cx0000000000000000000000000000000000000000") //constant
+      .to(cfg.ZERO_ADDRESS) //constant
       .stepLimit(IconConverter.toBigNumber(stepLimit))
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(Date.now() * 1000) //constant
@@ -82,12 +82,20 @@ const NewCollection = (props) => {
 
     try {
       let rpcResponse = await connection.getJsonRpc(payload);
-      console.log(rpcResponse);
-      localStorage.setItem("CONTRACT_ADDRESS", rpcResponse["result"]);
+      const txHash = rpcResponse.result;
+      console.log("txHash", txHash);
+
+      const provider = new HttpProvider(
+        "https://sejong.net.solidwallet.io/api/v3"
+      );
+      const iconService = new IconService(provider);
+      await sleep(5000);
+      const txObject = await iconService.getTransactionResult(txHash).execute();
+      console.log("txObject", txObject);
       //update indexedDB
       db.contracts
         .add({
-          contractAddress: rpcResponse["result"],
+          contractAddress: txObject.scoreAddress,
           walletAddress: cfg.LOCAL_WALLET_ADDRESS,
           name: collectionName,
           symbol: collectionSymbol,
@@ -107,6 +115,23 @@ const NewCollection = (props) => {
       //alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
     }
+  };
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  const getContractAddress = async (txHash) => {
+    let response = await axios
+      .get(
+        `https://sejong.tracker.solidwallet.io/v3/transaction/txDetail?txHash=${txHash}`
+      )
+      .then((res) => {
+        console.log("res", res);
+        console.log("res.data", res.data);
+        return res.data;
+      });
+    return response.data.targetContractAddr;
   };
 
   return (

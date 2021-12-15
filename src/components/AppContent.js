@@ -9,6 +9,8 @@ import "./utils/interact.js";
 import ICONexConnection from "./utils/interact";
 import cfg from "../config.json";
 import Dexie from "dexie";
+import axios from "axios";
+import IconService from "icon-sdk-js";
 
 const AppContent = () => {
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -29,7 +31,6 @@ const AppContent = () => {
   db.open().catch((error) => {
     console.log("error", error);
   });
-  console.log("app content", db.contracts);
 
   const getContractInfo = async () => {
     //check indexedDB data; if exists, pull contract info, else fallback
@@ -105,17 +106,18 @@ const AppContent = () => {
         <div style={{ padding: "0 25px" }}>
           <Row>
             {contractInfo.map((info) => (
-              <Col 
+              <Col
                 xs={6}
                 md={4}
                 style={{ marginBottom: "18px" }}
-                key={info.contractAddress} onClick = {() => connection.interact_with_contract(info.contractAddress)}
+                key={info.contractAddress}
+                onClick={() => connection.testMint(info.contractAddress)}
               >
                 <Card id="card_style" type="button">
                   <div id="card_div_style">
                     <span id="card_div_span_style">{info.name}</span>
                     <div id="card_div_div_style">
-                      <label id="card_div_label_style">{info.symbol}</label>
+                      <label id="card_div_label_style">o</label>
                     </div>
                   </div>
                   <span id="card_div_div_span_style">
