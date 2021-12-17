@@ -1,0 +1,149 @@
+.sideBar {
+  max-width: 250px;
+  width: 250px;
+  height: 90vh;
+  text-align: left;
+  background-color: rgb(255, 255, 255);
+  margin-bottom: 5vh;
+  margin-top: 5vh;
+  border-radius: 0 2rem 2rem 0px;
+  border: 1px solid #c6c8ca;
+  border-left-width: 0px;
+}
+
+.logo {
+  font-size: 40px;
+  text-align: center;
+  color: #494a66;
+  font-weight: bold;
+  text-decoration: none;
+  padding-top: 15px;
+}
+
+.navPill {
+  margin-top: 20px;
+  margin-left: 30px;
+  margin-right: 30px;
+  padding: 1rem;
+  background-color: #eeeeff;
+  color: #494a66;
+  font-weight: bold;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.navPill:hover {
+  color: white;
+  background-color: #4b4db3;
+}
+
+.navPill.active,
+#btnConnectWallet {
+  color: white;
+  background-color: #4b4db3;
+}
+
+.navPill.active:hover,
+#btnConnectWallet:hover {
+  color: white;
+  background-color: #393baf;
+}
+
+.pageContent {
+  width: calc(100vw - 250px);
+  height: 90vh;
+  margin: 5vh 2vw;
+  border-radius: 2rem;
+  border: 1px solid #c6c8ca;
+  background-color: white;
+}
+
+.headerContent {
+  height: 6rem;
+  border-bottom-width: 1px;
+  border-bottom-color: #c6c8ca;
+  border-bottom-style: solid;
+  padding: 15px 35px;
+  text-align: left;
+}
+
+.pillArrow {
+  width: 1rem;
+  float: right;
+  margin-top: 5px;
+}
+
+#btnConnectWallet {
+  padding: 0.8rem;
+  font-weight: bold;
+  margin-top: 5px;
+  float: right;
+  border-radius: 10px;
+}
+
+.pageTitle {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #494a66;
+  text-transform: uppercase;
+}
+
+.card {
+  margin-top: 25px;
+  padding: 10px 15px;
+  border: 1px solid #4b4db3;
+  border-radius: 10px;
+}
+
+.card > div > span {
+  font-size: 1.8rem;
+  font-weight: bold;
+  width: 100%;
+  text-align: left;
+  color: #494a66;
+}
+
+.card > div > span > svg {
+  width: 20px;
+  float: right;
+  margin-top: 13px;
+}
+
+.card > span {
+  text-align: left;
+  padding-bottom: 5px;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: -3px;
+  margin-left: 3px;
+}
+
+.card:hover {
+  background-color: #4b4db3;
+}
+
+.card:hover > span,
+.card:hover > div > span {
+  color: white;
+}
+
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1470px;
+  }
+}
+
+*.unselectable {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+
+  /*
+    Introduced in Internet Explorer 10.
+    See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+  */
+  -ms-user-select: none;
+  user-select: none;
+}

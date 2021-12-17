@@ -14,8 +14,9 @@ const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 const NewCollection = (props) => {
   //modal things
-  const [showCollectionModal, setShowCollectionModal] = props.modalProps;
-  const [contractInfoLength, setContractInfoLen] = props.usertxFunc;
+  //const [showCollectionModal, setShowCollectionModal] = props.modalProps;
+  //const [contractInfoLength, setContractInfoLen] = props.usertxFunc;
+
   //contract
   const connection = new ICONexConnection();
   var db = new Dexie("contracts_deployed");
@@ -107,10 +108,10 @@ const NewCollection = (props) => {
           console.log(e);
         });
 
-      setShowCollectionModal(false);
+      //setShowCollectionModal(false);
       alert("Deployed successfully!");
 
-      setContractInfoLen(setContractInfoLen + 1);
+      //setContractInfoLen(setContractInfoLen + 1);
     } catch (e) {
       //alert("User cancelled transaction");
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
