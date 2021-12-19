@@ -23,6 +23,7 @@ export class CollectionComponent extends Component {
     this.showCollectionModal = this.showCollectionModal.bind(this);
     this.hideCollectionModal = this.hideCollectionModal.bind(this);
     this.getContractInfo = this.getContractInfo.bind(this);
+
     this.db = new Dexie("contracts_deployed");
     this.db.version(1).stores({
       contracts: "contractAddress, walletAddress, name, symbol",
@@ -116,9 +117,8 @@ export class CollectionComponent extends Component {
     this.setState({ contractInfoLength: contractsDeployed.length });
   };
 
-  handleCardEvent = (e) => {
-    console.log(e.target.getAttribute("cxt"));
-    console.log(e.target);
+  handleCardEvent = (contractAddress) => {
+    localStorage.setItem("SELECTED_CONTRACT_ADDRESS", contractAddress);
   };
 
   render() {
@@ -142,16 +142,11 @@ export class CollectionComponent extends Component {
               </Card>
             </Col>
             {this.state.contractInfo.map((info) => (
-              <Col
-                xs={6}
-                md={4}
-                lg={3}
-                key={info.contractAddress}
-                to="files/${info.contractAddress}"
-              >
+              <Col xs={6} md={4} lg={3} key={info.contractAddress}>
                 <Link
-                  to={"files?contract=" + info.contractAddress}
+                  to={"files"}
                   className="contractLink"
+                  onClick={() => this.handleCardEvent(info.contractAddress)}
                 >
                   <Card className="card unselectable">
                     <div style={{ display: "flex" }}>
