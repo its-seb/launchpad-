@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
-import AppContent from "./components/AppContent.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./components/style.css";
-import Navigation from "./components/Navigation.js";
 import SideNav from "./components/SideNav.js";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dexie from "dexie";

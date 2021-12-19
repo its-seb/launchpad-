@@ -5,6 +5,7 @@ import IconService from "icon-sdk-js";
 import ICONexConnection from "./utils/interact.js";
 import PinataModal from "./PinataModal.js";
 import "./style.css";
+import Dropzone from "./Dropzone.js"
 const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 export class FileComponent extends Component {
@@ -32,7 +33,7 @@ export class FileComponent extends Component {
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
   }
   connection = new ICONexConnection();
-  async dragORfiles(contractAddress) {}
+  async dragORfiles(contractAddress) { }
 
   componentDidMount() {
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
@@ -108,35 +109,7 @@ export class FileComponent extends Component {
   render() {
     return (
       <div style={{ height: "75vh", overflowY: "auto" }}>
-        <Container>
-          <Row style={{ marginTop: "10px" }}>
-            <Col>
-              <Card className="upload-card unselectable">
-                <div style={{ paddingBottom: "10px" }}>
-                  <PhotographIcon
-                    style={{ width: "10rem", color: "#494a66" }}
-                  />
-                  <span
-                    style={{
-                      display: "block",
-                      color: "#494a66",
-                      fontSize: "2rem",
-                      fontWeight: "500",
-                    }}
-                  >
-                    drag and drop files
-                  </span>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-          <Button
-            id="btnUpload"
-            style={{ marginTop: "20px", padding: "0.5rem" }}
-          >
-            upload
-          </Button>
-        </Container>
+        <Dropzone />
         <Modal show={this.state.showPinataModal} onHide={this.hidePinataModal}>
           <PinataModal hideModal={this.hidePinataModal} />
         </Modal>

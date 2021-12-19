@@ -1,8 +1,17 @@
 import "./app_content.css";
 import React, { Component } from "react";
-import { Col, Row, Button, ProgressBar, Modal } from "react-bootstrap";
+import {
+  Button,
+  Container,
+  Modal,
+  Row,
+  Col,
+  Card,
+  ProgressBar,
+} from "react-bootstrap";
+import { PhotographIcon } from "@heroicons/react/solid";
 import "./global.css";
-import cfg from "../config.json";
+import "./style.css";
 const axios = require("axios");
 
 class Dropzone extends Component {
@@ -11,7 +20,7 @@ class Dropzone extends Component {
     super(props);
     this.state = {
       file: this.uploadedFiles,
-      pinataAuthenticated: "hello",
+      // pinataAuthenticated: "hello",
       pinningImageProgress: 0,
       generatingJsonProgress: 0,
       pinningJsonProgress: 0,
@@ -64,8 +73,8 @@ class Dropzone extends Component {
         maxContentLength: "Infinity",
         headers: {
           "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: cfg.PINATA_API_KEY,
-          pinata_secret_api_key: cfg.PINATA_API_SECRET,
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
         },
         onUploadProgress: (progressEvent) => {
           const { loaded, total } = progressEvent;
@@ -120,8 +129,8 @@ class Dropzone extends Component {
         maxContentLength: "Infinity",
         headers: {
           "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: cfg.PINATA_API_KEY,
-          pinata_secret_api_key: cfg.PINATA_API_SECRET,
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
         },
         onUploadProgress: (progressEvent) => {
           console.log(progressEvent);
@@ -239,68 +248,74 @@ class Dropzone extends Component {
 
   render() {
     return (
-      <>
-        <div
-          style={{
-            padding: "25px 25px",
-            border: "1px solid #5d2985",
-            borderRadius: "0.25rem",
-            maxHeight: "400px",
-            overflowY: "auto",
-          }}
-          onDrop={this.handleDropFiles}
-          onDragOver={(e) => {
-            e.preventDefault();
-          }}
-          onDragEnter={(e) => {
-            e.preventDefault();
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault();
-          }}
-          // onClick={this.handleBrowseFiles}
-        >
-          <span style={{ color: "#5d2985" }}>drag and drop files</span>
-          <div
-            id="gallery"
-            style={{
-              paddingTop: this.uploadedFiles.length == 0 ? "0px" : "5px",
-            }}
-          >
-            <Row>
-              {(this.uploadedFiles || []).map((data, i) => (
-                <Col key={i} xs={2} style={{ marginBottom: "10px" }}>
-                  <div style={{ padding: "5px", position: "relative" }}>
-                    <img
-                      src={data.blob}
-                      style={{
-                        width: "100%",
-                        display: "block",
-                        margin: "auto",
-                        border: "1px solid #c9c9c9",
-                      }}
-                    ></img>
-                    <i
-                      className="fa fa-times-circle"
-                      style={{
-                        fontSize: "25px",
-                        color: "red",
-                        position: "absolute",
-                        top: "0px",
-                        right: "-1px",
-                        opacity: "0.6",
-                      }}
-                      onClick={(e) => this.remove_file({ i })}
-                    ></i>
-                    <span style={{ fontWeight: "bold", fontSize: "12px" }}>
-                      {data.name}
-                    </span>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          </div>
-        </div>
+      <Container
+        onDrop={this.handleDropFiles}
+        onDragOver={(e) => {
+          e.preventDefault();
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <Row style={{ marginTop: "10px" }}>
+          <Col>
+            <Card className="upload-card unselectable">
+              <div
+                style={{
+                  paddingBottom: "10px",
+                  paddingTop: this.uploadedFiles.length == 0 ? "0px" : "5px",
+                }}
+              >
+                <PhotographIcon style={{ width: "10rem", color: "#494a66" }} />
+                <span
+                  style={{
+                    display: "block",
+                    color: "#494a66",
+                    fontSize: "2rem",
+                    fontWeight: "500",
+                  }}
+                >
+                  drag and drop files
+                </span>
+                <Row>
+                  {(this.uploadedFiles || []).map((data, i) => (
+                    <Col key={i} xs={2} style={{ marginBottom: "10px" }}>
+                      <div style={{ padding: "5px", position: "relative" }}>
+                        <img
+                          src={data.blob}
+                          style={{
+                            width: "100%",
+                            display: "block",
+                            margin: "auto",
+                            border: "1px solid #c9c9c9",
+                          }}
+                        ></img>
+                        <i
+                          className="fa fa-times-circle"
+                          style={{
+                            fontSize: "25px",
+                            color: "red",
+                            position: "absolute",
+                            top: "0px",
+                            right: "-1px",
+                            opacity: "0.6",
+                          }}
+                          onClick={(e) => this.remove_file({ i })}
+                        ></i>
+                        <span style={{ fontWeight: "bold", fontSize: "12px" }}>
+                          {data.name}
+                        </span>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+            </Card>
+          </Col>
+        </Row>
         <input
           type="file"
           id="files"
@@ -312,10 +327,11 @@ class Dropzone extends Component {
           onChange={this.handleDropFolder}
         ></input>
         <Button
-          style={{ float: "right", marginTop: "15px" }}
+          id="btnUpload"
+          style={{ marginTop: "20px", padding: "0.5rem" }}
           onClick={this.handleUploadFiles}
         >
-          Upload
+          upload
         </Button>
         <Modal show={this.state.show}>
           <div style={{ padding: "25px 25px" }}>
@@ -337,7 +353,7 @@ class Dropzone extends Component {
             ></ProgressBar>
           </div>
         </Modal>
-      </>
+      </Container>
     );
   }
 }
