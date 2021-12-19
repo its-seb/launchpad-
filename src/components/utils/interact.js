@@ -120,6 +120,9 @@ class ICONexConnection {
           symbol: contractResponse.data.symbol,
           contractAddress: contractAddress,
         });
+        if (contractDisplayed.length == 11) {
+          break; //show latest 11 contracts; we can change this
+        }
       }
     }
     return contractDisplayed;
@@ -223,6 +226,10 @@ export async function estimateStepsforDeployment(from, content, params) {
     console.error("FETCH:", err);
     throw err;
   }
+}
+
+export function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export default ICONexConnection;

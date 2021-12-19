@@ -2,9 +2,11 @@ import React, { Component } from "react";
 import "./App.css";
 import AppContent from "./components/AppContent.js";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./components/style.css";
 import Navigation from "./components/Navigation.js";
 import SideNav from "./components/SideNav.js";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Dexie from "dexie";
 import CollectionComponent from "./components/CollectionComponent.js";
 import FileComponent from "./components/FileComponent.js";
 import LaunchComponent from "./components/LaunchComponent.js";
@@ -14,21 +16,59 @@ import ICONexConnection from "./components/utils/interact.js";
 class App extends Component {
   constructor(props) {
     super(props);
-    this.walletAddress = "";
+    this.db = new Dexie("contracts_deployed");
+    this.db.version(1).stores({
+      contracts: "contractAddress, walletAddress, name, symbol",
+    });
+    this.db.open().catch((error) => {
+      console.log("error", error);
+    });
+    this.state = {
+      walletAddress: null,
+    };
   }
 
   connection = new ICONexConnection();
+  componentDidMount() {
+    if (localStorage.getItem("USER_WALLET_ADDRESS") != null) {
+      document.getElementById("btnConnectWallet").innerHTML = "sign out";
+    }
+  }
 
   handleWalletEvent = async (event) => {
-    this.walletAddress = await this.connection.getWalletAddress();
-    if (this.walletAddress == "undefined" || this.walletAddress == null) {
-      document.getElementById("btnConnectWallet").innerHTML = "connect wallet";
+    if (localStorage.getItem("USER_WALLET_ADDRESS") == null) {
+      //signing in
+      let _walletAddress = await this.connection.getWalletAddress();
+      if (_walletAddress != null) {
+        localStorage.setItem("USER_WALLET_ADDRESS", _walletAddress);
+        console.log(localStorage.getItem("USER_WALLET_ADDRESS"));
+        document.getElementById("btnConnectWallet").innerHTML = "sign out";
+        this.setState({ walletAddress: _walletAddress });
+      } else {
+        console.log("user cancelled login");
+      }
     } else {
-      document.getElementById(
-        "btnConnectWallet"
-      ).innerHTML = `connected to ${this.walletAddress}`;
-      localStorage.setItem("USER_WALLET_ADDRESS", this.walletAddress);
+      //signing out
+      localStorage.removeItem("USER_WALLET_ADDRESS");
+      document.getElementById("btnConnectWallet").innerHTML = "connect wallet";
+      this.setState({ walletAddress: null });
     }
+
+    // console.log(localStorage.getItem("USER_WALLET_ADDRESS"));
+    // if (
+    //   document.getElementById("btnConnectWallet").innerHTML == "connect wallet"
+    // ) {
+    //   this.walletAddress = await this.connection.getWalletAddress();
+    //   if (this.walletAddress != "undefined" && this.walletAddress != null) {
+    //     localStorage.setItem("USER_WALLET_ADDRESS", this.walletAddress);
+    //     document.getElementById("btnConnectWallet").innerHTML = "sign out";
+    //     this.db.contracts.clear();
+    //     this.db.close();
+    //   }
+    // } else {
+    //   localStorage.removeItem("USER_WALLET_ADDRESS");
+    //   document.getElementById("btnConnectWallet").innerHTML = "connect wallet";
+    // }
     event.preventDefault();
   };
 
@@ -41,7 +81,7 @@ class App extends Component {
 
             <div className="pageContent">
               <div className="headerContent">
-                <text className="pageTitle" id="_pageTitle"></text>
+                <text className="pageTitle unselectable" id="_pageTitle"></text>
                 <Button id="btnConnectWallet" onClick={this.handleWalletEvent}>
                   connect wallet
                 </Button>
@@ -50,7 +90,12 @@ class App extends Component {
                 <Routes>
                   <Route
                     exact
-                    element={<CollectionComponent pageTitle="Collection" />}
+                    element={
+                      <CollectionComponent
+                        pageTitle="Collection"
+                        walletAddress={this.state.walletAddress}
+                      />
+                    }
                     path="/"
                   ></Route>
                   <Route

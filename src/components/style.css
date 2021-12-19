@@ -38,13 +38,15 @@
 }
 
 .navPill.active,
-#btnConnectWallet {
+#btnConnectWallet,
+.modal-form-submit {
   color: white;
   background-color: #4b4db3;
 }
 
 .navPill.active:hover,
-#btnConnectWallet:hover {
+#btnConnectWallet:hover,
+.modal-form-submit:hover {
   color: white;
   background-color: #393baf;
 }
@@ -73,7 +75,8 @@
   margin-top: 5px;
 }
 
-#btnConnectWallet {
+#btnConnectWallet,
+.modal-form-submit {
   padding: 0.8rem;
   font-weight: bold;
   margin-top: 5px;
@@ -148,3 +151,37 @@
   user-select: none;
 }
 
+<<<<<<< Updated upstream
+=======
+.new-collection-modal {
+  padding: 15px 25px;
+}
+
+.new-collection-modal > .modal-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #494a66;
+}
+
+.modal-form-control {
+  color: #4b4db3;
+  border: 1px solid #4b4db3;
+}
+
+.modal-form-control:focus,
+.modal-form-control:active {
+  color: #4b4db3;
+  border: 2px solid #4b4db3;
+  outline: #4b4db3;
+  box-shadow: 0 0 0 #4b4db3;
+}
+
+.modal-form-submit {
+  margin-top: 0px;
+}
+
+.contractLink {
+  text-decoration: none;
+  color: #494a66;
+}
+>>>>>>> Stashed changes

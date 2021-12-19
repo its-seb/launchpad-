@@ -11,15 +11,15 @@ function SideNav() {
         <NavLink className="logo" to="/">
           launchpad
         </NavLink>
-        <NavLink className="navPill" to="/">
+        <NavLink className="navPill unselectable" to="/">
           collections
           <ArrowRightIcon className="pillArrow"></ArrowRightIcon>
         </NavLink>
-        <NavLink className="navPill" to="/files">
+        <NavLink className="navPill unselectable" to="/files">
           files
           <ArrowRightIcon className="pillArrow"></ArrowRightIcon>
         </NavLink>
-        <NavLink className="navPill" to="/launch">
+        <NavLink className="navPill unselectable" to="/launch">
           launch
           <ArrowRightIcon className="pillArrow"></ArrowRightIcon>
         </NavLink>
