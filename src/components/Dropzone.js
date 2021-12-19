@@ -1,3 +1,4 @@
+import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
 import {
@@ -13,6 +14,8 @@ import { PhotographIcon } from "@heroicons/react/solid";
 import "./global.css";
 import "./style.css";
 const axios = require("axios");
+const { IconConverter, IconBuilder, HttpProvider } = IconService;
+
 
 class Dropzone extends Component {
   uploadedFiles = [];
@@ -28,12 +31,44 @@ class Dropzone extends Component {
       show: false,
       uploadMessage: "",
     };
-    this.pinataKey = localStorage.getItem("pinataKey");
-    this.pinataSecret = localStorage.getItem("pinataSecret");
+    this.pinataKey = localStorage.getItem("PINATA_KEY");
+    this.pinataSecret = localStorage.getItem("PINATA_SECRET");
+
 
     this.showUploadModal = this.showUploadModal.bind(this);
     // this.hideUploadModal = this.hideUploadModal.bind(this);
   }
+
+
+  getJsonRpc(jsonRpcQuery) {
+    return this.ICONexRequest("REQUEST_JSON-RPC", jsonRpcQuery);
+  }
+
+  updateMetahash = async (metahash) => {
+    const txObj = new IconBuilder.CallTransactionBuilder()
+      .from(this.walletAddress)
+      .to(this.contractAddress)
+      .stepLimit(IconConverter.toBigNumber(2000000))
+      .nid("0x53")
+      .nonce(IconConverter.toBigNumber(1))
+      .version(IconConverter.toBigNumber(3)) //constant
+      .timestamp(new Date().getTime() * 1000)
+      .method("setMetahash")
+      .params({ _metahash: metahash })
+      .build();
+    console.log("txobj", txObj);
+    const payload = {
+      jsonrpc: "2.0",
+      method: "icx_sendTransaction",
+      id: 6639,
+      params: IconConverter.toRawTransaction(txObj),
+    };
+    console.log("payload", payload);
+    let rpcResponse = await this.connection.getJsonRpc(payload);
+    console.log("rpcresponse", rpcResponse);
+    console.log("fuck u")
+  };
+
 
   showUploadModal = () => {
     this.setState({ show: true });
@@ -156,19 +191,22 @@ class Dropzone extends Component {
       })
       .then((res) => {
         console.log("metadata", res);
-        console.log(data.toString());
         this.setState({
           pinningJsonProgress: 20,
           totalProgress: 100,
         });
+        //update metahash hash
+        this.updateMetahash(res.data.IpfsHash);
         return res;
       });
 
     //this.hideUploadModal();
     alert("upload complete");
+
   };
 
   handleDropFiles = async (event) => {
+
     event.preventDefault();
     const files = event.dataTransfer.files;
     for (var i = 0; i < files.length; i++) {
@@ -181,6 +219,8 @@ class Dropzone extends Component {
     }
 
     this.setState({ file: this.uploadedFiles });
+    var x = document.getElementById("bruh");
+    x.style.display = "none";
   };
 
   // handleDropFolder = async (event) => {
@@ -244,6 +284,10 @@ class Dropzone extends Component {
     }
     this.uploadedFiles = updated_uploadedFile;
     this.setState({ file: this.uploadedFiles });
+    var x = document.getElementById("bruh");
+    if (this.uploadedFiles.length == 0) {
+      x.style.display = "block";
+    }
   }
 
   render() {
@@ -269,17 +313,19 @@ class Dropzone extends Component {
                   paddingTop: this.uploadedFiles.length == 0 ? "0px" : "5px",
                 }}
               >
-                <PhotographIcon style={{ width: "10rem", color: "#494a66" }} />
-                <span
-                  style={{
-                    display: "block",
-                    color: "#494a66",
-                    fontSize: "2rem",
-                    fontWeight: "500",
-                  }}
-                >
-                  drag and drop files
-                </span>
+                <div id="bruh">
+                  <PhotographIcon style={{ width: "10rem", color: "#494a66" }} />
+                  <span
+                    style={{
+                      display: "block",
+                      color: "#494a66",
+                      fontSize: "2rem",
+                      fontWeight: "500",
+                    }}
+                  >
+                    drag and drop files
+                  </span>
+                </div>
                 <Row>
                   {(this.uploadedFiles || []).map((data, i) => (
                     <Col key={i} xs={2} style={{ marginBottom: "10px" }}>

@@ -5,7 +5,8 @@ import IconService from "icon-sdk-js";
 import ICONexConnection from "./utils/interact.js";
 import PinataModal from "./PinataModal.js";
 import "./style.css";
-import Dropzone from "./Dropzone.js"
+import Dropzone from "./Dropzone.js";
+import Gallery from "./gallery.js";
 const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 export class FileComponent extends Component {
@@ -23,6 +24,7 @@ export class FileComponent extends Component {
       showPinataModal: false,
       pinataKey: null,
       pinataSecret: null,
+      isActive: false,
     };
 
     const provider = new IconService.HttpProvider(
@@ -33,6 +35,7 @@ export class FileComponent extends Component {
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
   }
   connection = new ICONexConnection();
+
   async dragORfiles(contractAddress) { }
 
   componentDidMount() {
@@ -40,6 +43,8 @@ export class FileComponent extends Component {
     console.log("componentdidMount", this.contractAddress);
     if (this.contractAddress == null) {
       alert("you need to select a contract to view files");
+    } else {
+      this.getMetahash()
     }
 
     //check if user has configured pinata cloud api
@@ -50,29 +55,30 @@ export class FileComponent extends Component {
     }
   }
 
-  updateMetahash = async () => {
-    const txObj = new IconBuilder.CallTransactionBuilder()
-      .from(this.walletAddress)
-      .to(this.contractAddress)
-      .stepLimit(IconConverter.toBigNumber(2000000))
-      .nid("0x53")
-      .nonce(IconConverter.toBigNumber(1))
-      .version(IconConverter.toBigNumber(3)) //constant
-      .timestamp(new Date().getTime() * 1000)
-      .method("setMetahash")
-      .params({ _metahash: "helloworld" })
-      .build();
-    console.log("txobj", txObj);
-    const payload = {
-      jsonrpc: "2.0",
-      method: "icx_sendTransaction",
-      id: 6639,
-      params: IconConverter.toRawTransaction(txObj),
-    };
-    console.log("payload", payload);
-    let rpcResponse = await this.connection.getJsonRpc(payload);
-    console.log("rpcresponse", rpcResponse);
-  };
+  // updateMetahash = async (metahash) => {
+  //   const txObj = new IconBuilder.CallTransactionBuilder()
+  //     .from(this.walletAddress)
+  //     .to(this.contractAddress)
+  //     .stepLimit(IconConverter.toBigNumber(2000000))
+  //     .nid("0x53")
+  //     .nonce(IconConverter.toBigNumber(1))
+  //     .version(IconConverter.toBigNumber(3)) //constant
+  //     .timestamp(new Date().getTime() * 1000)
+  //     .method("setMetahash")
+  //     .params({ _metahash: metahash })
+  //     .build();
+  //   console.log("txobj", txObj);
+  //   const payload = {
+  //     jsonrpc: "2.0",
+  //     method: "icx_sendTransaction",
+  //     id: 6639,
+  //     params: IconConverter.toRawTransaction(txObj),
+  //   };
+  //   console.log("payload", payload);
+  //   let rpcResponse = await this.connection.getJsonRpc(payload);
+  //   console.log("rpcresponse", rpcResponse);
+  //   console.log("fuck u")
+  // };
 
   getMetahash = async () => {
     const callObj = new IconBuilder.CallBuilder()
@@ -86,6 +92,9 @@ export class FileComponent extends Component {
       .execute()
       .then((response) => {
         console.log("success_getmetahash", response);
+        if (response != undefined) {
+          this.setState({ isActive: true });
+        }
       })
       .catch((error) => {
         console.log("getmetahash", error);
@@ -109,7 +118,12 @@ export class FileComponent extends Component {
   render() {
     return (
       <div style={{ height: "75vh", overflowY: "auto" }}>
-        <Dropzone />
+        {/* <Dropzone /> */}
+        {this.state.isActive ? (
+          <Gallery />
+        ) : (
+          <Dropzone />
+        )}
         <Modal show={this.state.showPinataModal} onHide={this.hidePinataModal}>
           <PinataModal hideModal={this.hidePinataModal} />
         </Modal>

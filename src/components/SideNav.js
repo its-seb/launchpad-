@@ -3,6 +3,7 @@ import { Nav, Button } from "react-bootstrap";
 import "./style.css";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import { NavLink } from "react-router-dom";
+import App from "../App.js"
 
 function SideNav() {
   return (
