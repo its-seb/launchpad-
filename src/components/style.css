@@ -39,14 +39,18 @@
 
 .navPill.active,
 #btnConnectWallet,
-.modal-form-submit {
+.modal-form-submit,
+#btnUpload {
   color: white;
   background-color: #4b4db3;
 }
 
 .navPill.active:hover,
 #btnConnectWallet:hover,
-.modal-form-submit:hover {
+#btnUpload:hover,
+.modal-form-submit:hover,
+.modal-form-submit:active,
+.modal-form-submit:focus {
   color: white;
   background-color: #393baf;
 }
@@ -76,6 +80,7 @@
 }
 
 #btnConnectWallet,
+#btnUpload,
 .modal-form-submit {
   padding: 0.8rem;
   font-weight: bold;
@@ -91,14 +96,14 @@
   text-transform: uppercase;
 }
 
-.card {
+.contract-card {
   margin-top: 25px;
   padding: 10px 15px;
   border: 1px solid #4b4db3;
   border-radius: 10px;
 }
 
-.card > div > span {
+.contract-card > div > span {
   font-size: 1.8rem;
   font-weight: bold;
   width: 100%;
@@ -106,13 +111,13 @@
   color: #494a66;
 }
 
-.card > div > span > svg {
+.contract-card > div > span > svg {
   width: 20px;
   float: right;
   margin-top: 13px;
 }
 
-.card > span {
+.contract-card > span {
   text-align: left;
   padding-bottom: 5px;
   font-size: 0.9rem;
@@ -123,18 +128,18 @@
   margin-left: 3px;
 }
 
-.card:hover {
+.contract-card:hover {
   background-color: #4b4db3;
 }
 
-.card:hover > span,
-.card:hover > div > span {
+.contract-card:hover > span,
+.contract-card:hover > div > span {
   color: white;
 }
 
 @media (min-width: 1400px) {
   .container {
-    max-width: 1470px;
+    max-width: 1490px;
   }
 }
 
@@ -178,7 +183,15 @@
   margin-top: 0px;
 }
 
-.contractLink {
+.contractLink,
+.upload-card > span {
   text-decoration: none;
   color: #494a66;
+}
+
+.upload-card {
+  margin-top: 25px;
+  padding: 10px 15px;
+  border: 2px dashed #494a66;
+  border-radius: 5px;
 }

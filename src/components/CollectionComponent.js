@@ -123,12 +123,12 @@ export class CollectionComponent extends Component {
 
   render() {
     return (
-      <div style={{ height: "75vh", overflowY: "scroll" }}>
+      <div style={{ height: "75vh", overflowY: "auto" }}>
         <Container>
           <Row style={{ marginTop: "10px" }}>
             <Col xs={6} md={4} lg={3}>
               <Card
-                className="card unselectable"
+                className="contract-card unselectable"
                 type="button"
                 onClick={this.showCollectionModal}
               >
@@ -148,7 +148,7 @@ export class CollectionComponent extends Component {
                   className="contractLink"
                   onClick={() => this.handleCardEvent(info.contractAddress)}
                 >
-                  <Card className="card unselectable">
+                  <Card className="contract-card unselectable">
                     <div style={{ display: "flex" }}>
                       <span>
                         {info.name}

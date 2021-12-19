@@ -152,7 +152,7 @@ class NewCollectionModal extends Component {
             onClick={this.handleDeployContract}
             style={{ padding: "0.5rem", marginBottom: "3px" }}
           >
-            Deploy
+            deploy
           </Button>
         </div>
       </>

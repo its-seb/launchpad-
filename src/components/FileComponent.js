@@ -1,7 +1,10 @@
 import React, { Component } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Container, Modal, Row, Col, Card } from "react-bootstrap";
+import { PhotographIcon } from "@heroicons/react/solid";
 import IconService from "icon-sdk-js";
 import ICONexConnection from "./utils/interact.js";
+import PinataModal from "./PinataModal.js";
+import "./style.css";
 const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 export class FileComponent extends Component {
@@ -14,6 +17,13 @@ export class FileComponent extends Component {
   // 5. If metahash does not exist, proceed to show interface for drag and drop
   constructor(props) {
     super(props);
+
+    this.state = {
+      showPinataModal: false,
+      pinataKey: null,
+      pinataSecret: null,
+    };
+
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
     );
@@ -25,9 +35,17 @@ export class FileComponent extends Component {
   async dragORfiles(contractAddress) {}
 
   componentDidMount() {
+    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     console.log("componentdidMount", this.contractAddress);
     if (this.contractAddress == null) {
       alert("you need to select a contract to view files");
+    }
+
+    //check if user has configured pinata cloud api
+    this.state.pinataKey = localStorage.getItem("PINATA_KEY");
+    this.state.pinataSecret = localStorage.getItem("PINATA_SECRET");
+    if (this.state.pinataKey == null || this.state.pinataSecret == null) {
+      this.showPinataModal(); //configure to continue
     }
   }
 
@@ -74,12 +92,54 @@ export class FileComponent extends Component {
       });
   };
 
+  showPinataModal = () => {
+    this.setState({ showPinataModal: true });
+  };
+
+  hidePinataModal = () => {
+    if (
+      localStorage.getItem("PINATA_KEY") != null &&
+      localStorage.getItem("PINATA_SECRET") != null
+    ) {
+      this.setState({ showPinataModal: false });
+    }
+  };
+
   render() {
     return (
-      <div>
-        file component
-        <Button onClick={this.updateMetahash}>updateMetahash</Button>
-        <Button onClick={this.getMetahash}>getMetahash</Button>
+      <div style={{ height: "75vh", overflowY: "auto" }}>
+        <Container>
+          <Row style={{ marginTop: "10px" }}>
+            <Col>
+              <Card className="upload-card unselectable">
+                <div style={{ paddingBottom: "10px" }}>
+                  <PhotographIcon
+                    style={{ width: "10rem", color: "#494a66" }}
+                  />
+                  <span
+                    style={{
+                      display: "block",
+                      color: "#494a66",
+                      fontSize: "2rem",
+                      fontWeight: "500",
+                    }}
+                  >
+                    drag and drop files
+                  </span>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+          <Button
+            id="btnUpload"
+            style={{ marginTop: "20px", padding: "0.5rem" }}
+          >
+            upload
+          </Button>
+        </Container>
+        <Modal show={this.state.showPinataModal} onHide={this.hidePinataModal}>
+          <PinataModal hideModal={this.hidePinataModal} />
+        </Modal>
       </div>
     );
   }
