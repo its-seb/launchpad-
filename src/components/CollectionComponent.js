@@ -4,30 +4,21 @@ import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Link, Route } from "react-router-dom";
 import NewCollection from "./NewCollection.js";
-<<<<<<< Updated upstream
-import { Link } from 'react-router-dom';
-=======
 import NewCollectionModal from "./NewCollectionModal.js";
 import cfg from "../config.json";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
->>>>>>> Stashed changes
 import "./style.css";
 
 export class CollectionComponent extends Component {
   constructor(props) {
     super(props);
 
-
     this.state = {
-<<<<<<< Updated upstream
-      showCollectionModal: false
-=======
       showCollectionModal: false,
       contractInfo: [],
       contractInfoLength: 0,
       walletAddress: null,
->>>>>>> Stashed changes
     };
     this.showCollectionModal = this.showCollectionModal.bind(this);
     this.hideCollectionModal = this.hideCollectionModal.bind(this);
@@ -71,9 +62,6 @@ export class CollectionComponent extends Component {
     this.setState({ showCollectionModal: false });
   };
 
-<<<<<<< Updated upstream
-
-=======
   getContractInfo = async (walletAddress) => {
     //check indexedDB data; if exists, pull contract info, else fallback
     console.log("this.state.walletAddress", this.state.walletAddress);
@@ -132,7 +120,6 @@ export class CollectionComponent extends Component {
     console.log(e.target.getAttribute("cxt"));
     console.log(e.target);
   };
->>>>>>> Stashed changes
 
   render() {
     return (
@@ -154,21 +141,6 @@ export class CollectionComponent extends Component {
                 <span>deploy a new nft contract</span>
               </Card>
             </Col>
-<<<<<<< Updated upstream
-            <Col xs={6} md={4} lg={3}>
-              <Link to="/files" style={{ textDecoration: 'none', color: "black" }}>
-                <Card className="card unselectable" type="button">
-                  <div style={{ display: "flex" }}>
-                    <span>
-                      Collection 039
-                      <ArrowRightIcon></ArrowRightIcon>
-                    </span>
-                  </div>
-                  <span>hxbd1375315c7732779edaa4c3903ffc9b93e82ca3</span>
-                </Card>
-              </Link>
-            </Col>
-=======
             {this.state.contractInfo.map((info) => (
               <Col
                 xs={6}
@@ -193,7 +165,6 @@ export class CollectionComponent extends Component {
                 </Link>
               </Col>
             ))}
->>>>>>> Stashed changes
           </Row>
         </Container>
         <Modal
@@ -202,7 +173,7 @@ export class CollectionComponent extends Component {
         >
           <NewCollectionModal updateContractInfo={this.getContractInfo} />
         </Modal>
-      </div >
+      </div>
     );
   }
 }
