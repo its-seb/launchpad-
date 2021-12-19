@@ -34,7 +34,7 @@ const NewCollection = (props) => {
     }
 
     const contractContent = await fetchContractContent(
-      "https://gateway.pinata.cloud/ipfs/QmZd7Q9uYXi7jTiJiVQnZxpQx4bwVAinNjSFn7ARXroc94"
+      "https://gateway.pinata.cloud/ipfs/QmRJP6mcfSr9a8ZEcKgfPVf8ACSxVLtSXsSoF89eQbuYG1"
     );
     //    console.log(contractContent);
     const walletAddress = cfg.LOCAL_WALLET_ADDRESS; //localStorage.getItem("USER_WALLET_ADDRESS");

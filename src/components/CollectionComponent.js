@@ -2,14 +2,16 @@ import React, { Component } from "react";
 import { Container, Row, Col, Card, Modal } from "react-bootstrap";
 import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
 import NewCollection from "./NewCollection.js";
+import { Link } from 'react-router-dom';
 import "./style.css";
 
 export class CollectionComponent extends Component {
   constructor(props) {
     super(props);
 
+
     this.state = {
-      showCollectionModal: false,
+      showCollectionModal: false
     };
     this.showCollectionModal = this.showCollectionModal.bind(this);
     this.hideCollectionModal = this.hideCollectionModal.bind(this);
@@ -30,6 +32,8 @@ export class CollectionComponent extends Component {
   hideCollectionModal = () => {
     this.setState({ showCollectionModal: false });
   };
+
+
 
   render() {
     return (
@@ -52,22 +56,24 @@ export class CollectionComponent extends Component {
               </Card>
             </Col>
             <Col xs={6} md={4} lg={3}>
-              <Card className="card unselectable">
-                <div style={{ display: "flex" }}>
-                  <span>
-                    Collection 039
-                    <ArrowRightIcon></ArrowRightIcon>
-                  </span>
-                </div>
-                <span>hxbd1375315c7732779edaa4c3903ffc9b93e82ca3</span>
-              </Card>
+              <Link to="/files" style={{ textDecoration: 'none', color: "black" }}>
+                <Card className="card unselectable" type="button">
+                  <div style={{ display: "flex" }}>
+                    <span>
+                      Collection 039
+                      <ArrowRightIcon></ArrowRightIcon>
+                    </span>
+                  </div>
+                  <span>hxbd1375315c7732779edaa4c3903ffc9b93e82ca3</span>
+                </Card>
+              </Link>
             </Col>
           </Row>
         </Container>
         <Modal show={this.state.showCollectionModal}>
           <NewCollection />
         </Modal>
-      </div>
+      </div >
     );
   }
 }
