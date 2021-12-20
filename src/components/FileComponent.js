@@ -122,7 +122,7 @@ export class FileComponent extends Component {
         {this.state.isActive ? (
           <Gallery />
         ) : (
-          <Dropzone />
+          <Dropzone meta={this.getMetahash} />
         )}
         <Modal show={this.state.showPinataModal} onHide={this.hidePinataModal}>
           <PinataModal hideModal={this.hidePinataModal} />

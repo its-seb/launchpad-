@@ -1,6 +1,7 @@
 import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
+import ICONexConnection from "./utils/interact.js";
 import {
   Button,
   Container,
@@ -33,15 +34,12 @@ class Dropzone extends Component {
     };
     this.pinataKey = localStorage.getItem("PINATA_KEY");
     this.pinataSecret = localStorage.getItem("PINATA_SECRET");
-
-
     this.showUploadModal = this.showUploadModal.bind(this);
     // this.hideUploadModal = this.hideUploadModal.bind(this);
-  }
+    this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
+    this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
+    this.connection = new ICONexConnection();
 
-
-  getJsonRpc(jsonRpcQuery) {
-    return this.ICONexRequest("REQUEST_JSON-RPC", jsonRpcQuery);
   }
 
   updateMetahash = async (metahash) => {
@@ -66,7 +64,6 @@ class Dropzone extends Component {
     console.log("payload", payload);
     let rpcResponse = await this.connection.getJsonRpc(payload);
     console.log("rpcresponse", rpcResponse);
-    console.log("fuck u")
   };
 
 
@@ -202,7 +199,6 @@ class Dropzone extends Component {
 
     //this.hideUploadModal();
     alert("upload complete");
-
   };
 
   handleDropFiles = async (event) => {
