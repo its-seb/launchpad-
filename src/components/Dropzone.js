@@ -2,6 +2,7 @@ import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
+import { create } from 'ipfs-http-client';
 import {
   Button,
   Container,
@@ -31,7 +32,13 @@ class Dropzone extends Component {
       totalProgress: 0,
       show: false,
       uploadMessage: "",
+      complete: false
     };
+    const provider = new IconService.HttpProvider(
+      "https://sejong.net.solidwallet.io/api/v3"
+    );
+
+    this.iconService = new IconService(provider);
     this.pinataKey = localStorage.getItem("PINATA_KEY");
     this.pinataSecret = localStorage.getItem("PINATA_SECRET");
     this.showUploadModal = this.showUploadModal.bind(this);
@@ -42,7 +49,7 @@ class Dropzone extends Component {
 
   }
 
-  updateMetahash = async (metahash) => {
+  set_totalandcurrent_supply = async (num_of_file, metahash) => {
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(this.walletAddress)
       .to(this.contractAddress)
@@ -51,21 +58,25 @@ class Dropzone extends Component {
       .nonce(IconConverter.toBigNumber(1))
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
-      .method("setMetahash")
-      .params({ _metahash: metahash })
+      .method("setTotalandCurrentSupply")
+      .params({ _totalSupply: IconService.IconConverter.toHex(num_of_file), _metahash: metahash })
       .build();
-    console.log("txobj", txObj);
+
+    console.log("total_supply_txObj", txObj);
+
     const payload = {
       jsonrpc: "2.0",
       method: "icx_sendTransaction",
       id: 6639,
       params: IconConverter.toRawTransaction(txObj),
     };
-    console.log("payload", payload);
+    console.log("Total and Current Supply payload", payload);
     let rpcResponse = await this.connection.getJsonRpc(payload);
-    console.log("rpcresponse", rpcResponse);
-  };
+    console.log("Total and Current Supply payload rpcresponse", rpcResponse);
+    alert("upload complete");
 
+    this.getTotalSupply();
+  };
 
   showUploadModal = () => {
     this.setState({ show: true });
@@ -187,18 +198,18 @@ class Dropzone extends Component {
         },
       })
       .then((res) => {
+        // this.updateMetahash(res.data.IpfsHash);
+        this.get_metahashfolder_length(res.data.IpfsHash);
         console.log("metadata", res);
         this.setState({
           pinningJsonProgress: 20,
           totalProgress: 100,
         });
-        //update metahash hash
-        this.updateMetahash(res.data.IpfsHash);
-        return res;
+        this.hideUploadModal();
+        this.props.meta();
       });
 
-    //this.hideUploadModal();
-    alert("upload complete");
+
   };
 
   handleDropFiles = async (event) => {
@@ -219,6 +230,49 @@ class Dropzone extends Component {
     x.style.display = "none";
   };
 
+  get_metahashfolder_length = async (metahash) => {
+    console.log("trying to get metahashfolder length")
+    // let address = "https://ipfs.io/api/v0/dag/get";  
+    // let response = await axios.get(address, { params: { arg: metahash } }).then(res => {
+    //   let files = res.data.Links;
+    //   console.log("number of file uploaded: ", files.length)
+    //   // this.set_totalandcurrent_supply(files.length, metahash);
+    //   return files.length
+    // });
+
+    const url = 'https://dweb.link/api/v0'
+    const ipfs = create({ url })
+
+    const links = []
+    for await (const link of ipfs.ls(metahash)) {
+      links.push(link)
+    }
+    console.log("number of files uploaded", links.length)
+    await this.set_totalandcurrent_supply(links.length, metahash);
+    // console.log("the file length is", response);
+  }
+
+  getTotalSupply = async () => {
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(this.contractAddress)
+      .method("getTotalSupply")
+      .build();
+
+    console.log(callObj);
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        console.log("Total Supply is", response);
+        return response;
+      })
+      .catch((error) => {
+        console.log("Total Supply Error", error);
+        Promise.resolve({ error });
+      });
+  };
   // handleDropFolder = async (event) => {
   //   event.preventDefault();
   //   const files = event.target.files;
@@ -287,6 +341,7 @@ class Dropzone extends Component {
   }
 
   render() {
+
     return (
       <Container
         onDrop={this.handleDropFiles}
@@ -397,6 +452,7 @@ class Dropzone extends Component {
         </Modal>
       </Container>
     );
+
   }
 }
 
