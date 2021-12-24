@@ -30,6 +30,7 @@ export class FileComponent extends Component {
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
     );
+    this.contract_metahash = '';
     this.iconService = new IconService(provider);
     this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
@@ -53,6 +54,10 @@ export class FileComponent extends Component {
     if (this.state.pinataKey == null || this.state.pinataSecret == null) {
       this.showPinataModal(); //configure to continue
     }
+
+    //check if the adddress has file
+    //set isactive to true
+
   }
 
   // updateMetahash = async (metahash) => {
@@ -92,6 +97,7 @@ export class FileComponent extends Component {
       .execute()
       .then((response) => {
         console.log("success_getmetahash", response);
+        this.contract_metahash = response;
         if (response != undefined) {
           this.setState({ isActive: true });
         }
@@ -100,6 +106,7 @@ export class FileComponent extends Component {
         console.log("getmetahash", error);
         Promise.resolve({ error });
       });
+    return result
   };
 
   showPinataModal = () => {
@@ -120,7 +127,7 @@ export class FileComponent extends Component {
       <div style={{ height: "75vh", overflowY: "auto" }}>
         {/* <Dropzone /> */}
         {this.state.isActive ? (
-          <Gallery />
+          <Gallery metahash={this.contract_metahash} />
         ) : (
           <Dropzone meta={this.getMetahash} />
         )}

@@ -2,7 +2,8 @@ import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
-import { create } from "ipfs-http-client";
+import { Navigate } from 'react-router-dom';
+import { create } from 'ipfs-http-client';
 import {
   Button,
   Container,
@@ -32,6 +33,7 @@ class Dropzone extends Component {
       show: false,
       uploadMessage: "",
       complete: false,
+      redirect: false,
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -56,11 +58,8 @@ class Dropzone extends Component {
       .nonce(IconConverter.toBigNumber(1))
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
-      .method("setTotalandCurrentSupply")
-      .params({
-        _totalSupply: IconService.IconConverter.toHex(num_of_file),
-        _metahash: metahash,
-      })
+      .method("setInitialSupplyAndMetahash")
+      .params({ _supply: IconService.IconConverter.toHex(num_of_file), _metahash: metahash })
       .build();
 
     console.log("total_supply_txObj", txObj);
@@ -77,7 +76,16 @@ class Dropzone extends Component {
     alert("upload complete");
 
     this.getTotalSupply();
+    this.setState({ redirect: true });
+
+
   };
+
+  renderRedirect = () => {
+    if (this.state.redirect) {
+      return <Navigate to='/launch' />
+    }
+  }
 
   showUploadModal = () => {
     this.setState({ show: true });
@@ -449,6 +457,7 @@ class Dropzone extends Component {
             ></ProgressBar>
           </div>
         </Modal>
+        {this.renderRedirect()}
       </Container>
     );
   }

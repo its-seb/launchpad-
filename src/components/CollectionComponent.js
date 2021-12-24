@@ -37,7 +37,7 @@ export class CollectionComponent extends Component {
 
   componentDidMount() {
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
-    this.connection.testMint("cx1b62344f81d7df90b9f6995ee3d2910d96609d61");
+    // this.connection.testMint("cx1b62344f81d7df90b9f6995ee3d2910d96609d61");
 
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     if (walletAddress != null) {
@@ -103,9 +103,9 @@ export class CollectionComponent extends Component {
         .catch(Dexie.BulkError, (e) => {
           console.error(
             "Some contracts were not appended. However, " +
-              contractDisplay.length -
-              e.failures.length +
-              " contracts was added successfully"
+            contractDisplay.length -
+            e.failures.length +
+            " contracts was added successfully"
           );
         });
       //console.log(contractsToCommit);
