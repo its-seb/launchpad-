@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Page Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/icon-sdk-js@latest/build/icon-sdk-js.web.min.js"></script>
+  </head>
+  <script>
+    var IconService = window["icon-sdk-js"];
+    var IconConverter = IconService.Converter;
+
+    var endpoint = "https://sejong.net.solidwallet.io/api/v3"; //post req
+
+    // const getCurrentSupply = async () => {
+    //   //returns a promise, if wanna access value use .then((res) => {console.log(res)})
+    //   var fetchPromise = await fetch(endpoint, {
+    //     method: "POST",
+    //     header: {
+    //       Accept: "*/*",
+    //     },
+    //     body: JSON.stringify({
+    //       id: new Date().getTime() * 1000,
+    //       jsonrpc: "2.0",
+    //       method: "icx_call",
+    //       params: {
+    //         to: "cx1b62344f81d7df90b9f6995ee3d2910d96609d61",
+    //         dataType: "call",
+    //         data: {
+    //           method: "getCurrentSupply",
+    //         },
+    //       },
+    //     }),
+    //   }).then((res) => {
+    //     return res.json();
+    //   });
+    //   return fetchPromise;
+    // };
+
+    const callTransaction = async () => {
+      var payload = {
+        jsonrpc: "2.0",
+        method: "icx_sendTransaction",
+        id: 6639,
+        params: {
+          to: "cx00448346e85e70308953efd20e68164ff027cf93",
+          from: "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3",
+          nid: "0x53",
+          version: IconConverter.toHexNumber("3"),
+          value: IconConverter.toHexNumber(10 * 10 ** 18),
+          timestamp: IconConverter.toHexNumber(new Date().getTime() * 1000),
+          stepLimit: IconConverter.toHexNumber("2000000"),
+          nonce: IconConverter.toHexNumber("1"),
+          dataType: "call",
+          data: {
+            method: "mint",
+            params: {
+              _mintQuantity: IconConverter.toHexNumber("2"),
+            },
+          },
+        },
+      };
+
+      ICONexRequest("REQUEST_JSON-RPC", payload);
+    };
+
+    function ICONexRequest(requestType, payload) {
+      return new Promise((resolve, reject) => {
+        function eventHandler(event) {
+          const { payload } = event.detail;
+          window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
+          resolve(payload);
+        }
+        window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
+
+        window.dispatchEvent(
+          new window.CustomEvent("ICONEX_RELAY_REQUEST", {
+            detail: {
+              type: requestType,
+              payload,
+            },
+          })
+        );
+      });
+    }
+
+    // document.addEventListener("DOMContentLoaded", async () => {
+    //   console.log("helo");
+    //   const x = payableTransaction();
+    // });
+    //     {
+    // 	"dataType": "call",
+    // 	"data": {
+    // 		"method": "mint",
+    // 		"params": {
+    // 			"_id": "0x1",
+    // 			"_supply": "0x2",
+    // 			"_mintQuantity": "0x3",
+    // 			"_uri": "google.com"
+    // 		}
+    // 	}
+    // }
+  </script>
+</html>

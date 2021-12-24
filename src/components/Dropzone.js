@@ -2,7 +2,7 @@ import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
-import { create } from 'ipfs-http-client';
+import { create } from "ipfs-http-client";
 import {
   Button,
   Container,
@@ -18,7 +18,6 @@ import "./style.css";
 const axios = require("axios");
 const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
-
 class Dropzone extends Component {
   uploadedFiles = [];
   constructor(props) {
@@ -32,7 +31,7 @@ class Dropzone extends Component {
       totalProgress: 0,
       show: false,
       uploadMessage: "",
-      complete: false
+      complete: false,
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -46,7 +45,6 @@ class Dropzone extends Component {
     this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     this.connection = new ICONexConnection();
-
   }
 
   set_totalandcurrent_supply = async (num_of_file, metahash) => {
@@ -59,7 +57,10 @@ class Dropzone extends Component {
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
       .method("setTotalandCurrentSupply")
-      .params({ _totalSupply: IconService.IconConverter.toHex(num_of_file), _metahash: metahash })
+      .params({
+        _totalSupply: IconService.IconConverter.toHex(num_of_file),
+        _metahash: metahash,
+      })
       .build();
 
     console.log("total_supply_txObj", txObj);
@@ -208,12 +209,9 @@ class Dropzone extends Component {
         this.hideUploadModal();
         this.props.meta();
       });
-
-
   };
 
   handleDropFiles = async (event) => {
-
     event.preventDefault();
     const files = event.dataTransfer.files;
     for (var i = 0; i < files.length; i++) {
@@ -231,8 +229,8 @@ class Dropzone extends Component {
   };
 
   get_metahashfolder_length = async (metahash) => {
-    console.log("trying to get metahashfolder length")
-    // let address = "https://ipfs.io/api/v0/dag/get";  
+    console.log("trying to get metahashfolder length");
+    // let address = "https://ipfs.io/api/v0/dag/get";
     // let response = await axios.get(address, { params: { arg: metahash } }).then(res => {
     //   let files = res.data.Links;
     //   console.log("number of file uploaded: ", files.length)
@@ -240,17 +238,17 @@ class Dropzone extends Component {
     //   return files.length
     // });
 
-    const url = 'https://dweb.link/api/v0'
-    const ipfs = create({ url })
+    const url = "https://dweb.link/api/v0";
+    const ipfs = create({ url });
 
-    const links = []
+    const links = [];
     for await (const link of ipfs.ls(metahash)) {
-      links.push(link)
+      links.push(link);
     }
-    console.log("number of files uploaded", links.length)
+    console.log("number of files uploaded", links.length);
     await this.set_totalandcurrent_supply(links.length, metahash);
     // console.log("the file length is", response);
-  }
+  };
 
   getTotalSupply = async () => {
     const callObj = new IconBuilder.CallBuilder()
@@ -341,7 +339,6 @@ class Dropzone extends Component {
   }
 
   render() {
-
     return (
       <Container
         onDrop={this.handleDropFiles}
@@ -365,7 +362,9 @@ class Dropzone extends Component {
                 }}
               >
                 <div id="bruh">
-                  <PhotographIcon style={{ width: "10rem", color: "#494a66" }} />
+                  <PhotographIcon
+                    style={{ width: "10rem", color: "#494a66" }}
+                  />
                   <span
                     style={{
                       display: "block",
@@ -452,7 +451,6 @@ class Dropzone extends Component {
         </Modal>
       </Container>
     );
-
   }
 }
 

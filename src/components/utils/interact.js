@@ -43,7 +43,7 @@ class ICONexConnection {
       .nonce(IconConverter.toBigNumber(1))
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
-      .method("_mint")
+      .method("mint")
       .params({
         _owner: cfg.LOCAL_WALLET_ADDRESS,
         _id: "1",

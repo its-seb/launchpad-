@@ -7,8 +7,10 @@ import {
   Row,
   Col,
   Card,
+  Image,
 } from "react-bootstrap";
 import { PhotographIcon } from "@heroicons/react/solid";
+import PreviewComponent from "./PreviewComponent.js";
 
 export class LaunchComponent extends Component {
   constructor(props) {
@@ -18,6 +20,7 @@ export class LaunchComponent extends Component {
       collectionName: "default",
       nftMintPrice: 0,
       collectionCover: "",
+      isUploaded: false,
     };
   }
 
@@ -31,10 +34,27 @@ export class LaunchComponent extends Component {
     });
   };
 
-  handleMintPrice = () => {
-    this.setState({
-      nftMintPrice: document.getElementById("tbMintPrice").value,
-    });
+  handleMintPrice = (event) => {
+    const re = /^[0-9\b]+$/; //test for regex
+    if (event.target.value === "" || re.test(event.target.value)) {
+      this.setState({ nftMintPrice: event.target.value });
+    }
+  };
+
+  handleDropFile = (event) => {
+    event.preventDefault();
+    if (event.dataTransfer.items.length > 1) {
+      console.log("not allowed");
+      return;
+    }
+    const imgBlob = URL.createObjectURL(event.dataTransfer.files[0]); //creating a blob url
+    console.log(imgBlob);
+
+    this.setState({ collectionCover: imgBlob });
+  };
+
+  handlePublishDapp = () => {
+    console.log("hello world");
   };
 
   render() {
@@ -65,7 +85,7 @@ export class LaunchComponent extends Component {
               >
                 <Form.Control
                   id="tbMintPrice"
-                  type="text"
+                  type="number"
                   placeholder="Mint Price"
                   className="modal-form-control"
                   onChange={this.handleMintPrice}
@@ -80,8 +100,7 @@ export class LaunchComponent extends Component {
               >
                 <Form.Control
                   id="tbLaunchDate"
-                  type="text"
-                  placeholder="Mint Price"
+                  type="date"
                   className="modal-form-control"
                 />
                 <label htmlFor="tbLaunchDate" style={{ color: "#525252" }}>
@@ -93,8 +112,20 @@ export class LaunchComponent extends Component {
                 className="mb-3 unselectable"
                 style={{ marginTop: "25px" }}
               >
-                <Card className="upload-card unselectable">
-                  <div style={{ paddingBottom: "10px" }}>
+                <Card
+                  className="upload-card unselectable"
+                  onDrop={this.handleDropFile}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  <div id="dragAndDropPrompt" style={{ paddingBottom: "10px" }}>
                     <PhotographIcon
                       style={{ width: "5rem", color: "#494a66" }}
                     />
@@ -109,77 +140,47 @@ export class LaunchComponent extends Component {
                       drag and drop collection cover image
                     </span>
                   </div>
+                  <Col
+                    id="dragAndDropPreview"
+                    xs={2}
+                    style={{ marginBottom: "10px" }}
+                  >
+                    <div style={{ padding: "5px", position: "relative" }}>
+                      <img
+                        src={this.state.collectionCover}
+                        style={{
+                          width: "100%",
+                          display: "block",
+                          margin: "auto",
+                          border: "1px solid #c9c9c9",
+                        }}
+                      ></img>
+                      <i
+                        className="fa fa-times-circle"
+                        style={{
+                          fontSize: "25px",
+                          color: "red",
+                          position: "absolute",
+                          top: "0px",
+                          right: "-1px",
+                          opacity: "0.6",
+                        }}
+                      ></i>
+                    </div>
+                  </Col>
                 </Card>
               </Form.Floating>
               <Button
                 id="btnPublish"
                 className="modal-form-submit"
                 style={{ marginTop: "5px", padding: "0.5rem" }}
+                onClick={this.handlePublishDapp}
               >
                 publish
               </Button>
             </Col>
             <Col xs={8} md={8} lg={8}>
-              <Card className="preview-card unselectable">
-                <div
-                  style={{
-                    backgroundColor: "#323232",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "25px",
-                      margin: "auto",
-                      marginTop: "5rem",
-                      backgroundColor: "white",
-                      width: "20rem",
-                      height: "25rem",
-                      borderRadius: "1.5rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        textAlign: "left",
-                        marginTop: "-10px",
-                        marginBottom: "5px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "1.5rem",
-                          fontWeight: "bold",
-                          color: "#323232",
-                        }}
-                      >
-                        {this.state.collectionName}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        backgroundColor: "#323232",
-                        width: "100%",
-                        height: "60%",
-                      }}
-                    ></div>
-                    <div style={{ marginTop: "15px", textAlign: "right" }}>
-                      <span>Price: {this.state.nftMintPrice} ICX</span>
-                    </div>
-                    <Button
-                      style={{
-                        marginTop: "15px",
-                        float: "right",
-                        backgroundColor: "#323232",
-                        width: "100%",
-                        padding: "10px",
-                      }}
-                    >
-                      Mint NFT
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+              <PreviewComponent previewData={this.state} />
             </Col>
           </Row>
         </Container>

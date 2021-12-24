@@ -9,6 +9,7 @@ import cfg from "../config.json";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
 import "./style.css";
+import IconService from "icon-sdk-js";
 
 export class CollectionComponent extends Component {
   constructor(props) {
@@ -36,6 +37,8 @@ export class CollectionComponent extends Component {
 
   componentDidMount() {
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
+    this.connection.testMint("cx1b62344f81d7df90b9f6995ee3d2910d96609d61");
+
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     if (walletAddress != null) {
       this.getContractInfo(walletAddress);
