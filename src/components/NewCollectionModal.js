@@ -32,7 +32,7 @@ class NewCollectionModal extends Component {
     }
 
     const contractContent = await fetchContractContent(
-      "https://gateway.pinata.cloud/ipfs/QmfB31n3VLPwaQnGJNJgsTrGKbrsYzfaFJznRxDvyLgP2e"
+      "https://gateway.pinata.cloud/ipfs/Qmc2xwEkaiBQok235WfxQGutyxbczZS6YNJ6MUXVaHLzb2"
     );
 
     console.log(walletAddress);

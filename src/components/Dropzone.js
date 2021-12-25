@@ -3,7 +3,6 @@ import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
 import { Navigate } from 'react-router-dom';
-import { create } from 'ipfs-http-client';
 import {
   Button,
   Container,
@@ -77,8 +76,30 @@ class Dropzone extends Component {
 
     this.getTotalSupply();
     this.setState({ redirect: true });
+  };
 
+  set_JSON_File_Metahash = async (metahash) => {
+    console.log("hello i was heree")
+    const txObj = new IconBuilder.CallTransactionBuilder()
+      .from(this.walletAddress)
+      .to(this.contractAddress)
+      .stepLimit(IconConverter.toBigNumber(2000000))
+      .nid("0x53")
+      .nonce(IconConverter.toBigNumber(1))
+      .version(IconConverter.toBigNumber(3)) //constant
+      .timestamp(new Date().getTime() * 1000)
+      .method("setJSONFileMetahash")
+      .params({ _jsonfilemetahash: metahash })
+      .build();
 
+    const payload = {
+      jsonrpc: "2.0",
+      method: "icx_sendTransaction",
+      id: 6639,
+      params: IconConverter.toRawTransaction(txObj),
+    };
+    let rpcResponse = await this.connection.getJsonRpc(payload);
+    console.log("Set JSONFILEMETAHASH", rpcResponse);
   };
 
   renderRedirect = () => {
@@ -153,10 +174,12 @@ class Dropzone extends Component {
     //step 2 - generate meta data json file
 
     this.setState({ uploadMessage: "Generating metadata file..." });
+    const json_uploadfiles = { files_link: [] };
     const ipfsHash = response.data.IpfsHash;
     const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
     let mdata = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
+      json_uploadfiles.files_link.push(`${ipfsGateway}/${this.uploadedFiles[i].name}`)
       const mdataContent = {
         image: `${ipfsGateway}/${this.uploadedFiles[i].name}`,
       };
@@ -173,8 +196,29 @@ class Dropzone extends Component {
       });
       console.log("current prog at generating json", currentProgress);
     }
+    console.log(json_uploadfiles)
 
-    //step 3 - pin json file
+    const pinataEndpoint2 = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
+    let json_upload_response = await axios.post(pinataEndpoint2, json_uploadfiles, {
+      headers: {
+        'pinata_api_key': this.pinataKey,
+        'pinata_secret_api_key': this.pinataSecret
+      }
+    }
+    ).then((response) => {
+      console.log(response)
+      return response.data.IpfsHash
+      // let json_upload_hashlink = response.data.IpfsHash;
+      // console.log("yoohoo", json_upload_hashlink);
+      //work it here
+      // this.set_JSON_File_Metahash(json_upload_hashlink);
+    }).catch((error) => {
+      console.log(error)
+    });
+    console.log(json_upload_response);
+    this.set_JSON_File_Metahash(json_upload_response);
+
+    // step 3 - pin json file
     this.setState({ uploadMessage: "Uploading metadata file..." });
     let mresponse = await axios
       .post(pinataEndpoint, mdata, {
@@ -208,7 +252,7 @@ class Dropzone extends Component {
       })
       .then((res) => {
         // this.updateMetahash(res.data.IpfsHash);
-        this.get_metahashfolder_length(res.data.IpfsHash);
+        this.set_totalandcurrent_supply(json_uploadfiles.files_link.length, res.data.IpfsHash);
         console.log("metadata", res);
         this.setState({
           pinningJsonProgress: 20,
@@ -234,28 +278,6 @@ class Dropzone extends Component {
     this.setState({ file: this.uploadedFiles });
     var x = document.getElementById("bruh");
     x.style.display = "none";
-  };
-
-  get_metahashfolder_length = async (metahash) => {
-    console.log("trying to get metahashfolder length");
-    // let address = "https://ipfs.io/api/v0/dag/get";
-    // let response = await axios.get(address, { params: { arg: metahash } }).then(res => {
-    //   let files = res.data.Links;
-    //   console.log("number of file uploaded: ", files.length)
-    //   // this.set_totalandcurrent_supply(files.length, metahash);
-    //   return files.length
-    // });
-
-    const url = "https://dweb.link/api/v0";
-    const ipfs = create({ url });
-
-    const links = [];
-    for await (const link of ipfs.ls(metahash)) {
-      links.push(link);
-    }
-    console.log("number of files uploaded", links.length);
-    await this.set_totalandcurrent_supply(links.length, metahash);
-    // console.log("the file length is", response);
   };
 
   getTotalSupply = async () => {
