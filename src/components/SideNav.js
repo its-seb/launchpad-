@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { Nav, Button } from "react-bootstrap";
+import React from "react";
+import { Nav, Image } from "react-bootstrap";
 import "./style.css";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import { NavLink } from "react-router-dom";
-import App from "../App.js"
+import Logo from "../assets/launchpad_logo.svg";
 
 function SideNav() {
   return (
     <>
       <Nav className="flex-column sideBar">
         <NavLink className="logo" to="/">
-          launchpad
+          <Image src={Logo} style={{ width: "220px" }}></Image>
         </NavLink>
         <NavLink className="navPill unselectable" to="/">
           collections
@@ -28,5 +28,4 @@ function SideNav() {
     </>
   );
 }
-
 export default SideNav;

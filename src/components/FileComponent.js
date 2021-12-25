@@ -30,14 +30,14 @@ export class FileComponent extends Component {
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
     );
-    this.contract_metahash = '';
+    this.contract_metahash = "";
     this.iconService = new IconService(provider);
     this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
   }
   connection = new ICONexConnection();
 
-  async dragORfiles(contractAddress) { }
+  async dragORfiles(contractAddress) {}
 
   componentDidMount() {
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
@@ -45,7 +45,7 @@ export class FileComponent extends Component {
     if (this.contractAddress == null) {
       alert("you need to select a contract to view files");
     } else {
-      this.getMetahash()
+      this.getMetahash();
     }
 
     //check if user has configured pinata cloud api
@@ -57,7 +57,6 @@ export class FileComponent extends Component {
 
     //check if the adddress has file
     //set isactive to true
-
   }
 
   // updateMetahash = async (metahash) => {
@@ -106,7 +105,7 @@ export class FileComponent extends Component {
         console.log("getmetahash", error);
         Promise.resolve({ error });
       });
-    return result
+    return result;
   };
 
   showPinataModal = () => {

@@ -1,14 +1,11 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Card, Modal } from "react-bootstrap";
 import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
-import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Link, Route } from "react-router-dom";
 import NewCollectionModal from "./NewCollectionModal.js";
-import cfg from "../config.json";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
 import "./style.css";
-import IconService from "icon-sdk-js";
 
 export class CollectionComponent extends Component {
   constructor(props) {
@@ -42,7 +39,6 @@ export class CollectionComponent extends Component {
     if (walletAddress != null) {
       this.getContractInfo(walletAddress);
     }
-    //this.getContractInfo();
   }
 
   componentWillReceiveProps(props) {
