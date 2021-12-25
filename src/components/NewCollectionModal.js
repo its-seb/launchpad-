@@ -39,7 +39,7 @@ class NewCollectionModal extends Component {
     //remember to sanitize input-> allow alphanumeric only
     const collectionName = document.getElementById("tbCollectionName").value;
     const collectionSymbol =
-      document.getElementById("tbCollectionSymbol").value; 
+      document.getElementById("tbCollectionSymbol").value;
 
     if (!collectionName.length || !collectionSymbol.length) {
       alert("Please enter required fields");

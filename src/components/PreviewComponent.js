@@ -85,7 +85,7 @@ class PreviewComponent extends Component {
                     id="mint_qty"
                     type="number"
                     className="preview-mint-qty unselectable"
-                    readonly
+                    readOnly
                     disabled
                     defaultValue="1"
                   ></input>

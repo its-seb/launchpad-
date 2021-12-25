@@ -157,11 +157,13 @@
   user-select: none;
 }
 
-.new-collection-modal {
+.new-collection-modal,
+.advanced-settings-modal {
   padding: 15px 25px;
 }
 
-.new-collection-modal > .modal-title {
+.new-collection-modal > .modal-title,
+.advanced-settings-modal > .modal-title {
   font-size: 2rem;
   font-weight: bold;
   color: #494a66;
@@ -286,4 +288,14 @@ input[type="number"] {
   width: 3rem;
   border: 0;
   outline: none;
+}
+
+#btnAdvancedSetting {
+  float: left;
+  font-weight: bold;
+  background-color: #494a66;
+  color: #eeeeff;
+  border: 0;
+  margin-top: 5px;
+  padding: 0.5rem;
 }

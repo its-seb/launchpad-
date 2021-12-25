@@ -3,7 +3,6 @@ import { Container, Row, Col, Card, Modal } from "react-bootstrap";
 import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Link, Route } from "react-router-dom";
-import NewCollection from "./NewCollection.js";
 import NewCollectionModal from "./NewCollectionModal.js";
 import cfg from "../config.json";
 import Dexie from "dexie";
@@ -103,9 +102,9 @@ export class CollectionComponent extends Component {
         .catch(Dexie.BulkError, (e) => {
           console.error(
             "Some contracts were not appended. However, " +
-            contractDisplay.length -
-            e.failures.length +
-            " contracts was added successfully"
+              contractDisplay.length -
+              e.failures.length +
+              " contracts was added successfully"
           );
         });
       //console.log(contractsToCommit);
