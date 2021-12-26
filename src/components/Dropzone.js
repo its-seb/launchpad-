@@ -2,7 +2,8 @@ import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
-import { Navigate } from 'react-router-dom';
+import Dexie from "dexie";
+import { Navigate } from "react-router-dom";
 import {
   Button,
   Container,
@@ -46,6 +47,14 @@ class Dropzone extends Component {
     this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     this.connection = new ICONexConnection();
+
+    this.db = new Dexie("contracts_deployed");
+    this.db.version(1).stores({
+      contracts: "contractAddress, walletAddress, name, symbol",
+    });
+    this.db.open().catch((error) => {
+      console.log("error", error);
+    });
   }
 
   set_totalandcurrent_supply = async (num_of_file, metahash, jsonmetahash) => {
@@ -58,7 +67,11 @@ class Dropzone extends Component {
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
       .method("setInitialSupplyAndMetahashAndJSONMetahash")
-      .params({ _supply: IconService.IconConverter.toHex(num_of_file), _metahash: metahash, _jsonfilemetahash: jsonmetahash })
+      .params({
+        _supply: IconService.IconConverter.toHex(num_of_file),
+        _metahash: metahash,
+        _jsonfilemetahash: jsonmetahash,
+      })
       .build();
 
     console.log("total_supply_txObj", txObj);
@@ -104,9 +117,9 @@ class Dropzone extends Component {
 
   renderRedirect = () => {
     if (this.state.redirect) {
-      return <Navigate to='/launch' />
+      return <Navigate to="/launch" />;
     }
-  }
+  };
 
   showUploadModal = () => {
     this.setState({ show: true });
@@ -179,7 +192,9 @@ class Dropzone extends Component {
     const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
     let mdata = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
-      json_uploadfiles.files_link.push(`${ipfsGateway}/${this.uploadedFiles[i].name}`)
+      json_uploadfiles.files_link.push(
+        `${ipfsGateway}/${this.uploadedFiles[i].name}`
+      );
       const mdataContent = {
         image: `${ipfsGateway}/${this.uploadedFiles[i].name}`,
       };
@@ -196,25 +211,27 @@ class Dropzone extends Component {
       });
       console.log("current prog at generating json", currentProgress);
     }
-    console.log(json_uploadfiles)
+    console.log(json_uploadfiles);
 
     const pinataEndpoint2 = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
-    let json_upload_response = await axios.post(pinataEndpoint2, json_uploadfiles, {
-      headers: {
-        'pinata_api_key': this.pinataKey,
-        'pinata_secret_api_key': this.pinataSecret
-      }
-    }
-    ).then((response) => {
-      console.log(response)
-      return response.data.IpfsHash
-      // let json_upload_hashlink = response.data.IpfsHash;
-      // console.log("yoohoo", json_upload_hashlink);
-      //work it here
-      // this.set_JSON_File_Metahash(json_upload_hashlink);
-    }).catch((error) => {
-      console.log(error)
-    });
+    let json_upload_response = await axios
+      .post(pinataEndpoint2, json_uploadfiles, {
+        headers: {
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        return response.data.IpfsHash;
+        // let json_upload_hashlink = response.data.IpfsHash;
+        // console.log("yoohoo", json_upload_hashlink);
+        //work it here
+        // this.set_JSON_File_Metahash(json_upload_hashlink);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
     console.log(json_upload_response);
     // this.set_JSON_File_Metahash(json_upload_response);
 
@@ -252,15 +269,22 @@ class Dropzone extends Component {
       })
       .then((res) => {
         // this.updateMetahash(res.data.IpfsHash);
-        this.set_totalandcurrent_supply(json_uploadfiles.files_link.length, res.data.IpfsHash, json_upload_response);
+        this.set_totalandcurrent_supply(
+          json_uploadfiles.files_link.length,
+          res.data.IpfsHash,
+          json_upload_response
+        );
         //update dexie here
+        this.db.contracts.update(this.contractAddress, {
+          metahash_exist: true,
+        }); //update metahash_exists
         console.log("metadata", res);
         this.setState({
           pinningJsonProgress: 20,
           totalProgress: 100,
         });
+        localStorage.setItem("HAS_METAHASH", true);
         this.hideUploadModal();
-        this.props.meta();
       });
   };
 

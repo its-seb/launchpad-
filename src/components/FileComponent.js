@@ -6,7 +6,7 @@ import PinataModal from "./PinataModal.js";
 import Dexie from "dexie";
 import "./style.css";
 import Dropzone from "./Dropzone.js";
-import Gallery from "./gallery.js";
+import Gallery from "./Gallery.js";
 
 export class FileComponent extends Component {
   // 1. Get the collection hash address
@@ -62,7 +62,7 @@ export class FileComponent extends Component {
       this.showPinataModal(); //configure to continue
     }
 
-    console.log(this.state.hasMetahash);
+    console.log("filecomponent", this.state.hasMetahash);
     //this.db.contracts.update(this.contractAddress, { metahash_exist: true }); //update metahash_exists
     //check if the adddress has file
     //set isactive to true
@@ -107,25 +107,18 @@ export class FileComponent extends Component {
   };
 
   render() {
-    if (this.contractAddress == null) {
-      return <div></div>;
-    } else {
-      return (
-        <div style={{ height: "75vh", overflowY: "auto" }}>
-          {this.state.hasMetahash == true ? (
-            <Gallery metahash={this.contract_metahash} />
-          ) : (
-            <Dropzone meta={this.getMetahash} />
-          )}
-          <Modal
-            show={this.state.showPinataModal}
-            onHide={this.hidePinataModal}
-          >
-            <PinataModal hideModal={this.hidePinataModal} />
-          </Modal>
-        </div>
-      );
-    }
+    return (
+      <div style={{ height: "75vh", overflowY: "auto" }}>
+        {this.state.hasMetahash == "true" ? (
+          <Gallery metahash={this.contract_metahash} />
+        ) : (
+          <Dropzone />
+        )}
+        <Modal show={this.state.showPinataModal} onHide={this.hidePinataModal}>
+          <PinataModal hideModal={this.hidePinataModal} />
+        </Modal>
+      </div>
+    );
   }
 }
 
