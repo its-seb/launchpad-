@@ -48,6 +48,7 @@ class App extends Component {
     } else {
       //signing out
       localStorage.removeItem("USER_WALLET_ADDRESS");
+      localStorage.removeItem("SELECTED_CONTRACT_ADDRESS");
       document.getElementById("btnConnectWallet").innerHTML = "connect wallet";
       this.setState({ walletAddress: null });
     }

@@ -1,13 +1,12 @@
 import React, { Component } from "react";
-import { Button, Container, Modal, Row, Col, Card } from "react-bootstrap";
-import { PhotographIcon } from "@heroicons/react/solid";
+import { Modal } from "react-bootstrap";
 import IconService from "icon-sdk-js";
 import ICONexConnection from "./utils/interact.js";
 import PinataModal from "./PinataModal.js";
+import Dexie from "dexie";
 import "./style.css";
 import Dropzone from "./Dropzone.js";
-import Gallery from "./gallery.js";
-const { IconConverter, IconBuilder, HttpProvider } = IconService;
+import Gallery from "./Gallery.js";
 
 export class FileComponent extends Component {
   // 1. Get the collection hash address
@@ -24,7 +23,7 @@ export class FileComponent extends Component {
       showPinataModal: false,
       pinataKey: null,
       pinataSecret: null,
-      isActive: false,
+      hasMetahash: localStorage.getItem("HAS_METAHASH"),
     };
 
     const provider = new IconService.HttpProvider(
@@ -34,19 +33,27 @@ export class FileComponent extends Component {
     this.iconService = new IconService(provider);
     this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
     this.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
+
+    this.db = new Dexie("contracts_deployed");
+    this.db.version(1).stores({
+      contracts: "contractAddress, walletAddress, name, symbol, metahash_exist",
+    });
+    this.db.open().catch((error) => {
+      console.log("error", error);
+    });
   }
   connection = new ICONexConnection();
 
   async dragORfiles(contractAddress) {}
 
-  componentDidMount() {
-    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
-    console.log("componentdidMount", this.contractAddress);
+  async componentDidMount() {
     if (this.contractAddress == null) {
       alert("you need to select a contract to view files");
-    } else {
-      this.getMetahash();
+      window.history.back();
+      return;
     }
+
+    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
 
     //check if user has configured pinata cloud api
     this.state.pinataKey = localStorage.getItem("PINATA_KEY");
@@ -55,6 +62,8 @@ export class FileComponent extends Component {
       this.showPinataModal(); //configure to continue
     }
 
+    console.log(this.state.hasMetahash);
+    //this.db.contracts.update(this.contractAddress, { metahash_exist: true }); //update metahash_exists
     //check if the adddress has file
     //set isactive to true
   }
@@ -84,30 +93,6 @@ export class FileComponent extends Component {
   //   console.log("fuck u")
   // };
 
-  getMetahash = async () => {
-    const callObj = new IconBuilder.CallBuilder()
-      .from(null)
-      .to(this.contractAddress)
-      .method("getMetahash")
-      .build();
-
-    let result = await this.iconService
-      .call(callObj)
-      .execute()
-      .then((response) => {
-        console.log("success_getmetahash", response);
-        this.contract_metahash = response;
-        if (response != undefined) {
-          this.setState({ isActive: true });
-        }
-      })
-      .catch((error) => {
-        console.log("getmetahash", error);
-        Promise.resolve({ error });
-      });
-    return result;
-  };
-
   showPinataModal = () => {
     this.setState({ showPinataModal: true });
   };
@@ -122,19 +107,25 @@ export class FileComponent extends Component {
   };
 
   render() {
-    return (
-      <div style={{ height: "75vh", overflowY: "auto" }}>
-        {/* <Dropzone /> */}
-        {this.state.isActive ? (
-          <Gallery metahash={this.contract_metahash} />
-        ) : (
-          <Dropzone meta={this.getMetahash} />
-        )}
-        <Modal show={this.state.showPinataModal} onHide={this.hidePinataModal}>
-          <PinataModal hideModal={this.hidePinataModal} />
-        </Modal>
-      </div>
-    );
+    if (this.contractAddress == null) {
+      return <div></div>;
+    } else {
+      return (
+        <div style={{ height: "75vh", overflowY: "auto" }}>
+          {this.state.hasMetahash == true ? (
+            <Gallery metahash={this.contract_metahash} />
+          ) : (
+            <Dropzone meta={this.getMetahash} />
+          )}
+          <Modal
+            show={this.state.showPinataModal}
+            onHide={this.hidePinataModal}
+          >
+            <PinataModal hideModal={this.hidePinataModal} />
+          </Modal>
+        </div>
+      );
+    }
   }
 }
 

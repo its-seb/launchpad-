@@ -78,8 +78,8 @@ class PreviewComponent extends Component {
                     textAlign: "center",
                   }}
                 >
-                  <button onClick={() => this.handleQuantity("increment")}>
-                    +
+                  <button onClick={() => this.handleQuantity("decrement")}>
+                    -
                   </button>
                   <input
                     id="mint_qty"
@@ -89,8 +89,8 @@ class PreviewComponent extends Component {
                     disabled
                     defaultValue="1"
                   ></input>
-                  <button onClick={() => this.handleQuantity("decrement")}>
-                    -
+                  <button onClick={() => this.handleQuantity("increment")}>
+                    +
                   </button>
                 </div>
               </div>

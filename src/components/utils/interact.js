@@ -115,6 +115,7 @@ class ICONexConnection {
             return res.data;
           });
         console.log("contractResponse", contractResponse);
+
         contractDisplayed.push({
           name: contractResponse.data.tokenName,
           symbol: contractResponse.data.symbol,
@@ -144,6 +145,31 @@ class ICONexConnection {
         return response;
       })
       .catch((error) => {
+        Promise.resolve({ error });
+        //console.log(error);
+        return "0x0";
+      });
+    return result;
+  }
+
+  async hasMetahash(contractAddress) {
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(contractAddress)
+      .method("getMetahash")
+      .build();
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        if (response == null) {
+          return false;
+        }
+        return true;
+      })
+      .catch((error) => {
+        console.log("error", error);
         Promise.resolve({ error });
         //console.log(error);
         return "0x0";

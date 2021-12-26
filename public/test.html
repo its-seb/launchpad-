@@ -8,7 +8,7 @@
       crossorigin="anonymous"
     />
     <link
-      href="https://gateway.pinata.cloud/ipfs/QmbLteaJBbt4evWx8LY4CFWj1h5DwEP2bcYup8p7iGthVE?filename=app.css"
+      href="https://gateway.pinata.cloud/ipfs/QmeqQqq7GLgaEr8cPcsqxRCe6ZyhoEc3AtPMqjyvoqsYoM?filename=app.css"
       rel="stylesheet"
     />
   </head>
@@ -33,14 +33,14 @@
           </div>
           <div class="preview-price">
             <div style="display: inline-block; width: 100%; text-align: center">
-              <button onclick="handleQuantity('increment')">+</button
+              <button onclick="handleQuantity('decrement')">-</button
               ><input
                 id="mint_qty"
                 type="number"
                 class="preview-mint-qty unselectable"
                 disabled=""
                 value="1"
-              /><button onclick="handleQuantity('decrement')">-</button>
+              /><button onclick="handleQuantity('increment')">+</button>
             </div>
           </div>
           <button
@@ -60,116 +60,108 @@
       crossorigin="anonymous"
     ></script>
     <script>
-        var IconService = window["icon-sdk-js"];
-        var IconConverter = IconService.Converter;
-        let perNftCost = 10;
-        let walletAddress;
-        const handleQuantity = (eventType) => {
-          let inputElement = document.getElementById("mint_qty");
-          let inputValue = parseInt(inputElement.value);
-          if (eventType == "increment") {
-            let max = 100;
-            inputElement.value = inputValue == max ? max : inputValue + 1;
-          } //decrement
-          else {
-            let min = 1;
-            inputElement.value = inputValue == min ? min : inputValue - 1;
-          }
-        };
-
-        const getSiteInfo = () => {
-          const callObj = new IconBuilder.CallBuilder()
-        .from(null)
-        .to(this.contractAddress)
-        .method("getTotalSupply")
-        .build();
-
-      console.log(callObj);
-
-      let result = await this.iconService
-        .call(callObj)
-        .execute()
-        .then((response) => {
-          console.log("Total Supply is", response);
-          return response;
-        })
-        .catch((error) => {
-          console.log("Total Supply Error", error);
-          Promise.resolve({ error });
-        });
+      var IconService = window["icon-sdk-js"];
+      var IconConverter = IconService.Converter;
+      let perNftCost = 10;
+      let walletAddress;
+      const handleQuantity = (eventType) => {
+        let inputElement = document.getElementById("mint_qty");
+        let inputValue = parseInt(inputElement.value);
+        if (eventType == "increment") {
+          let max = 100;
+          inputElement.value = inputValue == max ? max : inputValue + 1;
+        } //decrement
+        else {
+          let min = 1;
+          inputElement.value = inputValue == min ? min : inputValue - 1;
         }
+      };
 
-        const mintNft = () => {
-          if (walletAddress == null) {
-            alert("please connect your wallet");
-            return;
-          }
-          let quantityToMint = parseInt(
-            document.getElementById("mint_qty").value
-          );
-          var payload = {
-            jsonrpc: "2.0",
-            method: "icx_sendTransaction",
-            id: 6639,
-            params: {
-              to: "cx00448346e85e70308953efd20e68164ff027cf93",
-              from: "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3",
-              nid: "0x53",
-              version: IconConverter.toHexNumber("3"),
-              value: IconConverter.toHexNumber(
-                quantityToMint * perNftCost * 10 ** 18
-              ),
-              timestamp: IconConverter.toHexNumber(new Date().getTime() * 1000),
-              stepLimit: IconConverter.toHexNumber("2000000"),
-              nonce: IconConverter.toHexNumber("1"),
-              dataType: "call",
-              data: {
-                method: "mint",
-                params: {
-                  _mintQuantity: IconConverter.toHexNumber("2"),
-                },
+      const getSiteInfo = () => {
+        var payload = {
+          jsonrpc: "2.0",
+          method: "icx_call",
+          params: {
+            to: "cx00448346e85e70308953efd20e68164ff027cf93",
+            dataType: "call",
+            data: {
+              method: "getSiteInfo",
+            },
+          },
+        };
+      };
+
+      const mintNft = () => {
+        if (walletAddress == null) {
+          alert("please connect your wallet");
+          return;
+        }
+        let quantityToMint = parseInt(
+          document.getElementById("mint_qty").value
+        );
+        var payload = {
+          jsonrpc: "2.0",
+          method: "icx_sendTransaction",
+          id: 6639,
+          params: {
+            to: "cx00448346e85e70308953efd20e68164ff027cf93",
+            from: "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3",
+            nid: "0x53",
+            version: IconConverter.toHexNumber("3"),
+            value: IconConverter.toHexNumber(
+              quantityToMint * perNftCost * 10 ** 18
+            ),
+            timestamp: IconConverter.toHexNumber(new Date().getTime() * 1000),
+            stepLimit: IconConverter.toHexNumber("2000000"),
+            nonce: IconConverter.toHexNumber("1"),
+            dataType: "call",
+            data: {
+              method: "mint",
+              params: {
+                _mintQuantity: IconConverter.toHexNumber("2"),
               },
             },
-          };
-
-          ICONexRequest("REQUEST_JSON-RPC", payload);
+          },
         };
 
-        const handleConnectWallet = async () => {
-          let _walletAddress;
-          if (walletAddress == null) {
-            _walletAddress = await ICONexRequest("REQUEST_ADDRESS");
-            document.getElementById("btnConnectWallet").innerText =
-              _walletAddress == null || _walletAddress == "undefined"
-                ? "Connect Wallet"
-                : `Disconnect from ${_walletAddress}`;
-          } else {
-            document.getElementById("btnConnectWallet").innerText =
-              "Connect Wallet";
-            _walletAddress = null;
-          }
-          walletAddress = _walletAddress;
-        };
+        ICONexRequest("REQUEST_JSON-RPC", payload);
+      };
 
-        async function ICONexRequest(requestType, payload) {
-          return new Promise((resolve, reject) => {
-            function eventHandler(event) {
-              const { payload } = event.detail;
-              window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
-              resolve(payload);
-            }
-            window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
-
-            window.dispatchEvent(
-              new window.CustomEvent("ICONEX_RELAY_REQUEST", {
-                detail: {
-                  type: requestType,
-                  payload,
-                },
-              })
-            );
-          });
+      const handleConnectWallet = async () => {
+        let _walletAddress;
+        if (walletAddress == null) {
+          _walletAddress = await ICONexRequest("REQUEST_ADDRESS");
+          document.getElementById("btnConnectWallet").innerText =
+            _walletAddress == null || _walletAddress == "undefined"
+              ? "Connect Wallet"
+              : `Disconnect from ${_walletAddress}`;
+        } else {
+          document.getElementById("btnConnectWallet").innerText =
+            "Connect Wallet";
+          _walletAddress = null;
         }
+        walletAddress = _walletAddress;
+      };
+
+      async function ICONexRequest(requestType, payload) {
+        return new Promise((resolve, reject) => {
+          function eventHandler(event) {
+            const { payload } = event.detail;
+            window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
+            resolve(payload);
+          }
+          window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
+
+          window.dispatchEvent(
+            new window.CustomEvent("ICONEX_RELAY_REQUEST", {
+              detail: {
+                type: requestType,
+                payload,
+              },
+            })
+          );
+        });
+      }
     </script>
   </body>
 </html>

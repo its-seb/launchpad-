@@ -6,6 +6,8 @@ import NewCollectionModal from "./NewCollectionModal.js";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
 import "./style.css";
+import IconService from "icon-sdk-js";
+const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 export class CollectionComponent extends Component {
   constructor(props) {
@@ -23,7 +25,7 @@ export class CollectionComponent extends Component {
 
     this.db = new Dexie("contracts_deployed");
     this.db.version(1).stores({
-      contracts: "contractAddress, walletAddress, name, symbol",
+      contracts: "contractAddress, walletAddress, name, symbol, metahash_exist",
     });
     this.db.open().catch((error) => {
       console.log("error", error);
@@ -31,9 +33,8 @@ export class CollectionComponent extends Component {
   }
   connection = new ICONexConnection();
 
-  componentDidMount() {
+  async componentDidMount() {
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
-    // this.connection.testMint("cx1b62344f81d7df90b9f6995ee3d2910d96609d61");
 
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     if (walletAddress != null) {
@@ -78,16 +79,19 @@ export class CollectionComponent extends Component {
       let contractDisplay = await this.connection.getLaunchpadContracts(
         walletAddress
       );
-
       //prepare statement for bulk add to db.contracts
       let contractsToCommit = [];
       console.log(contractDisplay);
       for (let contract of contractDisplay) {
+        let metahashExist = await this.connection.hasMetahash(
+          contract.contractAddress
+        );
         contractsToCommit.push({
           contractAddress: contract.contractAddress,
           walletAddress: walletAddress,
           name: contract.name,
           symbol: contract.symbol,
+          metahash_exist: metahashExist,
         });
       }
       this.db.contracts
@@ -115,8 +119,9 @@ export class CollectionComponent extends Component {
     this.setState({ contractInfoLength: contractsDeployed.length });
   };
 
-  handleCardEvent = (contractAddress) => {
+  handleCardEvent = (contractAddress, hasMetahash) => {
     localStorage.setItem("SELECTED_CONTRACT_ADDRESS", contractAddress);
+    localStorage.setItem("HAS_METAHASH", hasMetahash);
   };
 
   render() {
@@ -144,7 +149,12 @@ export class CollectionComponent extends Component {
                 <Link
                   to={"files"}
                   className="contractLink"
-                  onClick={() => this.handleCardEvent(info.contractAddress)}
+                  onClick={() =>
+                    this.handleCardEvent(
+                      info.contractAddress,
+                      info.metahash_exist
+                    )
+                  }
                 >
                   <Card className="contract-card unselectable">
                     <div style={{ display: "flex" }}>
@@ -160,11 +170,11 @@ export class CollectionComponent extends Component {
             ))}
           </Row>
         </Container>
-        <Modal
-          show={this.state.showCollectionModal}
-          onHide={this.hideCollectionModal}
-        >
-          <NewCollectionModal updateContractInfo={this.getContractInfo} />
+        <Modal show={this.state.showCollectionModal}>
+          <NewCollectionModal
+            updateContractInfo={this.getContractInfo}
+            hideModal={this.hideCollectionModal}
+          />
         </Modal>
       </div>
     );
