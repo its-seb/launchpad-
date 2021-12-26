@@ -6,8 +6,6 @@ import NewCollectionModal from "./NewCollectionModal.js";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
 import "./style.css";
-import IconService from "icon-sdk-js";
-const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
 export class CollectionComponent extends Component {
   constructor(props) {

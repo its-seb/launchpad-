@@ -47,6 +47,10 @@ export class FileComponent extends Component {
   async dragORfiles(contractAddress) {}
 
   async componentDidMount() {
+    if (this.walletAddress == null) {
+      alert("Please connect your wallet.");
+      return;
+    }
     if (this.contractAddress == null) {
       alert("you need to select a contract to view files");
       window.history.back();

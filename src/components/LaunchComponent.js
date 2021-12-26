@@ -41,6 +41,16 @@ export class LaunchComponent extends Component {
   }
 
   componentDidMount() {
+    if (this.walletAddress == null) {
+      alert("Please connect your wallet.");
+      return;
+    }
+    if (this.contractAddress == null) {
+      alert("you need to select a contract to view files");
+      window.history.back();
+      return;
+    }
+
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     if (this.state.collectionCover == "") {
       document.getElementById("dragAndDropPreview").style.display = "none";
@@ -345,170 +355,180 @@ export class LaunchComponent extends Component {
   };
 
   render() {
-    return (
-      <div style={{ height: "75vh" }}>
-        <Container>
-          <Row style={{ marginTop: "10px" }}>
-            <Col xs={4} md={4} lg={4}>
-              <Form.Floating
-                className="mb-3 unselectable"
-                style={{ marginTop: "25px" }}
-              >
-                <Form.Control
-                  id="tbCollectionName"
-                  type="text"
-                  placeholder="Collection Name"
-                  className="modal-form-control"
-                  onChange={this.handleCollectionName}
-                />
-                <label htmlFor="tbCollectionName" style={{ color: "#525252" }}>
-                  Collection Name
-                </label>
-              </Form.Floating>
-
-              <Form.Floating
-                className="mb-3 unselectable"
-                style={{ marginTop: "25px" }}
-              >
-                <Form.Control
-                  id="tbMintPrice"
-                  type="number"
-                  placeholder="Mint Price"
-                  className="modal-form-control"
-                  onChange={this.handleMintPrice}
-                />
-                <label htmlFor="tbMintPrice" style={{ color: "#525252" }}>
-                  Mint Price
-                </label>
-              </Form.Floating>
-
-              <Form.Floating
-                className="mb-3 unselectable"
-                style={{ marginTop: "25px" }}
-              >
-                <Card
-                  className="upload-card unselectable"
-                  onDrop={this.handleDropFile}
-                  onDragOver={this.handleDefaults}
-                  onDragEnter={this.handleDefaults}
-                  onDragLeave={this.handleDefaults}
+    if (this.contractAddress == null) {
+      return <div></div>;
+    } else {
+      return (
+        <div style={{ height: "75vh" }}>
+          <Container>
+            <Row style={{ marginTop: "10px" }}>
+              <Col xs={4} md={4} lg={4}>
+                <Form.Floating
+                  className="mb-3 unselectable"
+                  style={{ marginTop: "25px" }}
                 >
-                  <div id="dragAndDropPrompt" style={{ paddingBottom: "10px" }}>
-                    <PhotographIcon
-                      style={{ width: "5rem", color: "#494a66" }}
-                    />
-                    <span
-                      style={{
-                        display: "block",
-                        color: "#494a66",
-                        fontSize: "1rem",
-                        fontWeight: "500",
-                      }}
-                    >
-                      drag and drop collection cover image
-                    </span>
-                  </div>
-                  <Col
-                    id="dragAndDropPreview"
-                    xs={2}
-                    style={{ marginBottom: "10px" }}
+                  <Form.Control
+                    id="tbCollectionName"
+                    type="text"
+                    placeholder="Collection Name"
+                    className="modal-form-control"
+                    onChange={this.handleCollectionName}
+                  />
+                  <label
+                    htmlFor="tbCollectionName"
+                    style={{ color: "#525252" }}
                   >
-                    <div style={{ padding: "5px", position: "relative" }}>
-                      <img
-                        src={this.state.collectionCover}
+                    Collection Name
+                  </label>
+                </Form.Floating>
+
+                <Form.Floating
+                  className="mb-3 unselectable"
+                  style={{ marginTop: "25px" }}
+                >
+                  <Form.Control
+                    id="tbMintPrice"
+                    type="number"
+                    placeholder="Mint Price"
+                    className="modal-form-control"
+                    onChange={this.handleMintPrice}
+                  />
+                  <label htmlFor="tbMintPrice" style={{ color: "#525252" }}>
+                    Mint Price
+                  </label>
+                </Form.Floating>
+
+                <Form.Floating
+                  className="mb-3 unselectable"
+                  style={{ marginTop: "25px" }}
+                >
+                  <Card
+                    className="upload-card unselectable"
+                    onDrop={this.handleDropFile}
+                    onDragOver={this.handleDefaults}
+                    onDragEnter={this.handleDefaults}
+                    onDragLeave={this.handleDefaults}
+                  >
+                    <div
+                      id="dragAndDropPrompt"
+                      style={{ paddingBottom: "10px" }}
+                    >
+                      <PhotographIcon
+                        style={{ width: "5rem", color: "#494a66" }}
+                      />
+                      <span
                         style={{
-                          width: "100%",
                           display: "block",
-                          margin: "auto",
-                          border: "1px solid #c9c9c9",
+                          color: "#494a66",
+                          fontSize: "1rem",
+                          fontWeight: "500",
                         }}
-                      ></img>
-                      <i
-                        className="fa fa-times-circle"
-                        style={{
-                          fontSize: "25px",
-                          color: "red",
-                          position: "absolute",
-                          top: "0px",
-                          right: "-1px",
-                          opacity: "0.6",
-                        }}
-                        onClick={this.removeCoverImage}
-                      ></i>
+                      >
+                        drag and drop collection cover image
+                      </span>
                     </div>
-                  </Col>
-                </Card>
+                    <Col
+                      id="dragAndDropPreview"
+                      xs={2}
+                      style={{ marginBottom: "10px" }}
+                    >
+                      <div style={{ padding: "5px", position: "relative" }}>
+                        <img
+                          src={this.state.collectionCover}
+                          style={{
+                            width: "100%",
+                            display: "block",
+                            margin: "auto",
+                            border: "1px solid #c9c9c9",
+                          }}
+                        ></img>
+                        <i
+                          className="fa fa-times-circle"
+                          style={{
+                            fontSize: "25px",
+                            color: "red",
+                            position: "absolute",
+                            top: "0px",
+                            right: "-1px",
+                            opacity: "0.6",
+                          }}
+                          onClick={this.removeCoverImage}
+                        ></i>
+                      </div>
+                    </Col>
+                  </Card>
+                </Form.Floating>
+
+                <Button
+                  id="btnPublish"
+                  className="modal-form-submit"
+                  style={{ marginTop: "5px", padding: "0.5rem" }}
+                  onClick={this.handlePublishDapp}
+                >
+                  publish
+                </Button>
+                <Button
+                  id="btnAdvancedSetting"
+                  onClick={this.handleSettingsModal}
+                >
+                  show optional features
+                </Button>
+              </Col>
+              <Col xs={8} md={8} lg={8}>
+                <PreviewComponent previewData={this.state} />
+              </Col>
+            </Row>
+          </Container>
+          <Modal
+            show={this.state.showAdvancedSettings}
+            onHide={this.hideSettingsModal}
+          >
+            <div className="advanced-settings-modal">
+              <span className="modal-title">Advanced Settings</span>
+              <Form.Floating
+                className="mb-3 unselectable"
+                style={{ marginTop: "10px" }}
+              >
+                <Form.Control
+                  id="tbLaunchDate"
+                  type="date"
+                  className="modal-form-control"
+                />
+                <label htmlFor="tbLaunchDate" style={{ color: "#525252" }}>
+                  Launch Date - <i>optional</i>
+                </label>
               </Form.Floating>
 
+              <Form.Floating
+                className="mb-3 unselectable"
+                style={{ marginTop: "25px" }}
+              >
+                <Form.Control
+                  as="textarea"
+                  className="modal-form-control"
+                  id="tbWhitelistedAddress"
+                  rows={3}
+                  style={{ height: "100%" }}
+                />
+                <label
+                  htmlFor="tbWhitelistedAddress"
+                  style={{ color: "#525252" }}
+                >
+                  Whitelisted Address - <i>optional</i>
+                </label>
+              </Form.Floating>
               <Button
-                id="btnPublish"
+                id="btnSave"
                 className="modal-form-submit"
-                style={{ marginTop: "5px", padding: "0.5rem" }}
-                onClick={this.handlePublishDapp}
+                style={{ padding: "0.5rem", marginBottom: "3px" }}
               >
-                publish
+                save
               </Button>
-              <Button
-                id="btnAdvancedSetting"
-                onClick={this.handleSettingsModal}
-              >
-                show optional features
-              </Button>
-            </Col>
-            <Col xs={8} md={8} lg={8}>
-              <PreviewComponent previewData={this.state} />
-            </Col>
-          </Row>
-        </Container>
-        <Modal
-          show={this.state.showAdvancedSettings}
-          onHide={this.hideSettingsModal}
-        >
-          <div className="advanced-settings-modal">
-            <span className="modal-title">Advanced Settings</span>
-            <Form.Floating
-              className="mb-3 unselectable"
-              style={{ marginTop: "10px" }}
-            >
-              <Form.Control
-                id="tbLaunchDate"
-                type="date"
-                className="modal-form-control"
-              />
-              <label htmlFor="tbLaunchDate" style={{ color: "#525252" }}>
-                Launch Date - <i>optional</i>
-              </label>
-            </Form.Floating>
-
-            <Form.Floating
-              className="mb-3 unselectable"
-              style={{ marginTop: "25px" }}
-            >
-              <Form.Control
-                as="textarea"
-                className="modal-form-control"
-                id="tbWhitelistedAddress"
-                rows={3}
-                style={{ height: "100%" }}
-              />
-              <label
-                htmlFor="tbWhitelistedAddress"
-                style={{ color: "#525252" }}
-              >
-                Whitelisted Address - <i>optional</i>
-              </label>
-            </Form.Floating>
-            <Button
-              id="btnSave"
-              className="modal-form-submit"
-              style={{ padding: "0.5rem", marginBottom: "3px" }}
-            >
-              save
-            </Button>
-          </div>
-        </Modal>
-      </div>
-    );
+            </div>
+          </Modal>
+        </div>
+      );
+    }
   }
 }
 

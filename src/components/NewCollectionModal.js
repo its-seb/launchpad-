@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Button, Spinner, Modal } from "react-bootstrap";
+import { Form, Button, Spinner } from "react-bootstrap";
 import IconService from "icon-sdk-js";
 import Dexie from "dexie";
 import { XIcon } from "@heroicons/react/solid";
