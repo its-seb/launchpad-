@@ -6,7 +6,7 @@ import PinataModal from "./PinataModal.js";
 import Dexie from "dexie";
 import "./style.css";
 import Dropzone from "./Dropzone.js";
-import Gallery from "./Gallery.js";
+import Gallery from "./gallery.js";
 
 export class FileComponent extends Component {
   // 1. Get the collection hash address

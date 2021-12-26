@@ -48,7 +48,7 @@ class Dropzone extends Component {
     this.connection = new ICONexConnection();
   }
 
-  set_totalandcurrent_supply = async (num_of_file, metahash) => {
+  set_totalandcurrent_supply = async (num_of_file, metahash, jsonmetahash) => {
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(this.walletAddress)
       .to(this.contractAddress)
@@ -57,8 +57,8 @@ class Dropzone extends Component {
       .nonce(IconConverter.toBigNumber(1))
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
-      .method("setInitialSupplyAndMetahash")
-      .params({ _supply: IconService.IconConverter.toHex(num_of_file), _metahash: metahash })
+      .method("setInitialSupplyAndMetahashAndJSONMetahash")
+      .params({ _supply: IconService.IconConverter.toHex(num_of_file), _metahash: metahash, _jsonfilemetahash: jsonmetahash })
       .build();
 
     console.log("total_supply_txObj", txObj);
@@ -78,29 +78,29 @@ class Dropzone extends Component {
     this.setState({ redirect: true });
   };
 
-  set_JSON_File_Metahash = async (metahash) => {
-    console.log("hello i was heree")
-    const txObj = new IconBuilder.CallTransactionBuilder()
-      .from(this.walletAddress)
-      .to(this.contractAddress)
-      .stepLimit(IconConverter.toBigNumber(2000000))
-      .nid("0x53")
-      .nonce(IconConverter.toBigNumber(1))
-      .version(IconConverter.toBigNumber(3)) //constant
-      .timestamp(new Date().getTime() * 1000)
-      .method("setJSONFileMetahash")
-      .params({ _jsonfilemetahash: metahash })
-      .build();
+  // set_JSON_File_Metahash = async (metahash) => {
+  //   console.log("trying to set the json file metahash", metahash)
+  //   const txObj = new IconBuilder.CallTransactionBuilder()
+  //     .from(this.walletAddress)
+  //     .to(this.contractAddress)
+  //     .stepLimit(IconConverter.toBigNumber(2000000))
+  //     .nid("0x53")
+  //     .nonce(IconConverter.toBigNumber(1))
+  //     .version(IconConverter.toBigNumber(3)) //constant
+  //     .timestamp(new Date().getTime() * 1000)
+  //     .method("setJSONFileMetahash")
+  //     .params({ _jsonfilemetahash: metahash })
+  //     .build();
 
-    const payload = {
-      jsonrpc: "2.0",
-      method: "icx_sendTransaction",
-      id: 6639,
-      params: IconConverter.toRawTransaction(txObj),
-    };
-    let rpcResponse = await this.connection.getJsonRpc(payload);
-    console.log("Set JSONFILEMETAHASH", rpcResponse);
-  };
+  //   const payload = {
+  //     jsonrpc: "2.0",
+  //     method: "icx_sendTransaction",
+  //     id: 6639,
+  //     params: IconConverter.toRawTransaction(txObj),
+  //   };
+  //   let rpcResponse = await this.connection.getJsonRpc(payload);
+  //   console.log("Set JSONFILEMETAHASH", rpcResponse);
+  // };
 
   renderRedirect = () => {
     if (this.state.redirect) {
@@ -216,7 +216,7 @@ class Dropzone extends Component {
       console.log(error)
     });
     console.log(json_upload_response);
-    this.set_JSON_File_Metahash(json_upload_response);
+    // this.set_JSON_File_Metahash(json_upload_response);
 
     // step 3 - pin json file
     this.setState({ uploadMessage: "Uploading metadata file..." });
@@ -252,7 +252,8 @@ class Dropzone extends Component {
       })
       .then((res) => {
         // this.updateMetahash(res.data.IpfsHash);
-        this.set_totalandcurrent_supply(json_uploadfiles.files_link.length, res.data.IpfsHash);
+        this.set_totalandcurrent_supply(json_uploadfiles.files_link.length, res.data.IpfsHash, json_upload_response);
+        //update dexie here
         console.log("metadata", res);
         this.setState({
           pinningJsonProgress: 20,
@@ -301,57 +302,57 @@ class Dropzone extends Component {
         Promise.resolve({ error });
       });
   };
-  // handleDropFolder = async (event) => {
-  //   event.preventDefault();
-  //   const files = event.target.files;
+  handleDropFolder = async (event) => {
+    event.preventDefault();
+    const files = event.target.files;
 
-  //   const ipfsHash = "QmVQnSoCbCCTodGMhmnXWUb3sb7jAHQv5Z4S1ktzNdxzjz";
-  //   const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
+    const ipfsHash = "QmVQnSoCbCCTodGMhmnXWUb3sb7jAHQv5Z4S1ktzNdxzjz";
+    const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
 
-  //   const metaData = [];
-  //   for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-  //     const imgBlob = URL.createObjectURL(files[fileIndex]);
-  //     this.blobData.push({
-  //       name: files[fileIndex].name,
-  //       blob: imgBlob,
-  //       dataFile: files[fileIndex],
-  //     });
-  //     metaData.push({
-  //       image: `${ipfsGateway}/${files[fileIndex].name}`,
-  //     });
-  //   }
-  //   console.log(metaData);
+    const metaData = [];
+    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      const imgBlob = URL.createObjectURL(files[fileIndex]);
+      this.blobData.push({
+        name: files[fileIndex].name,
+        blob: imgBlob,
+        dataFile: files[fileIndex],
+      });
+      metaData.push({
+        image: `${ipfsGateway}/${files[fileIndex].name}`,
+      });
+    }
+    console.log(metaData);
 
-  //   let data = new FormData();
-  //   const testFile = new File([JSON.stringify(metaData[0])], "0.json", {
-  //     type: "application/json",
-  //   });
-  //   const testFile2 = new File([JSON.stringify(metaData[0])], "1.json", {
-  //     type: "application/json",
-  //   });
-  //   data.append(`file`, testFile, `metadata/${testFile.name}`);
-  //   data.append(`file`, testFile2, `metadata/${testFile2.name}`);
-  //   // data.append(`file`, testFile2, { filepath: `./${testFile.name}` });
+    let data = new FormData();
+    const testFile = new File([JSON.stringify(metaData[0])], "0.json", {
+      type: "application/json",
+    });
+    const testFile2 = new File([JSON.stringify(metaData[0])], "1.json", {
+      type: "application/json",
+    });
+    data.append(`file`, testFile, `metadata/${testFile.name}`);
+    data.append(`file`, testFile2, `metadata/${testFile2.name}`);
+    // data.append(`file`, testFile2, { filepath: `./${testFile.name}` });
 
-  //   console.log(testFile);
-  //   const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
-  //   axios
-  //     .post(pinataEndpoint, data, {
-  //       maxContentLength: "Infinity",
-  //       headers: {
-  //         "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-  //         pinata_api_key: "295a526cef20b63d813c",
-  //         pinata_secret_api_key:
-  //           "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
-  //       },
-  //     })
-  //     .then((res) => {
-  //       console.log(res);
-  //       console.log(data.toString());
-  //     });
+    console.log(testFile);
+    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    axios
+      .post(pinataEndpoint, data, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+          pinata_api_key: "295a526cef20b63d813c",
+          pinata_secret_api_key:
+            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
+        },
+      })
+      .then((res) => {
+        console.log(res);
+        console.log(data.toString());
+      });
 
-  //   this.setState({ file: this.blobData });
-  // };
+    this.setState({ file: this.blobData });
+  };
 
   remove_file(file_index) {
     let updated_uploadedFile = [];
