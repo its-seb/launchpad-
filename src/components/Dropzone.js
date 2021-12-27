@@ -3,6 +3,7 @@ import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
 import Dexie from "dexie";
+import Compressor from 'compressorjs';
 import { Navigate } from "react-router-dom";
 import {
   Button,
@@ -57,7 +58,7 @@ class Dropzone extends Component {
     });
   }
 
-  set_totalandcurrent_supply = async (num_of_file, metahash, jsonmetahash) => {
+  set_totalandcurrent_supply = async (num_of_file, metahash, jsonmetahash, jsonthumbnailmetahash) => {
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(this.walletAddress)
       .to(this.contractAddress)
@@ -71,6 +72,7 @@ class Dropzone extends Component {
         _supply: IconService.IconConverter.toHex(num_of_file),
         _metahash: metahash,
         _jsonfilemetahash: jsonmetahash,
+        _jsonthumbnailmetahash: jsonthumbnailmetahash
       })
       .build();
 
@@ -115,6 +117,30 @@ class Dropzone extends Component {
   //   console.log("Set JSONFILEMETAHASH", rpcResponse);
   // };
 
+  // setJSONThumbnailMetahash = async (jsonthumbnailmetahash) => {
+  //   const txObj = new IconBuilder.CallTransactionBuilder()
+  //     .from(this.walletAddress)
+  //     .to(this.contractAddress)
+  //     .stepLimit(IconConverter.toBigNumber(2000000))
+  //     .nid("0x53")
+  //     .nonce(IconConverter.toBigNumber(1))
+  //     .version(IconConverter.toBigNumber(3)) //constant
+  //     .timestamp(new Date().getTime() * 1000)
+  //     .method("setJSONThumbnailMetahash")
+  //     .params({
+  //       _jsonthumbnailmetahash: jsonthumbnailmetahash
+  //     })
+  //     .build();
+
+  //   const payload = {
+  //     jsonrpc: "2.0",
+  //     method: "icx_sendTransaction",
+  //     id: 6639,
+  //     params: IconConverter.toRawTransaction(txObj),
+  //   };
+  //   let rpcResponse = await this.connection.getJsonRpc(payload);
+  // };
+
   renderRedirect = () => {
     if (this.state.redirect) {
       return <Navigate to="/launch" />;
@@ -134,6 +160,20 @@ class Dropzone extends Component {
     event.preventDefault();
   };
 
+  handleCompressedUpload = (file) => {
+    let x = new Compressor(file, {
+      quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
+      success: (compressedResult) => {
+        // compressedResult has the compressed file.
+        // Use the compressed file to upload the images to your server.        
+        return compressedResult;
+        // console.log(compressedResult)
+        // console.log(typeof (compressedResult))
+      },
+    });
+    return x.file
+  };
+
   handleUploadFiles = async () => {
     if (this.uploadedFiles.length == 0) {
       alert("no files found, please upload file");
@@ -144,16 +184,27 @@ class Dropzone extends Component {
     //step 1 - pin image
     this.setState({ uploadMessage: "Uploading image file..." });
     let data = new FormData();
+    let data2 = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
       console.log(this.uploadedFiles[i]);
+      //For original full Resolution File
       data.append(
         `file`,
         this.uploadedFiles[i].dataFile,
         `file/${this.uploadedFiles[i].name}`
       );
+
+      //For Compressed File
+      data2.append(
+        `file`,
+        this.handleCompressedUpload(this.uploadedFiles[i].dataFile),
+        `file/${this.uploadedFiles[i].name}`
+      );
     }
 
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+
+    //For original full Resolution File
     let response = await axios
       .post(pinataEndpoint, data, {
         maxContentLength: "Infinity",
@@ -184,8 +235,23 @@ class Dropzone extends Component {
         return res;
       });
 
-    //step 2 - generate meta data json file
+    //For Compressed File
+    let response2 = await axios
+      .post(pinataEndpoint, data2, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        }
+      })
+      .then((res) => {
+        return res;
+      });
 
+    //step 2 - generate meta data json file
+    //For original full Resolution File
+    const pinataEndpoint2 = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
     this.setState({ uploadMessage: "Generating metadata file..." });
     const json_uploadfiles = { files_link: [] };
     const ipfsHash = response.data.IpfsHash;
@@ -193,7 +259,7 @@ class Dropzone extends Component {
     let mdata = new FormData();
     for (var i = 0; i < this.uploadedFiles.length; i++) {
       json_uploadfiles.files_link.push(
-        `${ipfsGateway}/${this.uploadedFiles[i].name}`
+        { 'link': `${ipfsGateway}/${this.uploadedFiles[i].name}`, 'name': `${this.uploadedFiles[i].name}` }
       );
       const mdataContent = {
         image: `${ipfsGateway}/${this.uploadedFiles[i].name}`,
@@ -213,7 +279,6 @@ class Dropzone extends Component {
     }
     console.log(json_uploadfiles);
 
-    const pinataEndpoint2 = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
     let json_upload_response = await axios
       .post(pinataEndpoint2, json_uploadfiles, {
         headers: {
@@ -224,18 +289,50 @@ class Dropzone extends Component {
       .then((response) => {
         console.log(response);
         return response.data.IpfsHash;
-        // let json_upload_hashlink = response.data.IpfsHash;
-        // console.log("yoohoo", json_upload_hashlink);
-        //work it here
-        // this.set_JSON_File_Metahash(json_upload_hashlink);
       })
       .catch((error) => {
         console.log(error);
       });
-    console.log(json_upload_response);
-    // this.set_JSON_File_Metahash(json_upload_response);
+    console.log("this is the original json full resolution image hash link:", json_upload_response);
+
+    //For Compressed File
+    const json_thumbnails = { files_link: [] };
+    const ipfsHash2 = response2.data.IpfsHash;
+    const ipfsGateway2 = `https://gateway.pinata.cloud/ipfs/${ipfsHash2}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
+    let mdata2 = new FormData();
+    for (var i = 0; i < this.uploadedFiles.length; i++) {
+      json_thumbnails.files_link.push(
+        { 'link': `${ipfsGateway2}/${this.uploadedFiles[i].name}`, 'name': `${this.uploadedFiles[i].name}` }
+      );
+      const mdataContent = {
+        image: `${ipfsGateway2}/${this.uploadedFiles[i].name}`,
+      };
+      const mdataFile = new File([JSON.stringify(mdataContent)], `${i}.json`, {
+        type: "application/json",
+      });
+      mdata2.append(`file`, mdataFile, `mdata/${i}.json`);
+    }
+    console.log(json_thumbnails);
+
+    let json_upload_response2 = await axios
+      .post(pinataEndpoint2, json_thumbnails, {
+        headers: {
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        return response.data.IpfsHash;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    console.log("this is the  json thumbnail resolution image hash link:", json_upload_response2);
+
 
     // step 3 - pin json file
+    //For original full Resolution File
     this.setState({ uploadMessage: "Uploading metadata file..." });
     let mresponse = await axios
       .post(pinataEndpoint, mdata, {
@@ -268,16 +365,15 @@ class Dropzone extends Component {
         },
       })
       .then((res) => {
-        // this.updateMetahash(res.data.IpfsHash);
         this.set_totalandcurrent_supply(
           json_uploadfiles.files_link.length,
           res.data.IpfsHash,
-          json_upload_response
+          json_upload_response,
+          json_upload_response2
         );
-        //update dexie here
         this.db.contracts.update(this.contractAddress, {
           metahash_exist: true,
-        }); //update metahash_exists
+        });
         console.log("metadata", res);
         this.setState({
           pinningJsonProgress: 20,
@@ -286,6 +382,20 @@ class Dropzone extends Component {
         localStorage.setItem("HAS_METAHASH", true);
         this.hideUploadModal();
       });
+
+    //For Compressed File
+    let mresponse2 = await axios
+      .post(pinataEndpoint, mdata2, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        }
+      })
+      .then((res) => {
+        return res
+      });
   };
 
   handleDropFiles = async (event) => {
@@ -293,6 +403,7 @@ class Dropzone extends Component {
     const files = event.dataTransfer.files;
     for (var i = 0; i < files.length; i++) {
       const imgBlob = URL.createObjectURL(files[i]);
+      console.log(imgBlob)
       this.uploadedFiles.push({
         name: files[i].name,
         blob: imgBlob,

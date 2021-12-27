@@ -371,6 +371,18 @@ input[type="number"] {
   animation: dash-check 0.9s 0.35s ease-in-out forwards;
 }
 
+/* Gallery CSS */
+img {
+  border: 1px solid #ddd; /* Gray border */
+  border-radius: 4px;  /* Rounded border */
+  padding: 5px; /* Some padding */
+  width: 150px; /* Set a small width */
+}
+
+img:hover {
+  box-shadow: 0 0 10px 8px rgba(0, 140, 186, 0.5);
+}
+
 @-webkit-keyframes dash {
   0% {
     stroke-dashoffset: 1000;
