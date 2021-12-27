@@ -44,7 +44,7 @@ export class FileComponent extends Component {
   }
   connection = new ICONexConnection();
 
-  async dragORfiles(contractAddress) { }
+  async dragORfiles(contractAddress) {}
 
   async componentDidMount() {
     if (this.walletAddress == null) {

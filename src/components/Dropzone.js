@@ -3,7 +3,7 @@ import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection from "./utils/interact.js";
 import Dexie from "dexie";
-import Compressor from 'compressorjs';
+import Compressor from "compressorjs";
 import { Navigate } from "react-router-dom";
 import {
   Button,
@@ -58,7 +58,12 @@ class Dropzone extends Component {
     });
   }
 
-  set_totalandcurrent_supply = async (num_of_file, metahash, jsonmetahash, jsonthumbnailmetahash) => {
+  set_totalandcurrent_supply = async (
+    num_of_file,
+    metahash,
+    jsonmetahash,
+    jsonthumbnailmetahash
+  ) => {
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(this.walletAddress)
       .to(this.contractAddress)
@@ -72,7 +77,7 @@ class Dropzone extends Component {
         _supply: IconService.IconConverter.toHex(num_of_file),
         _metahash: metahash,
         _jsonfilemetahash: jsonmetahash,
-        _jsonthumbnailmetahash: jsonthumbnailmetahash
+        _jsonthumbnailmetahash: jsonthumbnailmetahash,
       })
       .build();
 
@@ -165,237 +170,150 @@ class Dropzone extends Component {
       quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
       success: (compressedResult) => {
         // compressedResult has the compressed file.
-        // Use the compressed file to upload the images to your server.        
+        // Use the compressed file to upload the images to your server.
         return compressedResult;
         // console.log(compressedResult)
         // console.log(typeof (compressedResult))
       },
     });
-    return x.file
+    return x.file;
+  };
+
+  createImageFormData = (files) => {
+    let originalData = new FormData();
+    let thumbnailData = new FormData();
+    for (var i = 0; i < files.length; i++) {
+      console.log("createImageFormData", files[i]);
+      //For original full Resolution File
+      originalData.append(`file`, files[i].dataFile, `file/${files[i].name}`);
+
+      //For Compressed File
+      thumbnailData.append(
+        `file`,
+        this.handleCompressedUpload(files[i].dataFile),
+        `file/thumbnail_${files[i].name}`
+      );
+    }
+    return [originalData, thumbnailData];
+  };
+
+  pinMultipleFilesToIPFS = async (formData, displayedObjName) => {
+    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    const metadata = JSON.stringify({ name: displayedObjName });
+    formData.append("pinataMetadata", metadata);
+    let response = await axios
+      .post(pinataEndpoint, formData, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        },
+        onUploadProgress: (progressEvent) => {
+          const { loaded, total } = progressEvent;
+          console.log("total ", total, " for ", displayedObjName);
+          const currentProgress = Math.round(((loaded * 100) / total) * 0.5);
+
+          console.log(
+            "current progress for ",
+            displayedObjName,
+            currentProgress
+          );
+        },
+      })
+      .then((res) => {
+        //        console.log(displayedObjName, "   ", res);
+        return res;
+      }); //will probably have to handle error here
+    return response;
+  };
+
+  createJsonFormData = (files, ipfsHash) => {
+    let combinedJson = { files_link: [] };
+    const ipfsFolderHash = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
+    let data = new FormData();
+
+    for (var i = 0; i < files.length; i++) {
+      combinedJson.files_link.push({
+        link: `${ipfsFolderHash}/${files[i].name}`,
+        name: `${files[i].name}`,
+      });
+
+      const individualJson = {
+        image: `${ipfsFolderHash}/${this.uploadedFiles[i].name}`,
+      };
+
+      const jsonFile = new File([JSON.stringify(individualJson)], `${i}.json`, {
+        type: "application/json",
+      });
+      data.append(`file`, jsonFile, `data/${i}.json`);
+    }
+    return [combinedJson, data];
+  };
+
+  pinJsonToIPFS = async (content) => {
+    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
+    let response = await axios
+      .post(pinataEndpoint, content, {
+        headers: {
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        },
+      })
+      .then((response) => {
+        console.log("pinJsonToIPFS", response);
+        return response.data.IpfsHash;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    return response;
   };
 
   handleUploadFiles = async () => {
     if (this.uploadedFiles.length == 0) {
       alert("no files found, please upload file");
+      return;
     }
 
-    this.showUploadModal();
+    //step 1 - pin original res image
+    let [originalData, thumbnailData] = this.createImageFormData(
+      this.uploadedFiles
+    );
+    console.log("original data", originalData);
+    console.log("thumbnailData", thumbnailData);
+    let originalResponse = await this.pinMultipleFilesToIPFS(
+      originalData,
+      "original_res"
+    );
+    let thumbnailResponse = await this.pinMultipleFilesToIPFS(
+      thumbnailData,
+      "thumbnail_res"
+    );
+    console.log("original res", originalResponse);
+    console.log("thumbnail res", thumbnailResponse);
 
-    //step 1 - pin image
-    this.setState({ uploadMessage: "Uploading image file..." });
-    let data = new FormData();
-    let data2 = new FormData();
-    for (var i = 0; i < this.uploadedFiles.length; i++) {
-      console.log(this.uploadedFiles[i]);
-      //For original full Resolution File
-      data.append(
-        `file`,
-        this.uploadedFiles[i].dataFile,
-        `file/${this.uploadedFiles[i].name}`
-      );
+    //step 2 generate metadata json file
+    let [originalCombinedJson, originalJsonData] = this.createJsonFormData(
+      this.uploadedFiles,
+      originalResponse.data.IpfsHash
+    );
+    let [thumbnailCombinedJson, thumbnailJsonData] = this.createJsonFormData(
+      this.uploadedFiles,
+      thumbnailResponse.data.IpfsHash
+    );
 
-      //For Compressed File
-      data2.append(
-        `file`,
-        this.handleCompressedUpload(this.uploadedFiles[i].dataFile),
-        `file/${this.uploadedFiles[i].name}`
-      );
-    }
+    console.log("original combined Json", originalCombinedJson);
+    console.log("originalJsonData", originalJsonData);
+    console.log("thumbnailCombinedJson", thumbnailCombinedJson);
+    console.log("thumbnailJsonData", thumbnailJsonData);
 
-    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    let combjson_originalResponse = this.pinJsonToIPFS(originalCombinedJson);
+    let combjson_thumbnailResponse = this.pinJsonToIPFS(thumbnailCombinedJson);
 
-    //For original full Resolution File
-    let response = await axios
-      .post(pinataEndpoint, data, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        },
-        onUploadProgress: (progressEvent) => {
-          const { loaded, total } = progressEvent;
-          console.log("total", total);
-          const currentProgress = Math.round(((loaded * 100) / total) * 0.5);
-
-          console.log("current progress for ", currentProgress);
-          this.setState({
-            pinningImageProgress: currentProgress,
-            totalProgress: currentProgress,
-          });
-        },
-      })
-      .then((res) => {
-        console.log("file", res);
-        console.log(data.toString());
-        this.setState({
-          pinningImageProgress: 60,
-          totalProgress: 60,
-        });
-        return res;
-      });
-
-    //For Compressed File
-    let response2 = await axios
-      .post(pinataEndpoint, data2, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        }
-      })
-      .then((res) => {
-        return res;
-      });
-
-    //step 2 - generate meta data json file
-    //For original full Resolution File
-    const pinataEndpoint2 = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
-    this.setState({ uploadMessage: "Generating metadata file..." });
-    const json_uploadfiles = { files_link: [] };
-    const ipfsHash = response.data.IpfsHash;
-    const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
-    let mdata = new FormData();
-    for (var i = 0; i < this.uploadedFiles.length; i++) {
-      json_uploadfiles.files_link.push(
-        { 'link': `${ipfsGateway}/${this.uploadedFiles[i].name}`, 'name': `${this.uploadedFiles[i].name}` }
-      );
-      const mdataContent = {
-        image: `${ipfsGateway}/${this.uploadedFiles[i].name}`,
-      };
-      const mdataFile = new File([JSON.stringify(mdataContent)], `${i}.json`, {
-        type: "application/json",
-      });
-      mdata.append(`file`, mdataFile, `mdata/${i}.json`);
-      const currentProgress = Math.round(
-        ((i + 1) / this.uploadedFiles.length) * 20
-      );
-      this.setState({
-        generatingJsonProgress: currentProgress,
-        totalProgress: this.state.pinningImageProgress + currentProgress,
-      });
-      console.log("current prog at generating json", currentProgress);
-    }
-    console.log(json_uploadfiles);
-
-    let json_upload_response = await axios
-      .post(pinataEndpoint2, json_uploadfiles, {
-        headers: {
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        },
-      })
-      .then((response) => {
-        console.log(response);
-        return response.data.IpfsHash;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    console.log("this is the original json full resolution image hash link:", json_upload_response);
-
-    //For Compressed File
-    const json_thumbnails = { files_link: [] };
-    const ipfsHash2 = response2.data.IpfsHash;
-    const ipfsGateway2 = `https://gateway.pinata.cloud/ipfs/${ipfsHash2}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
-    let mdata2 = new FormData();
-    for (var i = 0; i < this.uploadedFiles.length; i++) {
-      json_thumbnails.files_link.push(
-        { 'link': `${ipfsGateway2}/${this.uploadedFiles[i].name}`, 'name': `${this.uploadedFiles[i].name}` }
-      );
-      const mdataContent = {
-        image: `${ipfsGateway2}/${this.uploadedFiles[i].name}`,
-      };
-      const mdataFile = new File([JSON.stringify(mdataContent)], `${i}.json`, {
-        type: "application/json",
-      });
-      mdata2.append(`file`, mdataFile, `mdata/${i}.json`);
-    }
-    console.log(json_thumbnails);
-
-    let json_upload_response2 = await axios
-      .post(pinataEndpoint2, json_thumbnails, {
-        headers: {
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        },
-      })
-      .then((response) => {
-        console.log(response);
-        return response.data.IpfsHash;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    console.log("this is the  json thumbnail resolution image hash link:", json_upload_response2);
-
-
-    // step 3 - pin json file
-    //For original full Resolution File
-    this.setState({ uploadMessage: "Uploading metadata file..." });
-    let mresponse = await axios
-      .post(pinataEndpoint, mdata, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        },
-        onUploadProgress: (progressEvent) => {
-          console.log(progressEvent);
-          const { loaded, total } = progressEvent;
-          console.log("total", total);
-          console.log("loaded", loaded);
-          const currentProgress = Math.round(((loaded * 100) / total) * 0.15);
-
-          console.log("current prog at pinning meta", currentProgress);
-          const newTotalProgress =
-            this.state.pinningImageProgress +
-            this.state.generatingJsonProgress +
-            currentProgress;
-          console.log("new total prog", newTotalProgress);
-          this.setState({
-            pinningJsonProgress: currentProgress,
-            totalProgress:
-              this.state.pinningImageProgress +
-              this.state.generatingJsonProgress +
-              currentProgress,
-          });
-        },
-      })
-      .then((res) => {
-        this.set_totalandcurrent_supply(
-          json_uploadfiles.files_link.length,
-          res.data.IpfsHash,
-          json_upload_response,
-          json_upload_response2
-        );
-        this.db.contracts.update(this.contractAddress, {
-          metahash_exist: true,
-        });
-        console.log("metadata", res);
-        this.setState({
-          pinningJsonProgress: 20,
-          totalProgress: 100,
-        });
-        localStorage.setItem("HAS_METAHASH", true);
-        this.hideUploadModal();
-      });
-
-    //For Compressed File
-    let mresponse2 = await axios
-      .post(pinataEndpoint, mdata2, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        }
-      })
-      .then((res) => {
-        return res
-      });
+    console.log("combined josn_original res", combjson_originalResponse);
+    console.log("combined josn_thumbnail res", combjson_thumbnailResponse);
+    //this.showUploadModal();
   };
 
   handleDropFiles = async (event) => {
@@ -403,7 +321,7 @@ class Dropzone extends Component {
     const files = event.dataTransfer.files;
     for (var i = 0; i < files.length; i++) {
       const imgBlob = URL.createObjectURL(files[i]);
-      console.log(imgBlob)
+      console.log(imgBlob);
       this.uploadedFiles.push({
         name: files[i].name,
         blob: imgBlob,

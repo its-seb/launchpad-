@@ -307,6 +307,7 @@ export class LaunchComponent extends Component {
     let data = new FormData();
     data.append("file", fileObj);
     const metadata = JSON.stringify({ name: displayedObjName });
+    data.append("pinataMetadata", metadata);
     let response = await axios
       .post(pinataEndpoint, data, {
         maxContentLength: "Infinity",
