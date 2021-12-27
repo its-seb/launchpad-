@@ -352,6 +352,57 @@ input[type="number"] {
   padding-top: 15px;
 }
 
+/* tags input css */
+.react-tagsinput {
+  background-color: #fff;
+  border: 1px solid #4b4db3;
+  overflow: hidden;
+  margin-top: 25px;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+}
+
+.react-tagsinput--focused {
+  color: #4b4db3;
+  border: 2px solid #4b4db3;
+  outline: #4b4db3;
+  box-shadow: 0 0 0 #4b4db3;
+}
+
+.react-tagsinput-tag {
+  background-color: #4b4db3;
+  border-radius: 2px;
+  border: 1px solid #4b4db3;
+  color: white;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+}
+.react-tagsinput-remove,
+.react-tagsinput-remove:hover {
+  color: white;
+}
+.react-tagsinput-remove {
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.react-tagsinput-tag a::before {
+  content: " ×";
+}
+
+.react-tagsinput-input {
+  background: transparent;
+  border: 0;
+  color: #777;
+  font-weight: 400;
+  outline: none;
+  width: 100%;
+}
+
 /* SUCCESS & ERROR CSS */
 
 .w4rAnimated_checkmark svg {

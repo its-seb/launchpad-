@@ -13,7 +13,7 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TagsInput from "react-tagsinput";
-import "react-tagsinput/react-tagsinput.css";
+import "./style.css";
 import ICONexConnection from "./utils/interact.js";
 import { PhotographIcon, XIcon } from "@heroicons/react/solid";
 import PreviewComponent from "./PreviewComponent.js";
@@ -380,6 +380,23 @@ export class LaunchComponent extends Component {
     console.log("whitelisted", whitelistedAddress);
   };
 
+  pasteSplit(data) {
+    const separators = [
+      ",",
+      ";",
+      "\\(",
+      "\\)",
+      "\\*",
+      "/",
+      ":",
+      "\\?",
+      "\n",
+      "\r",
+      " ",
+    ];
+    return data.split(new RegExp(separators.join("|"))).map((d) => d.trim());
+  }
+
   render() {
     if (this.contractAddress == null) {
       return <div></div>;
@@ -522,26 +539,13 @@ export class LaunchComponent extends Component {
                 />
               </Form.Floating>
 
-              <Form.Floating
-                className="mb-3 unselectable"
-                style={{ marginTop: "25px" }}
-              >
-                <Form.Control
-                  as="textarea"
-                  className="modal-form-control"
-                  id="tbWhitelistedAddress"
-                  rows={3}
-                  style={{ height: "100%" }}
-                />
-                <label
-                  htmlFor="tbWhitelistedAddress"
-                  style={{ color: "#525252" }}
-                >
-                  Whitelisted Address - optional
-                </label>
-              </Form.Floating>
-
-              <TagsInput value={this.state.tags} onChange={this.handleChange} />
+              <TagsInput
+                value={this.state.tags}
+                onChange={this.handleChange}
+                pasteSplit={this.pasteSplit}
+                addOnPaste="true"
+                inputProps={{ placeholder: "Add a whitelisted address" }}
+              />
               <Button
                 id="btnSave"
                 className="modal-form-submit"
