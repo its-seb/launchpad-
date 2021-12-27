@@ -145,7 +145,7 @@ class Dropzone extends Component {
       thumbnailData.append(
         `file`,
         this.handleCompressedUpload(files[i].dataFile),
-        `file/thumbnail_${files[i].name}`
+        `file/${files[i].name}`
       );
     }
     return [originalData, thumbnailData];

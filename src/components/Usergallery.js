@@ -4,7 +4,11 @@ export class Usergallery extends Component {
     render() {
         return (
             <div>
-                Your owned NFT from Collection:
+                <h1>Your owned NFT from Collection:</h1>
+                <h1>Your owned NFT from Collection:</h1>
+                <div>
+                    Hello
+                </div>
             </div>
         )
     }

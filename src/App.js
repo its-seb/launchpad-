@@ -24,6 +24,8 @@ class App extends Component {
     });
     this.state = {
       walletAddress: null,
+      user_contract_address: null,
+      user_walletaddress: null,
     };
   }
 
@@ -32,6 +34,10 @@ class App extends Component {
     if (localStorage.getItem("USER_WALLET_ADDRESS") != null) {
       document.getElementById("btnConnectWallet").innerHTML = "sign out";
     }
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    this.setState({ user_contract_address: urlParams.get('collection') });
+    this.setState({ user_walletaddress: urlParams.get('walletaddress') });
   }
 
   handleWalletEvent = async (event) => {
@@ -74,46 +80,56 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App" style={{ backgroundColor: "#F2F2F2" }}>
-        <Router>
-          <div style={{ display: "flex", width: "100%", height: "100%" }}>
-            <SideNav />
+      <div style={{ backgroundColor: "#F2F2F2", height: "100vh" }}>
+        {this.state.user_contract_address != null && this.state.user_walletaddress != null ? (
+          <Router>
+            <Routes>
+              <Route
+                exact
+                element={<Usergallery pageTitle="Usergallery" />}
+                path="/Usergallery"
+              ></Route>
+            </Routes>
+          </Router>) : (
 
-            <div className="pageContent">
-              <div className="headerContent">
-                <text className="pageTitle unselectable" id="_pageTitle"></text>
-                <Button id="btnConnectWallet" onClick={this.handleWalletEvent}>
-                  connect wallet
-                </Button>
+          <div className="App">
+            <Router>
+              <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                <SideNav />
+                <div className="pageContent">
+                  <div className="headerContent">
+                    <text className="pageTitle unselectable" id="_pageTitle"></text>
+                    <Button id="btnConnectWallet" onClick={this.handleWalletEvent}>
+                      connect wallet
+                    </Button>
+                  </div>
+                  <div className="mainContent">
+                    <Routes>
+                      <Route
+                        exact
+                        element={
+                          <CollectionComponent
+                            pageTitle="Collection"
+                            walletAddress={this.state.walletAddress}
+                          />
+                        }
+                        path="/"
+                      ></Route>
+                      <Route
+                        exact
+                        element={<FileComponent pageTitle="Files" />}
+                        path="/files"
+                      ></Route>
+                      <Route
+                        exact
+                        element={<LaunchComponent pageTitle="Launch" />}
+                        path="/launch"
+                      ></Route>
+                    </Routes>
+                  </div>
+                </div>
               </div>
-              <div className="mainContent">
-                <Routes>
-                  <Route
-                    exact
-                    element={
-                      <CollectionComponent
-                        pageTitle="Collection"
-                        walletAddress={this.state.walletAddress}
-                      />
-                    }
-                    path="/"
-                  ></Route>
-                  <Route
-                    exact
-                    element={<FileComponent pageTitle="Files" />}
-                    path="/files"
-                  ></Route>
-                  <Route
-                    exact
-                    element={<LaunchComponent pageTitle="Launch" />}
-                    path="/launch"
-                  ></Route>
-                </Routes>
-              </div>
-            </div>
-          </div>
-        </Router>
-
+            </Router></div>)}
       </div>
     );
   }

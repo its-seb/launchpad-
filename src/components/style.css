@@ -383,7 +383,8 @@ input[type="number"] {
   border: 1px solid #ddd; /* Gray border */
   border-radius: 4px; /* Rounded border */
   padding: 5px; /* Some padding */
-  width: 150px; /* Set a small width */
+  max-width: 250px; /* Set a small width */
+  margin-bottom: 4px;
 }
 
 #gallery > div > a > img:hover {
@@ -392,6 +393,16 @@ input[type="number"] {
 
 #gallery {
   overflow: auto;
+}
+
+#gallery > div > a {
+  text-decoration: none;
+  color: #494a66;
+  font-weight: 500;
+}
+
+#gallery > div > a > span {
+  display: block;
 }
 
 @-webkit-keyframes dash {
