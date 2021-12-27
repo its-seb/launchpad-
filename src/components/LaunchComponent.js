@@ -10,8 +10,12 @@ import {
   Card,
   Image,
 } from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import TagsInput from "react-tagsinput";
+import "react-tagsinput/react-tagsinput.css";
 import ICONexConnection from "./utils/interact.js";
-import { PhotographIcon } from "@heroicons/react/solid";
+import { PhotographIcon, XIcon } from "@heroicons/react/solid";
 import PreviewComponent from "./PreviewComponent.js";
 import axios from "axios";
 const { IconConverter, IconBuilder, HttpProvider } = IconService;
@@ -27,6 +31,8 @@ export class LaunchComponent extends Component {
       collectionCoverFile: "",
       isUploaded: false,
       showAdvancedSettings: false,
+      selectedDate: "",
+      tags: [],
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -39,6 +45,11 @@ export class LaunchComponent extends Component {
     this.pinataSecret = localStorage.getItem("PINATA_SECRET");
     this.connection = new ICONexConnection();
   }
+
+  handleChange = (tags) => {
+    this.setState({ tags: tags });
+    //this.setState({ tags: tags });
+  };
 
   componentDidMount() {
     if (this.walletAddress == null) {
@@ -355,6 +366,20 @@ export class LaunchComponent extends Component {
     let rpcResponse = await this.connection.getJsonRpc(payload);
   };
 
+  handleSaveOptional = (event) => {
+    event.preventDefault();
+
+    let timestamp;
+    if (this.state.selectedDate != "" || this.state.selectedDate != null) {
+      timestamp = this.state.selectedDate.getTime() * 1000;
+    }
+    console.log("timestamp", timestamp);
+    let whitelistedAddress = document.getElementById(
+      "tbWhitelistedAddress"
+    ).value; //validate for json
+    console.log("whitelisted", whitelistedAddress);
+  };
+
   render() {
     if (this.contractAddress == null) {
       return <div></div>;
@@ -480,24 +505,21 @@ export class LaunchComponent extends Component {
               </Col>
             </Row>
           </Container>
-          <Modal
-            show={this.state.showAdvancedSettings}
-            onHide={this.hideSettingsModal}
-          >
+          <Modal show={this.state.showAdvancedSettings}>
             <div className="advanced-settings-modal">
               <span className="modal-title">Advanced Settings</span>
-              <Form.Floating
-                className="mb-3 unselectable"
-                style={{ marginTop: "10px" }}
-              >
-                <Form.Control
-                  id="tbLaunchDate"
-                  type="date"
+              <XIcon className="close-modal" onClick={this.hideSettingsModal} />
+              <Form.Floating style={{ marginTop: "10px" }}>
+                <DatePicker
+                  timeInputLabel="Time:"
+                  dateFormat="MM/dd/yyyy h:mm aa"
+                  showTimeInput
                   className="modal-form-control"
+                  placeholderText="Launch Date - optional"
+                  selected={this.state.selectedDate}
+                  minDate={new Date()}
+                  onChange={(date) => this.setState({ selectedDate: date })}
                 />
-                <label htmlFor="tbLaunchDate" style={{ color: "#525252" }}>
-                  Launch Date - <i>optional</i>
-                </label>
               </Form.Floating>
 
               <Form.Floating
@@ -515,13 +537,16 @@ export class LaunchComponent extends Component {
                   htmlFor="tbWhitelistedAddress"
                   style={{ color: "#525252" }}
                 >
-                  Whitelisted Address - <i>optional</i>
+                  Whitelisted Address - optional
                 </label>
               </Form.Floating>
+
+              <TagsInput value={this.state.tags} onChange={this.handleChange} />
               <Button
                 id="btnSave"
                 className="modal-form-submit"
                 style={{ padding: "0.5rem", marginBottom: "3px" }}
+                onClick={this.handleSaveOptional}
               >
                 save
               </Button>

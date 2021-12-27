@@ -171,9 +171,16 @@
   color: #494a66;
 }
 
-.modal-form-control {
+.modal-form-control,
+.react-datepicker__input-container > input {
   color: #4b4db3;
   border: 1px solid #4b4db3;
+}
+
+.react-datepicker__input-container > input {
+  padding: 1rem 0.75rem;
+  width: 100%;
+  border-radius: 0.25rem;
 }
 
 .modal-form-control:focus,

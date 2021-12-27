@@ -1,7 +1,9 @@
 import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
-import ICONexConnection from "./utils/interact.js";
+import ICONexConnection, { sleep } from "./utils/interact.js";
+import FailureComponent from "./FailureComponent.js";
+import SuccessComponent from "./SuccessComponent.js";
 import Dexie from "dexie";
 import Compressor from "compressorjs";
 import { Navigate } from "react-router-dom";
@@ -12,7 +14,7 @@ import {
   Row,
   Col,
   Card,
-  ProgressBar,
+  Spinner,
 } from "react-bootstrap";
 import { PhotographIcon } from "@heroicons/react/solid";
 import "./global.css";
@@ -92,59 +94,11 @@ class Dropzone extends Component {
     console.log("Total and Current Supply payload", payload);
     let rpcResponse = await this.connection.getJsonRpc(payload);
     console.log("Total and Current Supply payload rpcresponse", rpcResponse);
-    alert("upload complete");
+    //alert("upload complete");
 
     this.getTotalSupply();
-    this.setState({ redirect: true });
+    return rpcResponse;
   };
-
-  // set_JSON_File_Metahash = async (metahash) => {
-  //   console.log("trying to set the json file metahash", metahash)
-  //   const txObj = new IconBuilder.CallTransactionBuilder()
-  //     .from(this.walletAddress)
-  //     .to(this.contractAddress)
-  //     .stepLimit(IconConverter.toBigNumber(2000000))
-  //     .nid("0x53")
-  //     .nonce(IconConverter.toBigNumber(1))
-  //     .version(IconConverter.toBigNumber(3)) //constant
-  //     .timestamp(new Date().getTime() * 1000)
-  //     .method("setJSONFileMetahash")
-  //     .params({ _jsonfilemetahash: metahash })
-  //     .build();
-
-  //   const payload = {
-  //     jsonrpc: "2.0",
-  //     method: "icx_sendTransaction",
-  //     id: 6639,
-  //     params: IconConverter.toRawTransaction(txObj),
-  //   };
-  //   let rpcResponse = await this.connection.getJsonRpc(payload);
-  //   console.log("Set JSONFILEMETAHASH", rpcResponse);
-  // };
-
-  // setJSONThumbnailMetahash = async (jsonthumbnailmetahash) => {
-  //   const txObj = new IconBuilder.CallTransactionBuilder()
-  //     .from(this.walletAddress)
-  //     .to(this.contractAddress)
-  //     .stepLimit(IconConverter.toBigNumber(2000000))
-  //     .nid("0x53")
-  //     .nonce(IconConverter.toBigNumber(1))
-  //     .version(IconConverter.toBigNumber(3)) //constant
-  //     .timestamp(new Date().getTime() * 1000)
-  //     .method("setJSONThumbnailMetahash")
-  //     .params({
-  //       _jsonthumbnailmetahash: jsonthumbnailmetahash
-  //     })
-  //     .build();
-
-  //   const payload = {
-  //     jsonrpc: "2.0",
-  //     method: "icx_sendTransaction",
-  //     id: 6639,
-  //     params: IconConverter.toRawTransaction(txObj),
-  //   };
-  //   let rpcResponse = await this.connection.getJsonRpc(payload);
-  // };
 
   renderRedirect = () => {
     if (this.state.redirect) {
@@ -276,7 +230,9 @@ class Dropzone extends Component {
       return;
     }
 
+    this.showUploadModal();
     //step 1 - pin original res image
+    this.setState({ uploadMessage: "pinning image files to pinata..." });
     let [originalData, thumbnailData] = this.createImageFormData(
       this.uploadedFiles
     );
@@ -294,6 +250,7 @@ class Dropzone extends Component {
     console.log("thumbnail res", thumbnailResponse);
 
     //step 2 generate metadata json file
+    this.setState({ uploadMessage: "pinning metadata to pinata..." });
     let [originalCombinedJson, originalJsonData] = this.createJsonFormData(
       this.uploadedFiles,
       originalResponse.data.IpfsHash
@@ -308,12 +265,47 @@ class Dropzone extends Component {
     console.log("thumbnailCombinedJson", thumbnailCombinedJson);
     console.log("thumbnailJsonData", thumbnailJsonData);
 
-    let combjson_originalResponse = this.pinJsonToIPFS(originalCombinedJson);
-    let combjson_thumbnailResponse = this.pinJsonToIPFS(thumbnailCombinedJson);
+    let combjson_originalResponse = await this.pinJsonToIPFS(
+      originalCombinedJson
+    );
+    let combjson_thumbnailResponse = await this.pinJsonToIPFS(
+      thumbnailCombinedJson
+    );
 
     console.log("combined josn_original res", combjson_originalResponse);
     console.log("combined josn_thumbnail res", combjson_thumbnailResponse);
+
+    //upload metadata
+    let metadata_response = await this.pinMultipleFilesToIPFS(
+      originalJsonData,
+      "json_metadata"
+    );
+    console.log("metadata_response", metadata_response);
+
     //this.showUploadModal();
+
+    //update contract
+    this.setState({ uploadMessage: "updating score..." });
+    let rpcResponse = await this.set_totalandcurrent_supply(
+      this.uploadedFiles.length,
+      metadata_response.data.IpfsHash,
+      combjson_originalResponse,
+      combjson_thumbnailResponse
+    ).then(() => {
+      this.db.contracts.update(this.contractAddress, {
+        metahash_exist: true,
+      });
+      localStorage.setItem("HAS_METAHASH", true);
+      document.getElementById("deploymentLoading").style.display = "none";
+      document.getElementById("deploymentSuccess").style.display = "block";
+      this.setState({ uploadMessage: "files uploaded successfully!" });
+    });
+
+    await sleep(1000);
+    this.setState({ uploadMessage: "redirecting to launchpage..." });
+
+    await sleep(1500);
+    this.setState({ redirect: true });
   };
 
   handleDropFiles = async (event) => {
@@ -354,57 +346,6 @@ class Dropzone extends Component {
         console.log("Total Supply Error", error);
         Promise.resolve({ error });
       });
-  };
-  handleDropFolder = async (event) => {
-    event.preventDefault();
-    const files = event.target.files;
-
-    const ipfsHash = "QmVQnSoCbCCTodGMhmnXWUb3sb7jAHQv5Z4S1ktzNdxzjz";
-    const ipfsGateway = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
-
-    const metaData = [];
-    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      const imgBlob = URL.createObjectURL(files[fileIndex]);
-      this.blobData.push({
-        name: files[fileIndex].name,
-        blob: imgBlob,
-        dataFile: files[fileIndex],
-      });
-      metaData.push({
-        image: `${ipfsGateway}/${files[fileIndex].name}`,
-      });
-    }
-    console.log(metaData);
-
-    let data = new FormData();
-    const testFile = new File([JSON.stringify(metaData[0])], "0.json", {
-      type: "application/json",
-    });
-    const testFile2 = new File([JSON.stringify(metaData[0])], "1.json", {
-      type: "application/json",
-    });
-    data.append(`file`, testFile, `metadata/${testFile.name}`);
-    data.append(`file`, testFile2, `metadata/${testFile2.name}`);
-    // data.append(`file`, testFile2, { filepath: `./${testFile.name}` });
-
-    console.log(testFile);
-    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
-    axios
-      .post(pinataEndpoint, data, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-          pinata_api_key: "295a526cef20b63d813c",
-          pinata_secret_api_key:
-            "f57c393914f6a30ac78b7a8641726a62c7285d12014adfe56e52686d5fdb03ff",
-        },
-      })
-      .then((res) => {
-        console.log(res);
-        console.log(data.toString());
-      });
-
-    this.setState({ file: this.blobData });
   };
 
   remove_file(file_index) {
@@ -496,16 +437,6 @@ class Dropzone extends Component {
             </Card>
           </Col>
         </Row>
-        <input
-          type="file"
-          id="files"
-          ref={(input) => (this.fileUploader = input)}
-          style={{ display: "none" }}
-          webkitdirectory=""
-          multiple=""
-          directory=""
-          onChange={this.handleDropFolder}
-        ></input>
         <Button
           id="btnUpload"
           style={{ marginTop: "20px", padding: "0.5rem" }}
@@ -515,22 +446,16 @@ class Dropzone extends Component {
         </Button>
         <Modal show={this.state.show}>
           <div style={{ padding: "25px 25px" }}>
-            <span
-              style={{
-                fontSize: "larger",
-                fontWeight: "bold",
-                color: "#525252",
-              }}
-            >
-              {this.state.uploadMessage}
-            </span>
-            <ProgressBar
-              id="pbUpload"
-              animated
-              style={{ marginTop: "15px" }}
-              now={this.state.totalProgress}
-              label={`${this.state.totalProgress}%`}
-            ></ProgressBar>
+            <div id="loading-container" style={{ display: "block" }}>
+              <Spinner
+                animation="border"
+                id="deploymentLoading"
+                style={{ display: "block" }}
+              ></Spinner>
+              <SuccessComponent id="deploymentSuccess" />
+              <FailureComponent id="deploymentFailure" />
+              <span id="deployText">{this.state.uploadMessage}</span>
+            </div>
           </div>
         </Modal>
         {this.renderRedirect()}
