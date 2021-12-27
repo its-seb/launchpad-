@@ -384,6 +384,9 @@ class Dropzone extends Component {
                 style={{
                   paddingBottom: "10px",
                   paddingTop: this.uploadedFiles.length == 0 ? "0px" : "5px",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  maxHeight: "50vh",
                 }}
               >
                 <div id="bruh">
