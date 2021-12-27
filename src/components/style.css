@@ -456,6 +456,18 @@ input[type="number"] {
   display: block;
 }
 
+/* User Gallery CSS */
+#usergallery > h1 {
+  text-align: center;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+#usergallery > div {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 @-webkit-keyframes dash {
   0% {
     stroke-dashoffset: 1000;

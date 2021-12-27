@@ -86,7 +86,7 @@ class App extends Component {
             <Routes>
               <Route
                 exact
-                element={<Usergallery pageTitle="Usergallery" />}
+                element={<Usergallery pageTitle="Usergallery" contract_address={this.state.user_contract_address} wallet_address={this.state.user_walletaddress} />}
                 path="/Usergallery"
               ></Route>
             </Routes>
