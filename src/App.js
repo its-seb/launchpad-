@@ -8,6 +8,7 @@ import Dexie from "dexie";
 import CollectionComponent from "./components/CollectionComponent.js";
 import FileComponent from "./components/FileComponent.js";
 import LaunchComponent from "./components/LaunchComponent.js";
+import Usergallery from "./components/Usergallery";
 import { Button } from "react-bootstrap";
 import ICONexConnection from "./components/utils/interact.js";
 
@@ -112,6 +113,7 @@ class App extends Component {
             </div>
           </div>
         </Router>
+
       </div>
     );
   }
