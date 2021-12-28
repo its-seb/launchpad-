@@ -10,7 +10,7 @@ class PreviewComponent extends Component {
       collectionName: this.props.previewData.collectionName,
       nftMintPrice: this.props.previewData.nftMintPrice,
       collectionCover: this.props.previewData.collectionCover,
-      totalCost: 0,
+      totalCost: this.props.previewData.nftMintPrice,
     };
   }
 
@@ -57,7 +57,7 @@ class PreviewComponent extends Component {
                   src={this.state.collectionCover}
                   style={{
                     backgroundColor: "#323232",
-                    height: "100%",
+                    width: "100%",
                   }}
                 ></Image>
               </div>

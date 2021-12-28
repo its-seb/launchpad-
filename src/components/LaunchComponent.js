@@ -36,6 +36,7 @@ export class LaunchComponent extends Component {
       selectedDate: null,
       tags: [],
       modalStatusText: "publishing launch site...",
+      showLoadingModal: false,
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -54,7 +55,30 @@ export class LaunchComponent extends Component {
     this.setState({ tags: tags });
   };
 
-  componentDidMount() {
+  executeCall = async (contractAddress, method) => {
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(this.contractAddress)
+      .method(method)
+      .build();
+
+    console.log(callObj);
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        console.log("then response", response);
+        return response;
+      })
+      .catch((error) => {
+        console.log("catch error", error);
+        Promise.resolve({ error });
+      });
+    return result;
+  };
+
+  async componentDidMount() {
     document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     if (this.walletAddress == null) {
       alert("Please connect your wallet.");
@@ -74,8 +98,42 @@ export class LaunchComponent extends Component {
       return;
     }
 
+    let response = await this.executeCall(this.contractAddress, "getSiteInfo");
+    if (Object.keys(response).length != 0) {
+      //site info set
+      document.getElementById("tbCollectionName").value =
+        response.collectionTitle;
+
+      let _nftMintPrice = IconConverter.toNumber(response.mintCost / 10 ** 18);
+      document.getElementById("tbMintPrice").value = _nftMintPrice;
+
+      this.setState({
+        collectionCover: response.coverImage,
+        collectionName: response.collectionTitle,
+        nftMintPrice: _nftMintPrice,
+      });
+    }
+
     //setState({tags: tags})
+    //getSiteInfo
   }
+
+  // async componentWillReceiveProps(props) {
+  //   let response = await this.executeCall(this.contractAddress, "getSiteInfo");
+  //   if (Object.keys(response).length != 0) {
+  //     //site info set
+  //     document.getElementById("tbCollectionName").value =
+  //       response.collectionTitle;
+
+  //     let _nftMintPrice = IconConverter.toNumber(response.mintCost) / 10 ** 18;
+  //     document.getElementById("tbMintPrice").value = _nftMintPrice;
+  //     this.setState({
+  //       collectionCover: response.coverImage,
+  //       collectionName: response.collectionTitle,
+  //       nftMintPrice: _nftMintPrice,
+  //     });
+  //   }
+  // }
 
   //reflect updates immediately on change
   handleCollectionName = () => {
@@ -142,6 +200,8 @@ export class LaunchComponent extends Component {
       return;
     }
 
+    this.setState({ showLoadingModal: true });
+
     //upload collection cover to pinata
     let response = await this.pinSingleFileToIPFS(
       this.state.collectionCoverFile,
@@ -162,7 +222,7 @@ export class LaunchComponent extends Component {
           crossorigin="anonymous"
         />
         <link
-          href="https://gateway.pinata.cloud/ipfs/QmbLteaJBbt4evWx8LY4CFWj1h5DwEP2bcYup8p7iGthVE?filename=app.css"
+          href="https://gateway.pinata.cloud/ipfs/QmeqQqq7GLgaEr8cPcsqxRCe6ZyhoEc3AtPMqjyvoqsYoM?filename=app.css"
           rel="stylesheet"
         />
       </head>
@@ -182,7 +242,7 @@ export class LaunchComponent extends Component {
               <div class="preview-cover-image">
                 <img
                   src="https://gateway.pinata.cloud/ipfs/${collectionCoverHash}"
-                  style="background-color: rgb(50, 50, 50); height: 100%"
+                  style="background-color: rgb(50, 50, 50); width: 100%"
                 />
               </div>
               <div class="preview-price">
@@ -216,7 +276,7 @@ export class LaunchComponent extends Component {
         <script>
           var IconService = window["icon-sdk-js"];
           var IconConverter = IconService.Converter;
-          let perNftCost = 10;
+          let perNftCost = ${mintPrice};
           let walletAddress;
           const handleQuantity = (eventType) => {
             let inputElement = document.getElementById("mint_qty");
@@ -229,6 +289,7 @@ export class LaunchComponent extends Component {
               let min = 1;
               inputElement.value = inputValue == min ? min : inputValue - 1;
             }
+            document.getElementById("totalMintCost").innerText = inputElement.value * perNftCost
           };
 
           const mintNft = () => {
@@ -313,9 +374,8 @@ export class LaunchComponent extends Component {
     });
 
     let dappResponse = await this.pinSingleFileToIPFS(htmlFile, "dapp");
-    console.log(
-      `https://gateway.pinata.cloud/ipfs/${dappResponse.data.IpfsHash}`
-    );
+    let publishedDapp = `https://gateway.pinata.cloud/ipfs/${dappResponse.data.IpfsHash}`;
+    console.log(publishedDapp);
 
     this.setState({ modalStatusText: "updating score..." });
     //set siteInfo
@@ -325,12 +385,20 @@ export class LaunchComponent extends Component {
       "setSiteInfo",
       {
         _collectionTitle: collectionName,
-        _mintCost: IconConverter.toHex(mintPrice * 10 ** 18),
-        _coverImage: collectionCover,
-        _launchDate: IconConverter.toHex(new Date().getTime() * 1000),
+        _mintCost: IconConverter.toHex(mintPrice),
+        _coverImage: `https://gateway.pinata.cloud/ipfs/${collectionCoverHash}`,
       }
     ).then(() => {
-      this.setState({ modalStatusText: "" });
+      document.getElementById("publishLoading").style.display = "none";
+      document.getElementById("publishSuccess").style.display = "block";
+      document.getElementById("close-loading-modal").style.display = "block";
+      this.setState({
+        modalStatusText: (
+          <a href={publishedDapp} target="_blank" rel="noreferrer">
+            view launch site
+          </a>
+        ),
+      });
     });
   };
 
@@ -556,7 +624,10 @@ export class LaunchComponent extends Component {
                 </Button>
               </Col>
               <Col xs={8} md={8} lg={8}>
-                <PreviewComponent previewData={this.state} />
+                <PreviewComponent
+                  previewData={this.state}
+                  previewSiteInfo={this.siteInfo}
+                />
               </Col>
             </Row>
           </Container>
@@ -596,17 +667,23 @@ export class LaunchComponent extends Component {
               </Button>
             </div>
           </Modal>
-          <Modal show={false}>
+          <Modal show={this.state.showLoadingModal}>
+            <XIcon
+              id="close-loading-modal"
+              className="close-modal"
+              onClick={() => this.setState({ showLoadingModal: false })}
+              style={{ position: "absolute", right: "1rem", display: "none" }}
+            />
             <div style={{ padding: "25px 25px" }}>
               <div id="loading-container" style={{ display: "block" }}>
                 <Spinner
                   animation="border"
-                  id="deploymentLoading"
+                  id="publishLoading"
                   style={{ display: "block" }}
                 ></Spinner>
-                <SuccessComponent id="deploymentSuccess" />
-                <FailureComponent id="deploymentFailure" />
-                <span id="deployText">{this.state.modalStatusText}</span>
+                <SuccessComponent id="publishSuccess" />
+                <FailureComponent id="publishFailure" />
+                <span id="publishText">{this.state.modalStatusText}</span>
               </div>
             </div>
           </Modal>

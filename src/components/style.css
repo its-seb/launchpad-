@@ -405,6 +405,11 @@ input[type="number"] {
   width: 100%;
 }
 
+#publishText > a {
+  text-decoration: none;
+  color: #494a66;
+}
+
 /* SUCCESS & ERROR CSS */
 
 .w4rAnimated_checkmark svg {

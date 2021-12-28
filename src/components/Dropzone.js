@@ -291,8 +291,8 @@ class Dropzone extends Component {
         metahash_exist: true,
       });
       localStorage.setItem("HAS_METAHASH", true);
-      document.getElementById("deploymentLoading").style.display = "none";
-      document.getElementById("deploymentSuccess").style.display = "block";
+      document.getElementById("uploadLoading").style.display = "none";
+      document.getElementById("uploadSuccess").style.display = "block";
       this.setState({ uploadMessage: "files uploaded successfully!" });
     });
 
@@ -448,12 +448,12 @@ class Dropzone extends Component {
             <div id="loading-container" style={{ display: "block" }}>
               <Spinner
                 animation="border"
-                id="deploymentLoading"
+                id="uploadLoading"
                 style={{ display: "block" }}
               ></Spinner>
-              <SuccessComponent id="deploymentSuccess" />
-              <FailureComponent id="deploymentFailure" />
-              <span id="deployText">{this.state.uploadMessage}</span>
+              <SuccessComponent id="uploadSuccess" />
+              <FailureComponent id="uploadFailure" />
+              <span id="uploadText">{this.state.uploadMessage}</span>
             </div>
           </div>
         </Modal>
