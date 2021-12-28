@@ -467,6 +467,31 @@ input[type="number"] {
   margin-left: 10px;
   margin-right: 10px;
 }
+#usergallery > div > div {
+  text-align: center;
+}
+
+#usergallery > div > div > a > img:hover {
+  box-shadow: 0 0 10px 8px rgba(0, 140, 186, 0.5);
+}
+
+#usergallery > div > div > a > span {
+  text-align: center;
+  display: block;
+}
+
+#usergallery > div > div > a > img {
+  border: 1px solid #ddd; /* Gray border */
+  border-radius: 4px; /* Rounded border */
+  padding: 5px; /* Some padding */
+  max-width: 500px; /* Set a small width */
+}
+
+#usergallery > div > div > a {
+  text-decoration: none;
+  color: #494a66;
+  font-weight: 500;
+}
 
 @-webkit-keyframes dash {
   0% {

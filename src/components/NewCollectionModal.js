@@ -44,7 +44,7 @@ class NewCollectionModal extends Component {
     }
 
     const contractContent = await fetchContractContent(
-      "https://gateway.pinata.cloud/ipfs/QmRXWzaro2GEWE4kFQP6Zpuh2twsSEenxk1psge1VBeJZ4"
+      "https://gateway.pinata.cloud/ipfs/QmRCVj2rv4yp4E6gVDbte3mCWXGcmyy4RvtgefYtr1d4XL"
     );
 
     let collectionContainer = document.getElementById(

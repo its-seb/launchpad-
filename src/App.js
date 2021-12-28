@@ -80,7 +80,7 @@ class App extends Component {
 
   render() {
     return (
-      <div style={{ backgroundColor: "#F2F2F2", height: "100vh" }}>
+      <div style={{ backgroundColor: "#F2F2F2", height: "auto" }}>
         {this.state.user_contract_address != null && this.state.user_walletaddress != null ? (
           <Router>
             <Routes>
