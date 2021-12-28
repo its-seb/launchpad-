@@ -14,10 +14,6 @@ class PreviewComponent extends Component {
     };
   }
 
-  componentDidMount() {
-    console.log(this.state.collectionCover);
-  }
-
   componentWillReceiveProps(props) {
     let inputElement = document.getElementById("mint_qty");
     this.setState({

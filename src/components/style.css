@@ -322,7 +322,7 @@ input[type="number"] {
 .spinner-border {
   width: 5rem;
   height: 5rem;
-  color: #4b4db3;
+  color: #494a66;
   text-align: center;
   margin: auto;
 }
@@ -405,7 +405,7 @@ input[type="number"] {
   width: 100%;
 }
 
-#publishText > a {
+#publishAnchor {
   text-decoration: none;
   color: #494a66;
 }

@@ -14,7 +14,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TagsInput from "react-tagsinput";
 import "./style.css";
-import ICONexConnection from "./utils/interact.js";
+import ICONexConnection, { sleep } from "./utils/interact.js";
 import { PhotographIcon, XIcon } from "@heroicons/react/solid";
 import PreviewComponent from "./PreviewComponent.js";
 import FailureComponent from "./FailureComponent.js";
@@ -118,22 +118,22 @@ export class LaunchComponent extends Component {
     //getSiteInfo
   }
 
-  // async componentWillReceiveProps(props) {
-  //   let response = await this.executeCall(this.contractAddress, "getSiteInfo");
-  //   if (Object.keys(response).length != 0) {
-  //     //site info set
-  //     document.getElementById("tbCollectionName").value =
-  //       response.collectionTitle;
+  async componentWillReceiveProps(props) {
+    let response = await this.executeCall(this.contractAddress, "getSiteInfo");
+    if (Object.keys(response).length != 0) {
+      //site info set
+      document.getElementById("tbCollectionName").value =
+        response.collectionTitle;
 
-  //     let _nftMintPrice = IconConverter.toNumber(response.mintCost) / 10 ** 18;
-  //     document.getElementById("tbMintPrice").value = _nftMintPrice;
-  //     this.setState({
-  //       collectionCover: response.coverImage,
-  //       collectionName: response.collectionTitle,
-  //       nftMintPrice: _nftMintPrice,
-  //     });
-  //   }
-  // }
+      let _nftMintPrice = IconConverter.toNumber(response.mintCost) / 10 ** 18;
+      document.getElementById("tbMintPrice").value = _nftMintPrice;
+      this.setState({
+        collectionCover: response.coverImage,
+        collectionName: response.collectionTitle,
+        nftMintPrice: _nftMintPrice,
+      });
+    }
+  }
 
   //reflect updates immediately on change
   handleCollectionName = () => {
@@ -388,17 +388,18 @@ export class LaunchComponent extends Component {
         _mintCost: IconConverter.toHex(mintPrice),
         _coverImage: `https://gateway.pinata.cloud/ipfs/${collectionCoverHash}`,
       }
-    ).then(() => {
+    ).then(async () => {
       document.getElementById("publishLoading").style.display = "none";
       document.getElementById("publishSuccess").style.display = "block";
       document.getElementById("close-loading-modal").style.display = "block";
       this.setState({
-        modalStatusText: (
-          <a href={publishedDapp} target="_blank" rel="noreferrer">
-            view launch site
-          </a>
-        ),
+        modalStatusText: "launch site published successfully!",
       });
+      await sleep(1500);
+      window.open(
+        `https://gateway.pinata.cloud/ipfs/${collectionCoverHash}`,
+        "_blank"
+      );
     });
   };
 
@@ -672,7 +673,7 @@ export class LaunchComponent extends Component {
               id="close-loading-modal"
               className="close-modal"
               onClick={() => this.setState({ showLoadingModal: false })}
-              style={{ position: "absolute", right: "1rem", display: "none" }}
+              style={{ position: "absolute", right: "1rem", display: "block" }}
             />
             <div style={{ padding: "25px 25px" }}>
               <div id="loading-container" style={{ display: "block" }}>
