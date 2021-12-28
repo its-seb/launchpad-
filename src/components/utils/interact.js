@@ -17,23 +17,6 @@ class ICONexConnection {
     return wallet_address;
   }
 
-  interact_with_contract(address) {
-    console.log(address);
-    // var callTransactionBuilder = new IconBuilder.CallTransactionBuilder()
-    // let from_address = localStorage.getItem("USER_WALLET_ADDRESS");
-    // var callTransactionData = callTransactionBuilder
-    //   .from(from_address)
-    //   .to(address)
-    //   .nid(0x53) //try big number if cmi
-    //   .nonce(IconConverter.toBigNumber(1))
-    //   .timestamp((new Date()).getTime() * 1000)
-    //   .stepLimit(IconConverter.toBigNumber('1000000'))
-    //   .version(IconConverter.toBigNumber('3'))
-    //   .method('mint')
-    //   .params({ _id: '', _supply: '', _uri: '' })
-    //   .build()
-  }
-
   async testMint(contractAddress) {
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(cfg.LOCAL_WALLET_ADDRESS)
@@ -84,8 +67,9 @@ class ICONexConnection {
     //filter tx to get contracts
     console.log("total pages", totalPages);
     for (var page = 0; page < totalPages; page++) {
-      let urlCurrentPage = `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${page + 1
-        }&count=100&address=${walletAddress}`;
+      let urlCurrentPage = `https://sejong.tracker.solidwallet.io/v3/address/txList?page=${
+        page + 1
+      }&count=100&address=${walletAddress}`;
       const pageResponse = await axios.get(urlCurrentPage).then((res) => {
         return res.data;
       });

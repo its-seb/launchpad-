@@ -97,8 +97,12 @@ class Gallery extends Component {
       <div id="gallery" className="row mx-2">
         {this.state.thumbnailFiles.map((data, index) => (
           <div className="col-lg-4 col-md-12 mt-4 mb-lg-0">
-            <a target="_blank" href={this.state.uploadedFiles[index].link}>
-              <img src={data.link} class="w-100 shadow-1-strong rounded" />
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={this.state.uploadedFiles[index].link}
+            >
+              <img src={data.link} className="w-100 shadow-1-strong rounded" />
               <span>{data.name}</span>
             </a>
           </div>

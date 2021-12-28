@@ -20,7 +20,7 @@ import { PhotographIcon } from "@heroicons/react/solid";
 import "./global.css";
 import "./style.css";
 const axios = require("axios");
-const { IconConverter, IconBuilder, HttpProvider } = IconService;
+const { IconConverter, IconBuilder } = IconService;
 
 class Dropzone extends Component {
   uploadedFiles = [];
@@ -112,11 +112,6 @@ class Dropzone extends Component {
 
   hideUploadModal = () => {
     this.setState({ show: false });
-  };
-
-  handleBrowseFiles = (event) => {
-    this.fileUploader.click();
-    event.preventDefault();
   };
 
   handleCompressedUpload = (file) => {
@@ -286,7 +281,7 @@ class Dropzone extends Component {
 
     //update contract
     this.setState({ uploadMessage: "updating score..." });
-    let rpcResponse = await this.set_totalandcurrent_supply(
+    await this.set_totalandcurrent_supply(
       this.uploadedFiles.length,
       metadata_response.data.IpfsHash,
       combjson_originalResponse,
@@ -346,6 +341,7 @@ class Dropzone extends Component {
         console.log("Total Supply Error", error);
         Promise.resolve({ error });
       });
+    return result;
   };
 
   remove_file(file_index) {

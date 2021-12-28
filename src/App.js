@@ -36,8 +36,8 @@ class App extends Component {
     }
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    this.setState({ user_contract_address: urlParams.get('collection') });
-    this.setState({ user_walletaddress: urlParams.get('walletaddress') });
+    this.setState({ user_contract_address: urlParams.get("collection") });
+    this.setState({ user_walletaddress: urlParams.get("walletaddress") });
   }
 
   handleWalletEvent = async (event) => {
@@ -49,6 +49,7 @@ class App extends Component {
         console.log(localStorage.getItem("USER_WALLET_ADDRESS"));
         document.getElementById("btnConnectWallet").innerHTML = "sign out";
         this.setState({ walletAddress: _walletAddress });
+        window.location.assign("/");
       } else {
         console.log("user cancelled login");
       }
@@ -56,7 +57,9 @@ class App extends Component {
       //signing out
       localStorage.removeItem("USER_WALLET_ADDRESS");
       localStorage.removeItem("SELECTED_CONTRACT_ADDRESS");
+      localStorage.removeItem("HAS_METAHASH");
       document.getElementById("btnConnectWallet").innerHTML = "connect wallet";
+      window.location.assign("/");
       this.setState({ walletAddress: null });
     }
 
@@ -80,26 +83,39 @@ class App extends Component {
 
   render() {
     return (
-      <div style={{ backgroundColor: "#F2F2F2", height: "auto" }}>
-        {this.state.user_contract_address != null && this.state.user_walletaddress != null ? (
+      <div style={{ backgroundColor: "#F2F2F2", height: "100%" }}>
+        {this.state.user_contract_address != null &&
+        this.state.user_walletaddress != null ? (
           <Router>
             <Routes>
               <Route
                 exact
-                element={<Usergallery pageTitle="Usergallery" contract_address={this.state.user_contract_address} wallet_address={this.state.user_walletaddress} />}
+                element={
+                  <Usergallery
+                    pageTitle="Usergallery"
+                    contract_address={this.state.user_contract_address}
+                    wallet_address={this.state.user_walletaddress}
+                  />
+                }
                 path="/Usergallery"
               ></Route>
             </Routes>
-          </Router>) : (
-
+          </Router>
+        ) : (
           <div className="App">
             <Router>
               <div style={{ display: "flex", width: "100%", height: "100%" }}>
                 <SideNav />
                 <div className="pageContent">
                   <div className="headerContent">
-                    <text className="pageTitle unselectable" id="_pageTitle"></text>
-                    <Button id="btnConnectWallet" onClick={this.handleWalletEvent}>
+                    <text
+                      className="pageTitle unselectable"
+                      id="_pageTitle"
+                    ></text>
+                    <Button
+                      id="btnConnectWallet"
+                      onClick={this.handleWalletEvent}
+                    >
                       connect wallet
                     </Button>
                   </div>
@@ -117,7 +133,12 @@ class App extends Component {
                       ></Route>
                       <Route
                         exact
-                        element={<FileComponent pageTitle="Files" />}
+                        element={
+                          <FileComponent
+                            pageTitle="Files"
+                            walletAddress={this.state.walletAddress}
+                          />
+                        }
                         path="/files"
                       ></Route>
                       <Route
@@ -129,7 +150,9 @@ class App extends Component {
                   </div>
                 </div>
               </div>
-            </Router></div>)}
+            </Router>
+          </div>
+        )}
       </div>
     );
   }

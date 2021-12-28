@@ -165,6 +165,7 @@
 }
 
 .new-collection-modal > #new-collection-container > .modal-title,
+.new-collection-modal > .modal-title,
 .advanced-settings-modal > .modal-title {
   font-size: 2rem;
   font-weight: bold;
@@ -360,6 +361,7 @@ input[type="number"] {
   margin-top: 25px;
   padding: 0.75rem;
   border-radius: 0.25rem;
+  margin-bottom: 1rem !important;
 }
 
 .react-tagsinput--focused {

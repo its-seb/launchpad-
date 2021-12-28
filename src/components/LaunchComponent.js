@@ -8,7 +8,7 @@ import {
   Row,
   Col,
   Card,
-  Image,
+  Spinner,
 } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -17,6 +17,8 @@ import "./style.css";
 import ICONexConnection from "./utils/interact.js";
 import { PhotographIcon, XIcon } from "@heroicons/react/solid";
 import PreviewComponent from "./PreviewComponent.js";
+import FailureComponent from "./FailureComponent.js";
+import SuccessComponent from "./SuccessComponent.js";
 import axios from "axios";
 const { IconConverter, IconBuilder, HttpProvider } = IconService;
 
@@ -31,8 +33,9 @@ export class LaunchComponent extends Component {
       collectionCoverFile: "",
       isUploaded: false,
       showAdvancedSettings: false,
-      selectedDate: "",
+      selectedDate: null,
       tags: [],
+      modalStatusText: "publishing launch site...",
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -44,28 +47,34 @@ export class LaunchComponent extends Component {
     this.pinataKey = localStorage.getItem("PINATA_KEY");
     this.pinataSecret = localStorage.getItem("PINATA_SECRET");
     this.connection = new ICONexConnection();
+    this.hasMetahash = localStorage.getItem("HAS_METAHASH");
   }
 
   handleChange = (tags) => {
     this.setState({ tags: tags });
-    //this.setState({ tags: tags });
   };
 
   componentDidMount() {
+    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     if (this.walletAddress == null) {
       alert("Please connect your wallet.");
       return;
     }
     if (this.contractAddress == null) {
-      alert("you need to select a contract to view files");
-      window.history.back();
+      alert("you need to select a contract to generate launch site");
       return;
     }
 
-    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
-    if (this.state.collectionCover == "") {
-      document.getElementById("dragAndDropPreview").style.display = "none";
+    if (this.hasMetahash != "false") {
+      if (this.state.collectionCover == "") {
+        document.getElementById("dragAndDropPreview").style.display = "none";
+      }
+    } else {
+      alert("please upload files before generating launch site");
+      return;
     }
+
+    //setState({tags: tags})
   }
 
   //reflect updates immediately on change
@@ -133,11 +142,7 @@ export class LaunchComponent extends Component {
       return;
     }
 
-    //set siteInfo
-    this.setSiteInfo(collectionName, mintPrice, collectionCover);
-
     //upload collection cover to pinata
-    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
     let response = await this.pinSingleFileToIPFS(
       this.state.collectionCoverFile,
       "collectionCover"
@@ -311,6 +316,22 @@ export class LaunchComponent extends Component {
     console.log(
       `https://gateway.pinata.cloud/ipfs/${dappResponse.data.IpfsHash}`
     );
+
+    this.setState({ modalStatusText: "updating score..." });
+    //set siteInfo
+    await this.executeCallTransaction(
+      this.walletAddress,
+      this.contractAddress,
+      "setSiteInfo",
+      {
+        _collectionTitle: collectionName,
+        _mintCost: IconConverter.toHex(mintPrice * 10 ** 18),
+        _coverImage: collectionCover,
+        _launchDate: IconConverter.toHex(new Date().getTime() * 1000),
+      }
+    ).then(() => {
+      this.setState({ modalStatusText: "" });
+    });
   };
 
   pinSingleFileToIPFS = async (fileObj, displayedObjName) => {
@@ -334,26 +355,25 @@ export class LaunchComponent extends Component {
     return response;
   };
 
-  setSiteInfo = async (_collectionTitle, _mintCost, _collectionCover) => {
-    const selectedContract = "cxe398f645eb6b891c51fa35ec7b40c19cee18ab8e";
+  executeCallTransaction = async (
+    walletAddress,
+    contractAddress,
+    method,
+    params
+  ) => {
     const txObj = new IconBuilder.CallTransactionBuilder()
-      .from(this.walletAddress)
-      .to(this.contractAddress)
+      .from(walletAddress)
+      .to(contractAddress)
       .stepLimit(IconConverter.toBigNumber(2000000))
       .nid("0x53")
       .nonce(IconConverter.toBigNumber(1))
       .version(IconConverter.toBigNumber(3)) //constant
       .timestamp(new Date().getTime() * 1000)
-      .method("setSiteInfo")
-      .params({
-        _collectionTitle: _collectionTitle,
-        _mintCost: IconConverter.toHex(_mintCost * 10 ** 18),
-        _coverImage: _collectionCover,
-        _launchDate: IconConverter.toHex(new Date().getTime() * 1000),
-      })
+      .method(method)
+      .params(params)
       .build();
 
-    console.log("siteInfo", txObj);
+    console.log("txObj", txObj);
 
     const payload = {
       jsonrpc: "2.0",
@@ -363,21 +383,39 @@ export class LaunchComponent extends Component {
     };
 
     console.log("payload", payload);
-    let rpcResponse = await this.connection.getJsonRpc(payload);
+    let rpcResponse = await this.connection.getJsonRpc(payload).then((res) => {
+      return res;
+    });
+    return rpcResponse;
   };
 
-  handleSaveOptional = (event) => {
+  handleSaveOptional = async (event) => {
     event.preventDefault();
 
-    let timestamp;
-    if (this.state.selectedDate != "" || this.state.selectedDate != null) {
-      timestamp = this.state.selectedDate.getTime() * 1000;
+    //get launch date time
+    let timestamp =
+      this.state.selectedDate == null
+        ? Date.now()
+        : new Date(this.state.selectedDate).getTime();
+    timestamp = timestamp * 1000;
+
+    let whitelistedAddress = this.state.tags;
+    if (this.state.tags.length == 0) {
+      whitelistedAddress = [this.walletAddress];
     }
-    console.log("timestamp", timestamp);
-    let whitelistedAddress = document.getElementById(
-      "tbWhitelistedAddress"
-    ).value; //validate for json
-    console.log("whitelisted", whitelistedAddress);
+
+    //get whitelisted address
+    let rpcResponse = await this.executeCallTransaction(
+      this.walletAddress,
+      this.contractAddress,
+      "setOptionalSetting",
+      {
+        _launchDate: IconConverter.toHex(timestamp),
+        _whitelistedAddress: whitelistedAddress,
+      }
+    ).then(() => {
+      console.log("completed");
+    });
   };
 
   pasteSplit(data) {
@@ -392,13 +430,13 @@ export class LaunchComponent extends Component {
       "\\?",
       "\n",
       "\r",
-      " ",
     ];
     return data.split(new RegExp(separators.join("|"))).map((d) => d.trim());
   }
 
   render() {
-    if (this.contractAddress == null) {
+    console.log("state", typeof this.hasMetahash);
+    if (this.contractAddress == null || this.hasMetahash == "false") {
       return <div></div>;
     } else {
       return (
@@ -544,7 +582,9 @@ export class LaunchComponent extends Component {
                 onChange={this.handleChange}
                 pasteSplit={this.pasteSplit}
                 addOnPaste="true"
-                inputProps={{ placeholder: "Add a whitelisted address" }}
+                inputProps={{
+                  placeholder: "Add a whitelisted address - optional",
+                }}
               />
               <Button
                 id="btnSave"
@@ -554,6 +594,20 @@ export class LaunchComponent extends Component {
               >
                 save
               </Button>
+            </div>
+          </Modal>
+          <Modal show={false}>
+            <div style={{ padding: "25px 25px" }}>
+              <div id="loading-container" style={{ display: "block" }}>
+                <Spinner
+                  animation="border"
+                  id="deploymentLoading"
+                  style={{ display: "block" }}
+                ></Spinner>
+                <SuccessComponent id="deploymentSuccess" />
+                <FailureComponent id="deploymentFailure" />
+                <span id="deployText">{this.state.modalStatusText}</span>
+              </div>
             </div>
           </Modal>
         </div>

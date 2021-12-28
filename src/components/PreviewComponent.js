@@ -1,14 +1,5 @@
 import React, { Component } from "react";
-import {
-  Form,
-  Button,
-  Container,
-  Modal,
-  Row,
-  Col,
-  Card,
-  Image,
-} from "react-bootstrap";
+import { Button, Card, Image } from "react-bootstrap";
 import "./style.css";
 
 class PreviewComponent extends Component {

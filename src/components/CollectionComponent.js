@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Card, Modal } from "react-bootstrap";
 import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
-import { BrowserRouter as Router, Link, Route } from "react-router-dom";
+import { BrowserRouter as Link } from "react-router-dom";
 import NewCollectionModal from "./NewCollectionModal.js";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
@@ -37,14 +37,16 @@ export class CollectionComponent extends Component {
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     if (walletAddress != null) {
       this.getContractInfo(walletAddress);
+    } else {
+      console.log("hello refreshed");
     }
   }
 
   componentWillReceiveProps(props) {
-    console.log("receiving", props.walletAddress);
-    if (props.walletAddress != null) {
-      this.setState({ walletAddress: props.walletAddress });
-      this.getContractInfo(props.walletAddress);
+    const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
+    if (walletAddress != null) {
+      this.setState({ walletAddress: walletAddress });
+      this.getContractInfo(walletAddress);
     } else {
       //***should we clear it tho? load gonna be slow if they always signout; meaning it'll always fallback
       this.db.contracts.clear();
@@ -73,6 +75,7 @@ export class CollectionComponent extends Component {
       });
 
     if (contractsCount == 0) {
+      this.db.contracts.clear();
       //fallback to check tx list for confirmation
       let contractDisplay = await this.connection.getLaunchpadContracts(
         walletAddress
