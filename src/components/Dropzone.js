@@ -125,7 +125,9 @@ class Dropzone extends Component {
         // console.log(typeof (compressedResult))
       },
     });
-    return x.file;
+
+    var blob_file = new File([x.result], "name");
+    return blob_file;
   };
 
   createImageFormData = (files) => {

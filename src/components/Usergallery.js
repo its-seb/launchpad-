@@ -8,20 +8,25 @@ export default class Usergallery extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            // mintedNFT: [],
-            mintedNFT: ["https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_joolz.png", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Namocchi.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Vyragami.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Namocchi.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Vyragami.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg"],
-            NFTName: ["peter", "Jane", "Boon Yeow", "Yong JIun", "Sebastian", "Joy"]
+            mintedNFT: [],
+            NFTName: [],
+            // mintedNFT: ["https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_joolz.png", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Namocchi.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Vyragami.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Namocchi.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Vyragami.jpeg"],
+            // NFTName: ["peter", "Jane", "Boon Yeow", "Yong JIun", "Sebastian", "Joy"],
+            gateway: null,
         };
-        // this.contract_address = this.props.contract_address;
-        // this.wallet_address = this.props.wallet_address;
+        this.contract_address = this.props.contract_address;
+        this.wallet_address = this.props.wallet_address;
         const provider = new IconService.HttpProvider(
             "https://sejong.net.solidwallet.io/api/v3"
         );
 
         this.iconService = new IconService(provider);
-        this.contract_address = 'cx242815948091f53dd31b576e5c82e2bbbec2db9c';
-        this.wallet_address = 'hxdf253be1cf4c4c7ea87ac649ac1694cfd0b072d8';
+        // this.contract_address = 'cx242815948091f53dd31b576e5c82e2bbbec2db9c';
+        // this.wallet_address = 'hxdf253be1cf4c4c7ea87ac649ac1694cfd0b072d8';
         this.mintedLink = [];
+        // this.gateway = ['astyanax.io', 'ipfs.io', 'ipfs.infura.io', 'infura-ipfs.io', 'ipfs.eth.aragon.network', 'cloudflare-ipfs.com', 'ipfs.fleek.co', 'cf-ipfs.com', 'gateway.pinata.cloud', 'ipfs.azurewebsites.net', 'cf-ipfs.com', 'astyanax.io', 'infura-ipfs.io', 'ipfs.kxv.io'];
+        this.gateway = ['astyanax.io', 'ipfs.io', 'ipfs.infura.io', 'infura-ipfs.io', 'ipfs.eth.aragon.network'];
+
     }
 
     async componentDidMount() {
@@ -38,7 +43,21 @@ export default class Usergallery extends Component {
                     console.log(error);
                 });
         }
+        let rounds = this.state.mintedNFT.length / this.gateway.length;
+        if (rounds <= 1) {
+            this.setState({ gateway: this.gateway });
+        }
+        else if (rounds > Math.floor(rounds)) {
+            this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
+            this.setState({ gateway: this.gateway });
+        }
+        else {
+            this.gateway = Array(rounds).fill(this.gateway).flat();
+            this.setState({ gateway: this.gateway });
+        }
+        // console.log(this.state.gateway)
         console.log(this.state.mintedNFT)
+        // console.log(this.mintedLink)
     }
 
     async getMintedNFT(contractAddress, walletAddress) {
@@ -74,7 +93,7 @@ export default class Usergallery extends Component {
                     {this.state.mintedNFT.map((data, index) => (
                         <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
                             <a target="_blank" href={data}>
-                                <img src={data} class="w-100 shadow-1-strong rounded" />
+                                <img src={"https://" + this.gateway[index] + data.slice(28)} class="w-100 shadow-1-strong rounded" />
                                 <span class="my-2">{this.state.NFTName[index]}</span>
                             </a>
                         </div>
