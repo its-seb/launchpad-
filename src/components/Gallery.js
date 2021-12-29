@@ -66,6 +66,7 @@ class Gallery extends Component {
 
   async componentDidMount() {
     await this.getJSONFileMetahash();
+    console.log(this.jsonhash)
     const pinataEndpoint3 = `https://gateway.pinata.cloud/ipfs/${this.jsonhash}`;
     let json_upload_response = await axios
       .get(pinataEndpoint3)
@@ -77,6 +78,7 @@ class Gallery extends Component {
       });
 
     await this.getJSONThumbnailMetahash();
+    console.log(this.jsonthumbnailhash)
     const pinataEndpoint4 = `https://gateway.pinata.cloud/ipfs/${this.jsonthumbnailhash}`;
     let json_upload_response2 = await axios
       .get(pinataEndpoint4)

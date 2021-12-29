@@ -120,32 +120,48 @@ class Dropzone extends Component {
       success: (compressedResult) => {
         // compressedResult has the compressed file.
         // Use the compressed file to upload the images to your server.
-        return compressedResult;
-        // console.log(compressedResult)
-        // console.log(typeof (compressedResult))
+        console.log(compressedResult);
+
+
       },
     });
 
-    var blob_file = new File([x.result], "name");
-    return blob_file;
-  };
+    // var blob_file = new File([x.result], "name");
 
-  createImageFormData = (files) => {
-    let originalData = new FormData();
+  };
+  createThumbnailImageFormData = (files) => {
     let thumbnailData = new FormData();
     for (var i = 0; i < files.length; i++) {
-      console.log("createImageFormData", files[i]);
+      console.log("createThumbnailImageFormData", files[i].name);
+      //For Compressed File
+
+      let x = new Compressor(files[i].dataFile, {
+        quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
+        success: (compressedResult) => {
+          // compressedResult has the compressed file.
+          // Use the compressed file to upload the images to your server.
+          console.log(compressedResult);
+          thumbnailData.append(
+            `file`,
+            compressedResult,
+            compressedResult.name
+          );
+
+        },
+      });
+    }
+    console.log(thumbnailData)
+    return thumbnailData;
+  };
+
+  createOriginalImageFormData = (files) => {
+    let originalData = new FormData();
+    for (var i = 0; i < files.length; i++) {
+      console.log("createOriginalImageFormData", files[i]);
       //For original full Resolution File
       originalData.append(`file`, files[i].dataFile, `file/${files[i].name}`);
-
-      //For Compressed File
-      thumbnailData.append(
-        `file`,
-        this.handleCompressedUpload(files[i].dataFile),
-        `file/${files[i].name}`
-      );
     }
-    return [originalData, thumbnailData];
+    return originalData;
   };
 
   pinMultipleFilesToIPFS = async (formData, displayedObjName) => {
@@ -230,9 +246,12 @@ class Dropzone extends Component {
     this.showUploadModal();
     //step 1 - pin original res image
     this.setState({ uploadMessage: "pinning image files to pinata..." });
-    let [originalData, thumbnailData] = this.createImageFormData(
-      this.uploadedFiles
-    );
+    // let [originalData, thumbnailData] = this.createImageFormData(
+    //   this.uploadedFiles
+    // );
+    let originalData = this.createOriginalImageFormData(this.uploadedFiles);
+    let thumbnailData = this.createThumbnailImageFormData(this.uploadedFiles);
+
     console.log("original data", originalData);
     console.log("thumbnailData", thumbnailData);
     let originalResponse = await this.pinMultipleFilesToIPFS(
