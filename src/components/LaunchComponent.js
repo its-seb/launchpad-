@@ -344,7 +344,7 @@ export class LaunchComponent extends Component {
             icon: "success",
           }).then((result) => {
             window.open(
-              "http://localhost:3000/Usergallery/collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
+              "http://localhost:3000/Usergallery/?collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
               "_blank"
             );
           });

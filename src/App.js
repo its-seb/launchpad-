@@ -40,6 +40,8 @@ class App extends Component {
     this.setState({ user_contract_address: urlParams.get("collection") });
     this.setState({ user_walletaddress: urlParams.get("user") });
     this.setState({ user_contract_title: urlParams.get("title") });
+    console.log(this.state.user_contract_address)
+    console.log(this.state.user_walletaddress)
 
   }
 
