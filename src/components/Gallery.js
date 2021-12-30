@@ -21,6 +21,10 @@ class Gallery extends Component {
     this.jsonthumbnailhash = "";
     this.iconService = new IconService(provider);
     this.contractAddress = localStorage.getItem("SELECTED_CONTRACT_ADDRESS");
+    this.mintedLink = [];
+    this.gateway = ['astyanax.io', 'ipfs.io', 'ipfs.infura.io', 'infura-ipfs.io', 'ipfs.eth.aragon.network', 'cloudflare-ipfs.com', 'ipfs.fleek.co', 'cf-ipfs.com', 'gateway.pinata.cloud', 'cf-ipfs.com', 'astyanax.io', 'infura-ipfs.io', 'ipfs.kxv.io'];
+
+
   }
   getJSONFileMetahash = async () => {
     const callObj = new IconBuilder.CallBuilder()
@@ -83,11 +87,26 @@ class Gallery extends Component {
     let json_upload_response2 = await axios
       .get(pinataEndpoint4)
       .then((response) => {
+        console.log(response)
         this.setState({ thumbnailFiles: response.data.files_link });
       })
       .catch((error) => {
         console.log(error);
       });
+
+    let rounds = this.state.thumbnailFiles.length / this.gateway.length;
+    if (rounds <= 1) {
+      this.setState({ gateway: this.gateway });
+    }
+    else if (rounds > Math.floor(rounds)) {
+      this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
+      this.setState({ gateway: this.gateway });
+    }
+    else {
+      this.gateway = Array(rounds).fill(this.gateway).flat();
+      this.setState({ gateway: this.gateway });
+    }
+
   }
 
   render() {
@@ -104,7 +123,7 @@ class Gallery extends Component {
               rel="noreferrer"
               href={this.state.uploadedFiles[index].link}
             >
-              <img src={data.link} className="w-100 shadow-1-strong rounded" />
+              <img src={"https://" + this.gateway[index] + data.link.slice(28)} className="w-100 shadow-1-strong rounded" />
               <span>{data.name}</span>
             </a>
           </div>

@@ -114,18 +114,6 @@ class Dropzone extends Component {
     this.setState({ show: false });
   };
 
-  handleCompressedUpload = (file) => {
-    let x = new Compressor(file, {
-      quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
-      success: (compressedResult) => {
-        // compressedResult has the compressed file.
-        // Use the compressed file to upload the images to your server.
-        console.log(compressedResult);
-      },
-    });
-
-    // var blob_file = new File([x.result], "name");
-  };
   createThumbnailImageFormData = (files) => {
     let thumbnailData = new FormData();
     for (var i = 0; i < files.length; i++) {
@@ -134,6 +122,7 @@ class Dropzone extends Component {
 
       let x = new Compressor(files[i].dataFile, {
         quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
+        convertSize: Infinity,
         success: (compressedResult) => {
           // compressedResult has the compressed file.
           // Use the compressed file to upload the images to your server.

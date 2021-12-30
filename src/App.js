@@ -26,6 +26,7 @@ class App extends Component {
       walletAddress: null,
       user_contract_address: null,
       user_walletaddress: null,
+      user_contract_title: null,
     };
   }
 
@@ -37,7 +38,9 @@ class App extends Component {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     this.setState({ user_contract_address: urlParams.get("collection") });
-    this.setState({ user_walletaddress: urlParams.get("walletaddress") });
+    this.setState({ user_walletaddress: urlParams.get("user") });
+    this.setState({ user_contract_title: urlParams.get("title") });
+
   }
 
   handleWalletEvent = async (event) => {
@@ -85,7 +88,7 @@ class App extends Component {
     return (
       <div style={{ backgroundColor: "#F2F2F2", height: "100%" }}>
         {this.state.user_contract_address != null &&
-        this.state.user_walletaddress != null ? (
+          this.state.user_walletaddress != null ? (
           <Router>
             <Routes>
               <Route
@@ -95,6 +98,7 @@ class App extends Component {
                     pageTitle="Usergallery"
                     contract_address={this.state.user_contract_address}
                     wallet_address={this.state.user_walletaddress}
+                    contract_name={this.state.user_contract_title}
                   />
                 }
                 path="/Usergallery"
