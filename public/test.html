@@ -11,6 +11,11 @@
       href="https://gateway.pinata.cloud/ipfs/QmeqQqq7GLgaEr8cPcsqxRCe6ZyhoEc3AtPMqjyvoqsYoM?filename=app.css"
       rel="stylesheet"
     />
+    <style>
+      .swal2-styled.swal2-confirm {
+        background-color: #424242;
+      }
+    </style>
   </head>
   <body>
     <div style="height: 100vh; background-color: #323232">
@@ -24,11 +29,15 @@
       </button>
       <div class="preview-container">
         <div class="preview-content">
-          <div class="preview-title"><span>default</span></div>
+          <div class="preview-title"><span>hello4</span></div>
           <div class="preview-cover-image">
             <img
-              src="https://gateway.pinata.cloud/ipfs/QmcJtvSabMfCYjQaRdcfUqVzewY8tFvhoHLMVPDH78manN"
-              style="background-color: rgb(50, 50, 50); height: 100%"
+              src="https://gateway.pinata.cloud/ipfs/Qmb1PLPsLzoFUD6yAuq8UZA3vbuF4AnvzeJVKcqu1sAwWp"
+              style="
+                background-color: rgb(50, 50, 50);
+                width: 100%;
+                height: 100%;
+              "
             />
           </div>
           <div class="preview-price">
@@ -48,8 +57,37 @@
             type="button"
             class="mintButton btn btn-primary"
           >
-            Mint - <span id="totalMintCost">0</span> ICX
+            Mint - <span id="totalMintCost">4</span> ICX
           </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modal title</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Modal body text goes here.</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
         </div>
       </div>
     </div>
@@ -59,10 +97,11 @@
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
       crossorigin="anonymous"
     ></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       var IconService = window["icon-sdk-js"];
       var IconConverter = IconService.Converter;
-      let perNftCost = 10;
+      let perNftCost = 4;
       let walletAddress;
       const handleQuantity = (eventType) => {
         let inputElement = document.getElementById("mint_qty");
@@ -75,23 +114,11 @@
           let min = 1;
           inputElement.value = inputValue == min ? min : inputValue - 1;
         }
+        document.getElementById("totalMintCost").innerText =
+          inputElement.value * perNftCost;
       };
 
-      const getSiteInfo = () => {
-        var payload = {
-          jsonrpc: "2.0",
-          method: "icx_call",
-          params: {
-            to: "cx00448346e85e70308953efd20e68164ff027cf93",
-            dataType: "call",
-            data: {
-              method: "getSiteInfo",
-            },
-          },
-        };
-      };
-
-      const mintNft = () => {
+      const mintNft = async () => {
         if (walletAddress == null) {
           alert("please connect your wallet");
           return;
@@ -104,8 +131,8 @@
           method: "icx_sendTransaction",
           id: 6639,
           params: {
-            to: "cx00448346e85e70308953efd20e68164ff027cf93",
-            from: "hxbd1375315c7732779edaa4c3903ffc9b93e82ca3",
+            to: "cx9b731b64984ac210d18efe862e1a1b8375313207",
+            from: walletAddress,
             nid: "0x53",
             version: IconConverter.toHexNumber("3"),
             value: IconConverter.toHexNumber(
@@ -118,23 +145,46 @@
             data: {
               method: "mint",
               params: {
-                _mintQuantity: IconConverter.toHexNumber("2"),
+                _mintQuantity: IconConverter.toHexNumber(quantityToMint),
               },
             },
           },
         };
 
-        ICONexRequest("REQUEST_JSON-RPC", payload);
+        await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
+          Swal.fire({
+            title: "Success!",
+            text: "You have minted hhh NFTs from hello4",
+            confirmButtonText: "View Wallet",
+            icon: "success",
+          }).then((result) => {
+            window.open(
+              `http://localhost:3000/Usergallery/collection=hhh&title=hhh&user=hhh`,
+              "_blank"
+            );
+          });
+        });
       };
 
       const handleConnectWallet = async () => {
         let _walletAddress;
         if (walletAddress == null) {
-          _walletAddress = await ICONexRequest("REQUEST_ADDRESS");
+          _walletAddress = await ICONexRequest("REQUEST_ADDRESS").then(
+            (res) => {
+              Swal.fire({
+                title: "Connected!",
+                icon: "success",
+                showCloseButton: true,
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              return res;
+            }
+          );
           document.getElementById("btnConnectWallet").innerText =
             _walletAddress == null || _walletAddress == "undefined"
               ? "Connect Wallet"
-              : `Disconnect from ${_walletAddress}`;
+              : "Disconnect from " + _walletAddress;
         } else {
           document.getElementById("btnConnectWallet").innerText =
             "Connect Wallet";

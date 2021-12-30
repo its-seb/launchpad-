@@ -212,162 +212,197 @@ export class LaunchComponent extends Component {
 
     //generate microsite & upload microsite to pinatacloud
     let htmlContent = `
-        <!DOCTYPE html>
-    <html>
-      <head>
-        <link
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-          crossorigin="anonymous"
-        />
-        <link
-          href="https://gateway.pinata.cloud/ipfs/QmeqQqq7GLgaEr8cPcsqxRCe6ZyhoEc3AtPMqjyvoqsYoM?filename=app.css"
-          rel="stylesheet"
-        />
-      </head>
-      <body>
-        <div style="height: 100vh; background-color: #323232">
-          <button
-            type="button"
-            id="btnConnectWallet"
-            class="preview-connect-wallet btn btn-primary"
-            onclick="handleConnectWallet()"
-          >
-            Connect Wallet
-          </button>
-          <div class="preview-container">
-            <div class="preview-content">
-              <div class="preview-title"><span>${collectionName}</span></div>
-              <div class="preview-cover-image">
-                <img
-                  src="https://gateway.pinata.cloud/ipfs/${collectionCoverHash}"
-                  style="background-color: rgb(50, 50, 50); width: 100%"
-                />
-              </div>
-              <div class="preview-price">
-                <div style="display: inline-block; width: 100%; text-align: center">
-                  <button onclick="handleQuantity('increment')">+</button
-                  ><input
-                    id="mint_qty"
-                    type="number"
-                    class="preview-mint-qty unselectable"
-                    disabled=""
-                    value="1"
-                  /><button onclick="handleQuantity('decrement')">-</button>
-                </div>
-              </div>
-              <button
-                onclick="mintNft()"
-                type="button"
-                class="mintButton btn btn-primary"
-              >
-                Mint - <span id="totalMintCost">${mintPrice}</span> ICX
-              </button>
+    <!DOCTYPE html>
+<html>
+  <head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://gateway.pinata.cloud/ipfs/QmeqQqq7GLgaEr8cPcsqxRCe6ZyhoEc3AtPMqjyvoqsYoM?filename=app.css"
+      rel="stylesheet"
+    />
+    <style>
+      .swal2-styled.swal2-confirm {
+        background-color: #424242;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="height: 100vh; background-color: #323232">
+      <button
+        type="button"
+        id="btnConnectWallet"
+        class="preview-connect-wallet btn btn-primary"
+        onclick="handleConnectWallet()"
+      >
+        Connect Wallet
+      </button>
+      <div class="preview-container">
+        <div class="preview-content">
+          <div class="preview-title"><span>${collectionName}</span></div>
+          <div class="preview-cover-image">
+            <img
+              src="https://gateway.pinata.cloud/ipfs/${collectionCoverHash}"
+              style="
+                background-color: white;
+                width: 100%;
+                height: 100%;
+              "
+            />
+          </div>
+          <div class="preview-price">
+            <div style="display: inline-block; width: 100%; text-align: center">
+              <button onclick="handleQuantity('decrement')">-</button
+              ><input
+                id="mint_qty"
+                type="number"
+                class="preview-mint-qty unselectable"
+                disabled=""
+                value="1"
+              /><button onclick="handleQuantity('increment')">+</button>
             </div>
           </div>
+          <button
+            onclick="mintNft()"
+            type="button"
+            class="mintButton btn btn-primary"
+          >
+            Mint - <span id="totalMintCost">${mintPrice}</span> ICX
+          </button>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/icon-sdk-js@latest/build/icon-sdk-js.web.min.js"></script>
-        <script
-          src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-          integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-          crossorigin="anonymous"
-        ></script>
-        <script>
-          var IconService = window["icon-sdk-js"];
-          var IconConverter = IconService.Converter;
-          let perNftCost = ${mintPrice};
-          let walletAddress;
-          const handleQuantity = (eventType) => {
-            let inputElement = document.getElementById("mint_qty");
-            let inputValue = parseInt(inputElement.value);
-            if (eventType == "increment") {
-              let max = 100;
-              inputElement.value = inputValue == max ? max : inputValue + 1;
-            } //decrement
-            else {
-              let min = 1;
-              inputElement.value = inputValue == min ? min : inputValue - 1;
-            }
-            document.getElementById("totalMintCost").innerText = inputElement.value * perNftCost
-          };
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/icon-sdk-js@latest/build/icon-sdk-js.web.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+      crossorigin="anonymous"
+    ></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      var IconService = window["icon-sdk-js"];
+      var IconConverter = IconService.Converter;
+      let perNftCost = ${mintPrice};
+      let walletAddress;
+      const handleQuantity = (eventType) => {
+        let inputElement = document.getElementById("mint_qty");
+        let inputValue = parseInt(inputElement.value);
+        if (eventType == "increment") {
+          let max = 100;
+          inputElement.value = inputValue == max ? max : inputValue + 1;
+        } //decrement
+        else {
+          let min = 1;
+          inputElement.value = inputValue == min ? min : inputValue - 1;
+        }
+        document.getElementById("totalMintCost").innerText =
+          inputElement.value * perNftCost;
+      };
 
-          const mintNft = () => {
-            if (walletAddress == null) {
-              alert("please connect your wallet");
-              return;
-            }
-            let quantityToMint = parseInt(
-              document.getElementById("mint_qty").value
-            );
-            var payload = {
-              jsonrpc: "2.0",
-              method: "icx_sendTransaction",
-              id: 6639,
+      const mintNft = async () => {
+        if (walletAddress == null) {
+          alert("please connect your wallet");
+          return;
+        }
+        let quantityToMint = parseInt(
+          document.getElementById("mint_qty").value
+        );
+        var payload = {
+          jsonrpc: "2.0",
+          method: "icx_sendTransaction",
+          id: 6639,
+          params: {
+            to: "${this.contractAddress}",
+            from: walletAddress,
+            nid: "0x53",
+            version: IconConverter.toHexNumber("3"),
+            value: IconConverter.toHexNumber(
+              quantityToMint * perNftCost * 10 ** 18
+            ),
+            timestamp: IconConverter.toHexNumber(new Date().getTime() * 1000),
+            stepLimit: IconConverter.toHexNumber("2000000"),
+            nonce: IconConverter.toHexNumber("1"),
+            dataType: "call",
+            data: {
+              method: "mint",
               params: {
-                to: "${this.contractAddress}",
-                from: walletAddress,
-                nid: "0x53",
-                version: IconConverter.toHexNumber("3"),
-                value: IconConverter.toHexNumber(
-                  quantityToMint * perNftCost * 10 ** 18
-                ),
-                timestamp: IconConverter.toHexNumber(new Date().getTime() * 1000),
-                stepLimit: IconConverter.toHexNumber("2000000"),
-                nonce: IconConverter.toHexNumber("1"),
-                dataType: "call",
-                data: {
-                  method: "mint",
-                  params: {
-                    _mintQuantity: IconConverter.toHexNumber("2"),
-                  },
-                },
+                _mintQuantity: IconConverter.toHexNumber(quantityToMint),
               },
-            };
+            },
+          },
+        };
 
-            ICONexRequest("REQUEST_JSON-RPC", payload);
-          };
+        await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
+          Swal.fire({
+            title: "Success!",
+            text: "You have minted " + quantityToMint + " NFTs from hello4",
+            confirmButtonText: "View Wallet",
+            icon: "success",
+          }).then((result) => {
+            window.open(
+              "http://localhost:3000/Usergallery/collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
+              "_blank"
+            );
+          });
+        });
+      };
 
-          const handleConnectWallet = async () => {
-            let _walletAddress;
-            if (walletAddress == null) {
-              _walletAddress = await ICONexRequest("REQUEST_ADDRESS");
-              document.getElementById("btnConnectWallet").innerText =
-                _walletAddress == null || _walletAddress == "undefined"
-                  ? "Connect Wallet"
-                  : "Disconnect from " + _walletAddress;
-            } else {
-              document.getElementById("btnConnectWallet").innerText =
-                "Connect Wallet";
-              _walletAddress = null;
+      const handleConnectWallet = async () => {
+        let _walletAddress;
+        if (walletAddress == null) {
+          _walletAddress = await ICONexRequest("REQUEST_ADDRESS").then(
+            (res) => {
+              Swal.fire({
+                title: "Connected!",
+                icon: "success",
+                showCloseButton: true,
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              return res;
             }
-            walletAddress = _walletAddress;
-          };
+          );
+          document.getElementById("btnConnectWallet").innerText =
+            _walletAddress == null || _walletAddress == "undefined"
+              ? "Connect Wallet"
+              : "Disconnect from " + _walletAddress;
+        } else {
+          document.getElementById("btnConnectWallet").innerText =
+            "Connect Wallet";
+          _walletAddress = null;
+        }
+        walletAddress = _walletAddress;
+      };
 
-          async function ICONexRequest(requestType, payload) {
-            return new Promise((resolve, reject) => {
-              function eventHandler(event) {
-                const { payload } = event.detail;
-                window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
-                resolve(payload);
-              }
-              window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
-
-              window.dispatchEvent(
-                new window.CustomEvent("ICONEX_RELAY_REQUEST", {
-                  detail: {
-                    type: requestType,
-                    payload,
-                  },
-                })
-              );
-            });
+      async function ICONexRequest(requestType, payload) {
+        return new Promise((resolve, reject) => {
+          function eventHandler(event) {
+            const { payload } = event.detail;
+            window.removeEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
+            resolve(payload);
           }
-        </script>
-      </body>
-    </html>
+          window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler);
 
-        `;
+          window.dispatchEvent(
+            new window.CustomEvent("ICONEX_RELAY_REQUEST", {
+              detail: {
+                type: requestType,
+                payload,
+              },
+            })
+          );
+        });
+      }
+    </script>
+  </body>
+</html>
+
+
+    `;
 
     const htmlFile = new File([htmlContent], "dapp.html", {
       type: "text/html",
@@ -396,10 +431,7 @@ export class LaunchComponent extends Component {
         modalStatusText: "launch site published successfully!",
       });
       await sleep(1500);
-      window.open(
-        `https://gateway.pinata.cloud/ipfs/${collectionCoverHash}`,
-        "_blank"
-      );
+      window.open(publishedDapp, "_blank");
     });
   };
 
@@ -673,7 +705,7 @@ export class LaunchComponent extends Component {
               id="close-loading-modal"
               className="close-modal"
               onClick={() => this.setState({ showLoadingModal: false })}
-              style={{ position: "absolute", right: "1rem", display: "block" }}
+              style={{ position: "absolute", right: "1rem", display: "none" }}
             />
             <div style={{ padding: "25px 25px" }}>
               <div id="loading-container" style={{ display: "block" }}>

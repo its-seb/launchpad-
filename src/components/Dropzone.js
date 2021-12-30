@@ -121,13 +121,10 @@ class Dropzone extends Component {
         // compressedResult has the compressed file.
         // Use the compressed file to upload the images to your server.
         console.log(compressedResult);
-
-
       },
     });
 
     // var blob_file = new File([x.result], "name");
-
   };
   createThumbnailImageFormData = (files) => {
     let thumbnailData = new FormData();
@@ -144,13 +141,12 @@ class Dropzone extends Component {
           thumbnailData.append(
             `file`,
             compressedResult,
-            compressedResult.name
+            `file/${compressedResult.name}`
           );
-
         },
       });
     }
-    console.log(thumbnailData)
+    console.log(thumbnailData);
     return thumbnailData;
   };
 

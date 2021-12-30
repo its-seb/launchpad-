@@ -52,8 +52,9 @@ class PreviewComponent extends Component {
                 <Image
                   src={this.state.collectionCover}
                   style={{
-                    backgroundColor: "#323232",
+                    backgroundColor: "white",
                     width: "100%",
+                    height: "100%",
                   }}
                 ></Image>
               </div>
