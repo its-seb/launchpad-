@@ -1,100 +1,54 @@
 import React, { Component } from "react";
+import gif1 from "../assets/gif1.gif";
+import gif2 from "../assets/gif2.gif";
+import gif3 from "../assets/gif3.gif";
 
 export class LandingComponent extends Component {
   render() {
     return (
-      <div class="min-h-screen bg-gray-50 py-6 flex flex-col justify-center relative overflow-hidden sm:py-12">
-        <img
-          src="/img/beams.jpg"
-          alt=""
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-none"
-          width="1308"
-        />
-        <div class="absolute inset-0 bg-[url(/img/grid.svg)] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        <div class="relative px-6 pt-10 pb-8 bg-white shadow-xl ring-1 ring-gray-900/5 sm:max-w-lg sm:mx-auto sm:rounded-lg sm:px-10">
-          <div class="max-w-md mx-auto">
-            <img src="/img/logo.svg" class="h-6" />
-            <div class="divide-y divide-gray-300/50">
-              <div class="py-8 text-base leading-7 space-y-6 text-gray-600">
-                <p>
-                  An advanced online playground for Tailwind CSS, including
-                  support for things like:
-                </p>
-                <ul class="space-y-4">
-                  <li class="flex items-center">
-                    <svg
-                      class="w-6 h-6 flex-none fill-sky-100 stroke-sky-500 stroke-2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="11" />
-                      <path
-                        d="m8 13 2.165 2.165a1 1 0 0 0 1.521-.126L16 9"
-                        fill="none"
-                      />
-                    </svg>
-                    <p class="ml-4">
-                      Customizing your
-                      <code class="text-sm font-bold text-gray-900">
-                        tailwind.config.js
-                      </code>{" "}
-                      file
-                    </p>
-                  </li>
-                  <li class="flex items-center">
-                    <svg
-                      class="w-6 h-6 flex-none fill-sky-100 stroke-sky-500 stroke-2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="11" />
-                      <path
-                        d="m8 13 2.165 2.165a1 1 0 0 0 1.521-.126L16 9"
-                        fill="none"
-                      />
-                    </svg>
-                    <p class="ml-4">
-                      Extracting classes with
-                      <code class="text-sm font-bold text-gray-900">
-                        @apply
-                      </code>
-                    </p>
-                  </li>
-                  <li class="flex items-center">
-                    <svg
-                      class="w-6 h-6 flex-none fill-sky-100 stroke-sky-500 stroke-2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="11" />
-                      <path
-                        d="m8 13 2.165 2.165a1 1 0 0 0 1.521-.126L16 9"
-                        fill="none"
-                      />
-                    </svg>
-                    <p class="ml-4">Code completion with instant preview</p>
-                  </li>
-                </ul>
-                <p>
-                  Perfect for learning how the framework works, prototyping a
-                  new idea, or creating a demo to share online.
-                </p>
-              </div>
-              <div class="pt-8 text-base leading-7 font-semibold">
-                <p class="text-gray-900">Want to dig deeper into Tailwind?</p>
-                <p>
-                  <a
-                    href="https://tailwindcss.com/docs"
-                    class="text-sky-500 hover:text-sky-600"
-                  >
-                    Read the docs &rarr;
-                  </a>
-                </p>
-              </div>
+      <>
+        <div class="flex sm:h-screen">
+          <div class="w-2/3 sm:h-screen flex flex-col items-center justify-center  py-10 px-5">
+            <h1 class="w-2/3 font-mono  font-extrabold text-6xl ">
+              launchpad.
+            </h1>
+            <p class="w-2/3 font-light">
+              A no-code solution for artwork generation, decentralized storage &
+              distribution of NFTs.
+            </p>
+            <div class="flex items-center pt-10 w-2/3">
+              <img class="w-1/3" src={gif1}></img>
+              <img class="w-1/3" src={gif2}></img>
+              <img class="w-1/3" src={gif3}></img>
+            </div>
+          </div>
+          <div class="w-1/3 sm:h-screen flex flex-col items-center justify-center bg-gray-900 py-10 px-5 pb-80">
+            <h1 class="w-2/3 text-white font-mono">Welcome!</h1>
+            <p class="w-2/3 text-white">Sign in with your wallet to continue</p>
+            <button
+              type="button"
+              class="w-2/3 text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 mr-2 mb-2"
+            >
+              Connect with ICONex
+            </button>
+          </div>
+        </div>
+        <div class="flex sm:h-screen">
+          <div class="w-2/3 sm:h-screen flex flex-col items-center justify-center  py-10 px-5">
+            <h1 class="w-2/3 font-mono  font-extrabold text-6xl ">
+              How does it work?
+            </h1>
+            <div class="pb-fluid-video w-2/3 h-2/3 pt-6">
+              <iframe
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/CsGH9eKdmZU"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 }
