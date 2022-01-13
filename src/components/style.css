@@ -500,6 +500,20 @@ input[type="number"] {
   font-weight: 500;
 }
 
+/* LandingComponent CSS */
+.right_outer {
+  position: relative;
+  margin: 0;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-block;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
 @-webkit-keyframes dash {
   0% {
     stroke-dashoffset: 1000;
