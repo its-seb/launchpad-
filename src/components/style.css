@@ -514,6 +514,14 @@ input[type="number"] {
   margin-right: auto;
 }
 
+.right_inner {
+  position: absolute;
+  bottom: 8px;
+  left: 88%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+}
+
 @-webkit-keyframes dash {
   0% {
     stroke-dashoffset: 1000;

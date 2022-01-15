@@ -125,9 +125,9 @@ export class CollectionComponent extends Component {
         .catch(Dexie.BulkError, (e) => {
           console.error(
             "Some contracts were not appended. However, " +
-              contractDisplay.length -
-              e.failures.length +
-              " contracts was added successfully"
+            contractDisplay.length -
+            e.failures.length +
+            " contracts was added successfully"
           );
         });
       //console.log(contractsToCommit);
