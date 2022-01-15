@@ -1,12 +1,34 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Card, Modal } from "react-bootstrap";
 import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
-import { BrowserRouter as Router, Link, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Link as RouteLink,
+} from "react-router-dom";
 import NewCollectionModal from "./NewCollectionModal.js";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Input,
+  Button,
+  FormControl,
+  FormLabel,
+  Flex,
+  Text,
+  SimpleGrid,
+  Box,
+  Stack,
+  Link,
+} from "@chakra-ui/react";
+import { AddIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import "./style.css";
-
 export class CollectionComponent extends Component {
   constructor(props) {
     super(props);
@@ -32,7 +54,7 @@ export class CollectionComponent extends Component {
   connection = new ICONexConnection();
 
   async componentDidMount() {
-    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
+    //document.getElementById("_pageTitle").innerText = this.props.pageTitle;
 
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
     if (walletAddress != null) {
@@ -127,57 +149,142 @@ export class CollectionComponent extends Component {
 
   render() {
     return (
-      <div style={{ height: "75vh", overflowY: "auto" }}>
-        <Container>
-          <Row style={{ marginTop: "10px" }}>
-            <Col xs={6} md={4} lg={3}>
-              <Card
-                className="contract-card unselectable"
-                type="button"
-                onClick={this.showCollectionModal}
+      <>
+        <Stack flexDirection="row">
+          <Box mt="1rem">
+            <Link variant="current" href="/collection">
+              Collection
+            </Link>
+          </Box>
+          <Stack justifyContent="flex-end" flexDirection="row" w="100%">
+            <Link as={RouteLink} pr="0" mt="0.5rem" to="/generate">
+              Generate
+            </Link>
+          </Stack>
+        </Stack>
+
+        <SimpleGrid columns={[1, 1, 2, 4]} spacing={"1rem"} mt="0.5rem">
+          <Box
+            type="button"
+            bg={"#fed428"}
+            p="6px 15px 10px 15px"
+            borderRadius="xl"
+            onClick={this.showCollectionModal}
+            mt="0.5rem"
+          >
+            <Flex>
+              <Text
+                fontSize="1.8rem"
+                fontWeight="bold"
+                w="100%"
+                textOverflow="ellipsis"
+                overflow="hidden"
+                whiteSpace="nowrap"
               >
-                <div style={{ display: "flex" }}>
-                  <span>
-                    New Collection
-                    <PlusIcon></PlusIcon>
-                  </span>
-                </div>
-                <span>deploy a new nft contract</span>
-              </Card>
-            </Col>
-            {this.state.contractInfo.map((info) => (
-              <Col xs={6} md={4} lg={3} key={info.contractAddress}>
-                <Link
-                  to={"files"}
-                  className="contractLink"
-                  onClick={() =>
-                    this.handleCardEvent(
-                      info.contractAddress,
-                      info.metahash_exist
-                    )
-                  }
+                New Collection
+                <AddIcon w="1rem" h="1rem" mt="13px" float="right" />
+              </Text>
+            </Flex>
+            <Text fontSize="0.9rem">deploy a new nft contract</Text>
+          </Box>
+
+          {this.state.contractInfo.map((info) => (
+            <RouteLink to="/file">
+              <Box
+                mt="0.5rem"
+                type="button"
+                bg={"#2f3136"}
+                color="white"
+                p="6px 15px 10px 15px"
+                borderRadius="xl"
+                _hover={{ backgroundColor: "#393c43", color: "white" }}
+                onClick={() =>
+                  this.handleCardEvent(
+                    info.contractAddress,
+                    info.metahash_exist
+                  )
+                }
+                to="/file"
+              >
+                <Flex as="a" _hover={{ color: "white" }}>
+                  <Text fontSize="1.8rem" fontWeight="bold" w="100%">
+                    {info.name}
+                    <ArrowForwardIcon
+                      w="1rem"
+                      h="1rem"
+                      mt="13px"
+                      float="right"
+                    />
+                  </Text>
+                </Flex>
+                <Text
+                  fontSize="0.9rem"
+                  textOverflow="ellipsis"
+                  overflow="hidden"
+                  whiteSpace="nowrap"
                 >
-                  <Card className="contract-card unselectable">
-                    <div style={{ display: "flex" }}>
-                      <span>
-                        {info.name}
-                        <ArrowRightIcon></ArrowRightIcon>
-                      </span>
-                    </div>
-                    <span>{info.contractAddress}</span>
-                  </Card>
-                </Link>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-        <Modal show={this.state.showCollectionModal}>
-          <NewCollectionModal
-            updateContractInfo={this.getContractInfo}
-            hideModal={this.hideCollectionModal}
-          />
+                  {info.contractAddress}
+                </Text>
+              </Box>
+            </RouteLink>
+          ))}
+        </SimpleGrid>
+        <Modal
+          closeOnOverlayClick={false}
+          isOpen={this.state.showCollectionModal}
+          onClose={this.hideCollectionModal}
+        >
+          <ModalOverlay />
+          <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
+            <ModalHeader borderBottom="1px solid #4c4c4c">
+              Create a new collection
+            </ModalHeader>
+            <ModalCloseButton t={4} />
+            <ModalBody pb={2} pt={2}>
+              <FormControl>
+                <FormLabel>Collection Name</FormLabel>
+                <Input
+                  placeholder="Token Symbol"
+                  borderColor="#4c4c4c"
+                  _focus={{ outlineColor: "#4c4c4c", outlineOffset: "0" }}
+                  placeholder="Collection Name"
+                />
+              </FormControl>
+
+              <FormControl mt={4}>
+                <FormLabel>Token Symbol</FormLabel>
+                <Input
+                  placeholder="Token Symbol"
+                  borderColor="#4c4c4c"
+                  _focus={{ outlineColor: "#4c4c4c", outlineOffset: "0" }}
+                />
+              </FormControl>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button
+                onClick={this.hideCollectionModal}
+                mr={3}
+                bg="#2f3136"
+                _hover={{ backgroundColor: "#2f3136" }}
+                _active={{ backgroundColor: "#2f3136" }}
+                _focus={{ boxShadow: "0" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                bg="#fed428"
+                color="#2f3136"
+                _hover={{ backgroundColor: "#fed428", boxShadow: "0" }}
+                _active={{ backgroundColor: "#fed428" }}
+                _focus={{ boxShadow: "0" }}
+              >
+                Save
+              </Button>
+            </ModalFooter>
+          </ModalContent>
         </Modal>
-      </div>
+      </>
     );
   }
 }

@@ -9,9 +9,11 @@ import CollectionComponent from "./components/CollectionComponent.js";
 import FileComponent from "./components/FileComponent.js";
 import LaunchComponent from "./components/LaunchComponent.js";
 import Usergallery from "./components/Usergallery";
-import { Button } from "react-bootstrap";
 import ICONexConnection from "./components/utils/interact.js";
 import LandingComponent from "./components/LandingComponent";
+import NavigationComponent from "./components/NavigationComponent";
+import GenerateComponent from "./components/GenerateComponent";
+import { Box, Stack, Link, Button } from "@chakra-ui/react";
 
 class App extends Component {
   constructor(props) {
@@ -20,11 +22,41 @@ class App extends Component {
 
   render() {
     return (
-      <Router>
-        <Routes>
-          <Route exact element={<LandingComponent />} path="/"></Route>
-        </Routes>
-      </Router>
+      <>
+        <Router>
+          <Routes>
+            <Route exact element={<LandingComponent />} path="/"></Route>
+          </Routes>
+          <NavigationComponent></NavigationComponent>
+        </Router>
+        <Box
+          h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
+          bg={"#202225"}
+        >
+          <Box mx="auto" maxW="1300px">
+            <Router>
+              <Routes>
+                <Route
+                  exact
+                  element={<CollectionComponent />}
+                  path="/collection"
+                ></Route>
+                <Route exact element={<FileComponent />} path="/file"></Route>
+                <Route
+                  exact
+                  element={<LaunchComponent />}
+                  path="/launch"
+                ></Route>
+                <Route
+                  exact
+                  element={<GenerateComponent />}
+                  path="/generate"
+                ></Route>
+              </Routes>
+            </Router>
+          </Box>
+        </Box>
+      </>
     );
   }
 }

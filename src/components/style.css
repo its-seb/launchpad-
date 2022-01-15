@@ -99,10 +99,11 @@
 }
 
 .contract-card {
-  margin-top: 25px;
+  margin-top: 0.5rem;
   padding: 10px 15px;
-  border: 1px solid #4b4db3;
   border-radius: 10px;
+  background-color: #2f3136;
+  color: white;
 }
 
 .contract-card > div > span {
@@ -110,7 +111,7 @@
   font-weight: bold;
   width: 100%;
   text-align: left;
-  color: #494a66;
+  color: white;
 }
 
 .contract-card > div > span > svg {
@@ -131,7 +132,7 @@
 }
 
 .contract-card:hover {
-  background-color: #4b4db3;
+  background-color: #393c43;
 }
 
 .contract-card:hover > span,
@@ -512,7 +513,6 @@ input[type="number"] {
   margin-left: auto;
   margin-right: auto;
 }
-
 
 @-webkit-keyframes dash {
   0% {
