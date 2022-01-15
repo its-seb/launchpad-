@@ -28,13 +28,11 @@ class App extends Component {
             <Route exact element={<LandingComponent />} path="/"></Route>
           </Routes>
           <NavigationComponent></NavigationComponent>
-        </Router>
-        <Box
-          h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
-          bg={"#202225"}
-        >
-          <Box mx="auto" maxW="1300px">
-            <Router>
+          <Box
+            h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
+            bg={"#202225"}
+          >
+            <Box mx="auto" maxW="1300px" px={"5"}>
               <Routes>
                 <Route
                   exact
@@ -53,9 +51,9 @@ class App extends Component {
                   path="/generate"
                 ></Route>
               </Routes>
-            </Router>
+            </Box>
           </Box>
-        </Box>
+        </Router>
       </>
     );
   }

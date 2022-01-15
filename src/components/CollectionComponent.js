@@ -182,8 +182,8 @@ export class CollectionComponent extends Component {
                 whiteSpace="nowrap"
               >
                 New Collection
-                <AddIcon w="1rem" h="1rem" mt="13px" float="right" />
               </Text>
+              <AddIcon w={["1rem"]} h="1rem" mt="13px" float="right" />
             </Flex>
             <Text fontSize="0.9rem">deploy a new nft contract</Text>
           </Box>
@@ -209,13 +209,8 @@ export class CollectionComponent extends Component {
                 <Flex as="a" _hover={{ color: "white" }}>
                   <Text fontSize="1.8rem" fontWeight="bold" w="100%">
                     {info.name}
-                    <ArrowForwardIcon
-                      w="1rem"
-                      h="1rem"
-                      mt="13px"
-                      float="right"
-                    />
                   </Text>
+                  <ArrowForwardIcon w="1rem" h="1rem" mt="13px" float="right" />
                 </Flex>
                 <Text
                   fontSize="0.9rem"

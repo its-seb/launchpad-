@@ -22,7 +22,7 @@ export class NavigationComponent extends Component {
   render() {
     return (
       <>
-        <Box bg={"#202225"} h="70">
+        <Box bg={"#202225"} h="70" px={"5"}>
           <Flex
             align="center"
             justify="space-between"
@@ -36,10 +36,11 @@ export class NavigationComponent extends Component {
           >
             <Box>
               <Link
+                as={RouteLink}
                 fontSize="2xl"
                 fontWeight="bold"
                 color="white"
-                href="/collection"
+                to="/collection"
                 _hover={{ color: "white" }}
               >
                 &lt;/&gt; launchpad
