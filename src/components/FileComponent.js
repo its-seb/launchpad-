@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Modal } from "react-bootstrap";
 import IconService from "icon-sdk-js";
 import ICONexConnection from "./utils/interact.js";
 import PinataModal from "./PinataModal.js";
@@ -9,6 +8,12 @@ import Dropzone from "./Dropzone.js";
 import Gallery from "./Gallery.js";
 import { Navigate } from "react-router-dom";
 
+import { Box, Stack, Link } from "@chakra-ui/react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Link as RouteLink,
+} from "react-router-dom";
 export class FileComponent extends Component {
   // 1. Get the collection hash address
   // 2. call builder to the hash address
@@ -49,7 +54,7 @@ export class FileComponent extends Component {
   async dragORfiles(contractAddress) {}
 
   async componentDidMount() {
-    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
+    //document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     if (this.state.walletAddress == null) {
       alert("Please connect your wallet.");
       return;
@@ -60,8 +65,8 @@ export class FileComponent extends Component {
     }
 
     //check if user has configured pinata cloud api
-    this.state.pinataKey = localStorage.getItem("PINATA_KEY");
-    this.state.pinataSecret = localStorage.getItem("PINATA_SECRET");
+    // this.state.pinataKey = localStorage.getItem("PINATA_KEY");
+    // this.state.pinataSecret = localStorage.getItem("PINATA_SECRET");
     if (this.state.pinataKey == null || this.state.pinataSecret == null) {
       this.showPinataModal(); //configure to continue
     }
@@ -100,28 +105,44 @@ export class FileComponent extends Component {
   };
 
   render() {
-    if (
-      this.state.walletAddress == null ||
-      this.state.contractAddress == null
-    ) {
-      return <div></div>;
-    } else {
-      return (
-        <div style={{ height: "75vh", overflowY: "auto" }}>
-          {this.state.hasMetahash == "true" ? (
-            <Gallery metahash={this.contract_metahash} />
-          ) : (
-            <Dropzone />
-          )}
-          <Modal
-            show={this.state.showPinataModal}
-            onHide={this.hidePinataModal}
-          >
-            <PinataModal hideModal={this.hidePinataModal} />
-          </Modal>
-        </div>
-      );
-    }
+    return (
+      <>
+        <Stack flexDirection="row">
+          <Box mt="1rem">
+            <Link as={RouteLink} variant="notCurrent" to="/collection">
+              Collection
+            </Link>
+            <Link variant="current" href="/file">
+              File
+            </Link>
+            <Link variant="notCurrent" href="/launch">
+              Launch
+            </Link>
+          </Box>
+          <Stack justifyContent="flex-end" flexDirection="row" w="100%">
+            <Link
+              as={RouteLink}
+              pr="0"
+              mt="0.5rem"
+              to="/generate"
+              variant="notCurrent"
+            >
+              Generate
+            </Link>
+          </Stack>
+        </Stack>
+
+        {this.state.hasMetahash == "true" ? (
+          <Gallery metahash={this.contract_metahash} />
+        ) : (
+          <Dropzone />
+        )}
+        <PinataModal
+          show={this.state.showPinataModal}
+          hide={this.hidePinataModal}
+        ></PinataModal>
+      </>
+    );
   }
 }
 

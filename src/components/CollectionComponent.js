@@ -8,25 +8,7 @@ import {
 import NewCollectionModal from "./NewCollectionModal.js";
 import Dexie from "dexie";
 import ICONexConnection from "./utils/interact.js";
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Input,
-  Button,
-  FormControl,
-  FormLabel,
-  Flex,
-  Text,
-  SimpleGrid,
-  Box,
-  Stack,
-  Link,
-} from "@chakra-ui/react";
+import { Flex, Text, SimpleGrid, Box, Stack, Link } from "@chakra-ui/react";
 import { AddIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import "./style.css";
 export class CollectionComponent extends Component {
@@ -125,9 +107,9 @@ export class CollectionComponent extends Component {
         .catch(Dexie.BulkError, (e) => {
           console.error(
             "Some contracts were not appended. However, " +
-            contractDisplay.length -
-            e.failures.length +
-            " contracts was added successfully"
+              contractDisplay.length -
+              e.failures.length +
+              " contracts was added successfully"
           );
         });
       //console.log(contractsToCommit);
@@ -166,38 +148,21 @@ export class CollectionComponent extends Component {
         <SimpleGrid columns={[1, 1, 2, 4]} spacing={"1rem"} mt="0.5rem">
           <Box
             type="button"
-            bg={"#fed428"}
-            p="6px 15px 10px 15px"
-            borderRadius="xl"
             onClick={this.showCollectionModal}
-            mt="0.5rem"
+            layerStyle="card_new_collection"
           >
             <Flex>
-              <Text
-                fontSize="1.8rem"
-                fontWeight="bold"
-                w="100%"
-                textOverflow="ellipsis"
-                overflow="hidden"
-                whiteSpace="nowrap"
-              >
-                New Collection
-              </Text>
-              <AddIcon w={["1rem"]} h="1rem" mt="13px" float="right" />
+              <Text layerStyle="card_title">New Collection</Text>
+              <AddIcon layerStyle="card_icon" />
             </Flex>
-            <Text fontSize="0.9rem">deploy a new nft contract</Text>
+            <Text layerStyle="card_content">deploy a new nft contract</Text>
           </Box>
 
           {this.state.contractInfo.map((info) => (
             <RouteLink to="/file">
               <Box
-                mt="0.5rem"
+                layerStyle="card_collection"
                 type="button"
-                bg={"#2f3136"}
-                color="white"
-                p="6px 15px 10px 15px"
-                borderRadius="xl"
-                _hover={{ backgroundColor: "#393c43", color: "white" }}
                 onClick={() =>
                   this.handleCardEvent(
                     info.contractAddress,
@@ -207,78 +172,18 @@ export class CollectionComponent extends Component {
                 to="/file"
               >
                 <Flex as="a" _hover={{ color: "white" }}>
-                  <Text fontSize="1.8rem" fontWeight="bold" w="100%">
-                    {info.name}
-                  </Text>
-                  <ArrowForwardIcon w="1rem" h="1rem" mt="13px" float="right" />
+                  <Text layerStyle="card_title">{info.name}</Text>
+                  <ArrowForwardIcon layerStyle="card_icon" />
                 </Flex>
-                <Text
-                  fontSize="0.9rem"
-                  textOverflow="ellipsis"
-                  overflow="hidden"
-                  whiteSpace="nowrap"
-                >
-                  {info.contractAddress}
-                </Text>
+                <Text layerStyle="card_content">{info.contractAddress}</Text>
               </Box>
             </RouteLink>
           ))}
         </SimpleGrid>
-        <Modal
-          closeOnOverlayClick={false}
-          isOpen={this.state.showCollectionModal}
-          onClose={this.hideCollectionModal}
-        >
-          <ModalOverlay />
-          <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
-            <ModalHeader borderBottom="1px solid #4c4c4c">
-              Create a new collection
-            </ModalHeader>
-            <ModalCloseButton t={4} />
-            <ModalBody pb={2} pt={2}>
-              <FormControl>
-                <FormLabel>Collection Name</FormLabel>
-                <Input
-                  placeholder="Token Symbol"
-                  borderColor="#4c4c4c"
-                  _focus={{ outlineColor: "#4c4c4c", outlineOffset: "0" }}
-                  placeholder="Collection Name"
-                />
-              </FormControl>
-
-              <FormControl mt={4}>
-                <FormLabel>Token Symbol</FormLabel>
-                <Input
-                  placeholder="Token Symbol"
-                  borderColor="#4c4c4c"
-                  _focus={{ outlineColor: "#4c4c4c", outlineOffset: "0" }}
-                />
-              </FormControl>
-            </ModalBody>
-
-            <ModalFooter>
-              <Button
-                onClick={this.hideCollectionModal}
-                mr={3}
-                bg="#2f3136"
-                _hover={{ backgroundColor: "#2f3136" }}
-                _active={{ backgroundColor: "#2f3136" }}
-                _focus={{ boxShadow: "0" }}
-              >
-                Cancel
-              </Button>
-              <Button
-                bg="#fed428"
-                color="#2f3136"
-                _hover={{ backgroundColor: "#fed428", boxShadow: "0" }}
-                _active={{ backgroundColor: "#fed428" }}
-                _focus={{ boxShadow: "0" }}
-              >
-                Save
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+        <NewCollectionModal
+          show={this.state.showCollectionModal}
+          hide={this.hideCollectionModal}
+        />
       </>
     );
   }

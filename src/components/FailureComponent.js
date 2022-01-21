@@ -17,7 +17,7 @@ export class FailureComponent extends Component {
           <circle
             className="path circle"
             fill="none"
-            stroke="#494a66"
+            stroke="#cd0e00"
             strokeWidth="6"
             strokeMiterlimit="10"
             cx="65.1"
@@ -27,7 +27,7 @@ export class FailureComponent extends Component {
           <line
             className="path line"
             fill="none"
-            stroke="#494a66"
+            stroke="#cd0e00"
             strokeWidth="6"
             strokeLinecap="round"
             strokeMiterlimit="10"
@@ -39,7 +39,7 @@ export class FailureComponent extends Component {
           <line
             className="path line"
             fill="none"
-            stroke="#494a66"
+            stroke="#cd0e00"
             strokeWidth="6"
             strokeLinecap="round"
             strokeMiterlimit="10"

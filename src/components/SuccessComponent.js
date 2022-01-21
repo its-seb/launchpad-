@@ -17,7 +17,7 @@ export class SuccessComponent extends Component {
           <circle
             className="path circle"
             fill="none"
-            stroke="#494a66"
+            stroke="#ffcd00"
             strokeWidth="6"
             strokeMiterlimit="10"
             cx="65.1"
@@ -27,7 +27,7 @@ export class SuccessComponent extends Component {
           <polyline
             className="path check"
             fill="none"
-            stroke="#494a66"
+            stroke="#ffcd00"
             strokeWidth="6"
             strokeLinecap="round"
             strokeMiterlimit="10"

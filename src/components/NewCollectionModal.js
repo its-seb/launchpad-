@@ -1,8 +1,22 @@
 import React, { Component } from "react";
-import { Form, Button, Spinner } from "react-bootstrap";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Input,
+  Button,
+  FormControl,
+  FormLabel,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
 import IconService from "icon-sdk-js";
 import Dexie from "dexie";
-import { XIcon } from "@heroicons/react/solid";
+import Swal from "sweetalert2";
 import FailureComponent from "./FailureComponent.js";
 import SuccessComponent from "./SuccessComponent.js";
 import { fetchContractContent } from "./utils/fetchContractContent.js";
@@ -16,6 +30,11 @@ const { IconConverter, IconBuilder, HttpProvider } = IconService;
 class NewCollectionModal extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      showStatusModal: false,
+    };
+
     this.db = new Dexie("contracts_deployed");
     this.db.version(1).stores({
       contracts: "contractAddress, walletAddress, name, symbol",
@@ -23,6 +42,10 @@ class NewCollectionModal extends Component {
     this.db.open().catch((error) => {
       console.log("error", error);
     });
+
+    this.tbCollectionName = React.createRef();
+    this.tbCollectionSymbol = React.createRef();
+    this.deployText = React.createRef();
   }
 
   connection = new ICONexConnection();
@@ -30,16 +53,19 @@ class NewCollectionModal extends Component {
   handleDeployContract = async () => {
     //checks before proceeding for deployment
     const walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
-    const collectionName = document.getElementById("tbCollectionName").value;
-    const collectionSymbol =
-      document.getElementById("tbCollectionSymbol").value;
+    const collectionName = this.tbCollectionName.current.value;
+    const collectionSymbol = this.tbCollectionSymbol.current.value;
 
     if (walletAddress == null) {
       alert("Please connect your wallet.");
       return;
     } else if (!collectionName.length || !collectionSymbol.length) {
       //remember to sanitize input-> allow alphanumeric only
-      alert("Please enter required fields");
+      Swal.fire({
+        title: "Oops...",
+        icon: "error",
+        text: "Make sure you have entered the mandatory fields",
+      }); //do consider replacing this -boon
       return;
     }
 
@@ -47,20 +73,15 @@ class NewCollectionModal extends Component {
       "https://gateway.pinata.cloud/ipfs/QmcGEfBjWyHntPh9xAasAK4UcvG5GL7VrtUZguWfpooNky"
     );
 
-    let collectionContainer = document.getElementById(
-      "new-collection-container"
-    );
-    let loadingContainer = document.getElementById("loading-container");
-    let deploymentLoading = document.getElementById("deploymentLoading");
     let deploymentSuccess = document.getElementById("deploymentSuccess");
     let deploymentFailure = document.getElementById("deploymentFailure");
     let deploymentStatusText = document.getElementById("deployText");
+    this.props.hide();
+    this.setState({ showStatusModal: true });
 
+    console.log(deploymentStatusText);
     deploymentStatusText.innerText = "deploying collection...";
     deploymentStatusText.style.display = "block";
-    collectionContainer.style.display = "none";
-    deploymentLoading.style.display = "block";
-    loadingContainer.style.display = "block";
 
     const txParams = {
       _name: collectionName, //based on user input
@@ -125,23 +146,19 @@ class NewCollectionModal extends Component {
         });
       this.props.updateContractInfo(walletAddress);
 
-      deploymentLoading.style.display = "none";
       deploymentSuccess.style.display = "block";
       deploymentStatusText.innerText = "new collection has been created";
       await sleep(2000);
       deploymentSuccess.style.display = "none";
       deploymentStatusText.style.display = "none";
-      collectionContainer.style.display = "block";
       this.props.hideModal();
     } catch (e) {
-      //alert("User cancelled transaction");
-      deploymentLoading.style.display = "none";
+      ////alert("User cancelled transaction");
       deploymentFailure.style.display = "block";
       deploymentStatusText.innerText = "deployment cancelled by user";
       await sleep(2000);
       deploymentStatusText.style.display = "none";
       deploymentFailure.style.display = "none";
-      collectionContainer.style.display = "block";
 
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
     }
@@ -150,53 +167,72 @@ class NewCollectionModal extends Component {
   render() {
     return (
       <>
-        <div id="new-collection-modal" className="new-collection-modal">
-          <div id="new-collection-container">
-            <span className="modal-title">New Collection</span>
-            <XIcon className="close-modal" onClick={this.props.hideModal} />
-            <Form.Floating
-              className="mb-3 unselectable"
-              style={{ marginTop: "15px" }}
-            >
-              <Form.Control
-                id="tbCollectionName"
-                type="text"
-                placeholder="Collection Name"
-                className="modal-form-control"
-              />
-              <label htmlFor="tbCollectionName" style={{ color: "#525252" }}>
-                Collection Name
-              </label>
-            </Form.Floating>
-            <Form.Floating className="mb-3 unselectable">
-              <Form.Control
-                id="tbCollectionSymbol"
-                type="text"
-                placeholder="Symbol"
-                className="modal-form-control"
-              />
-              <label htmlFor="tbCollectionSymbol" style={{ color: "#525252" }}>
-                Symbol
-              </label>
-            </Form.Floating>
+        <Modal
+          closeOnOverlayClick={false}
+          isOpen={this.props.show}
+          onClose={this.props.hide}
+        >
+          <ModalOverlay />
+          <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
+            <ModalHeader borderBottom="1px solid #4c4c4c">
+              Create a new collection
+            </ModalHeader>
+            <ModalCloseButton top={4} />
+            <ModalBody pb={2} pt={2}>
+              <FormControl>
+                <FormLabel>Collection Name</FormLabel>
+                <Input
+                  ref={this.tbCollectionName}
+                  focusBorderColor="#4c4c4c"
+                  borderColor="#4c4c4c"
+                  placeholder="Collection Name"
+                />
+              </FormControl>
 
-            <Button
-              id="btnDeploy"
-              className="modal-form-submit"
-              onClick={this.handleDeployContract}
-              style={{ padding: "0.5rem", marginBottom: "3px" }}
-            >
-              deploy
-            </Button>
-          </div>
+              <FormControl mt={4}>
+                <FormLabel>Token Symbol</FormLabel>
+                <Input
+                  ref={this.tbCollectionSymbol}
+                  focusBorderColor="#4c4c4c"
+                  placeholder="Token Symbol"
+                  borderColor="#4c4c4c"
+                />
+              </FormControl>
+            </ModalBody>
 
-          <div id="loading-container">
-            <Spinner animation="border" id="deploymentLoading"></Spinner>
-            <SuccessComponent id="deploymentSuccess" />
-            <FailureComponent id="deploymentFailure" />
-            <span id="deployText">deploying collection...</span>
-          </div>
-        </div>
+            <ModalFooter>
+              <Button onClick={this.props.hide} variant="modal_cancel">
+                Cancel
+              </Button>
+              <Button
+                variant="modal_submit"
+                onClick={this.handleDeployContract}
+              >
+                Save
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        <Modal closeOnOverlayClick={false} isOpen={this.state.showStatusModal}>
+          <ModalOverlay />
+          <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
+            <ModalBody py={10} textAlign="center">
+              <Spinner
+                thickness="4px"
+                speed="0.65s"
+                w="5rem"
+                h="5rem"
+                borderColor="#626262"
+              ></Spinner>
+              <SuccessComponent id="deploymentSuccess" />
+              <FailureComponent id="deploymentFailure" />
+              <Text fontSize="1.2rem" pt="15px" id="deployText">
+                deploying collection...
+              </Text>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       </>
     );
   }

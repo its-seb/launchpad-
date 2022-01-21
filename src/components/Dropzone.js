@@ -8,15 +8,19 @@ import Dexie from "dexie";
 import Compressor from "compressorjs";
 import { Navigate } from "react-router-dom";
 import {
+  Switch,
+  Text,
+  SimpleGrid,
+  Box,
+  VisuallyHiddenInput,
   Button,
-  Container,
-  Modal,
-  Row,
-  Col,
-  Card,
-  Spinner,
-} from "react-bootstrap";
-import { PhotographIcon } from "@heroicons/react/solid";
+  Image,
+} from "@chakra-ui/react";
+import {
+  PhotographIcon,
+  DocumentTextIcon,
+  XCircleIcon,
+} from "@heroicons/react/solid";
 import "./global.css";
 import "./style.css";
 const axios = require("axios");
@@ -37,6 +41,7 @@ class Dropzone extends Component {
       uploadMessage: "",
       complete: false,
       redirect: false,
+      showMetadataSection: false,
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -58,6 +63,9 @@ class Dropzone extends Component {
     this.db.open().catch((error) => {
       console.log("error", error);
     });
+
+    this.imagesUploadInput = React.createRef();
+    this.metadataUploadInput = React.createRef();
   }
 
   set_totalandcurrent_supply = async (
@@ -114,204 +122,10 @@ class Dropzone extends Component {
     this.setState({ show: false });
   };
 
-  createThumbnailImageFormData = (files) => {
-    let thumbnailData = new FormData();
-    for (var i = 0; i < files.length; i++) {
-      console.log("createThumbnailImageFormData", files[i].name);
-      //For Compressed File
-
-      let x = new Compressor(files[i].dataFile, {
-        quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
-        convertSize: Infinity,
-        success: (compressedResult) => {
-          // compressedResult has the compressed file.
-          // Use the compressed file to upload the images to your server.
-          console.log(compressedResult);
-          thumbnailData.append(
-            `file`,
-            compressedResult,
-            `file/${compressedResult.name}`
-          );
-        },
-      });
-    }
-    console.log(thumbnailData);
-    return thumbnailData;
-  };
-
-  createOriginalImageFormData = (files) => {
-    let originalData = new FormData();
-    for (var i = 0; i < files.length; i++) {
-      console.log("createOriginalImageFormData", files[i]);
-      //For original full Resolution File
-      originalData.append(`file`, files[i].dataFile, `file/${files[i].name}`);
-    }
-    return originalData;
-  };
-
-  pinMultipleFilesToIPFS = async (formData, displayedObjName) => {
-    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
-    const metadata = JSON.stringify({ name: displayedObjName });
-    formData.append("pinataMetadata", metadata);
-    let response = await axios
-      .post(pinataEndpoint, formData, {
-        maxContentLength: "Infinity",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        },
-        onUploadProgress: (progressEvent) => {
-          const { loaded, total } = progressEvent;
-          console.log("total ", total, " for ", displayedObjName);
-          const currentProgress = Math.round(((loaded * 100) / total) * 0.5);
-
-          console.log(
-            "current progress for ",
-            displayedObjName,
-            currentProgress
-          );
-        },
-      })
-      .then((res) => {
-        //        console.log(displayedObjName, "   ", res);
-        return res;
-      }); //will probably have to handle error here
-    return response;
-  };
-
-  createJsonFormData = (files, ipfsHash) => {
-    let combinedJson = { files_link: [] };
-    const ipfsFolderHash = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
-    let data = new FormData();
-
-    for (var i = 0; i < files.length; i++) {
-      combinedJson.files_link.push({
-        link: `${ipfsFolderHash}/${files[i].name}`,
-        name: `${files[i].name}`,
-      });
-
-      const individualJson = {
-        image: `${ipfsFolderHash}/${this.uploadedFiles[i].name}`,
-      };
-
-      const jsonFile = new File([JSON.stringify(individualJson)], `${i}.json`, {
-        type: "application/json",
-      });
-      data.append(`file`, jsonFile, `data/${i}.json`);
-    }
-    return [combinedJson, data];
-  };
-
-  pinJsonToIPFS = async (content) => {
-    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
-    let response = await axios
-      .post(pinataEndpoint, content, {
-        headers: {
-          pinata_api_key: this.pinataKey,
-          pinata_secret_api_key: this.pinataSecret,
-        },
-      })
-      .then((response) => {
-        console.log("pinJsonToIPFS", response);
-        return response.data.IpfsHash;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    return response;
-  };
-
-  handleUploadFiles = async () => {
-    if (this.uploadedFiles.length == 0) {
-      alert("no files found, please upload file");
-      return;
-    }
-
-    this.showUploadModal();
-    //step 1 - pin original res image
-    this.setState({ uploadMessage: "pinning image files to pinata..." });
-    // let [originalData, thumbnailData] = this.createImageFormData(
-    //   this.uploadedFiles
-    // );
-    let originalData = this.createOriginalImageFormData(this.uploadedFiles);
-    let thumbnailData = this.createThumbnailImageFormData(this.uploadedFiles);
-
-    console.log("original data", originalData);
-    console.log("thumbnailData", thumbnailData);
-    let originalResponse = await this.pinMultipleFilesToIPFS(
-      originalData,
-      "original_res"
-    );
-    let thumbnailResponse = await this.pinMultipleFilesToIPFS(
-      thumbnailData,
-      "thumbnail_res"
-    );
-    console.log("original res", originalResponse);
-    console.log("thumbnail res", thumbnailResponse);
-
-    //step 2 generate metadata json file
-    this.setState({ uploadMessage: "pinning metadata to pinata..." });
-    let [originalCombinedJson, originalJsonData] = this.createJsonFormData(
-      this.uploadedFiles,
-      originalResponse.data.IpfsHash
-    );
-    let [thumbnailCombinedJson, thumbnailJsonData] = this.createJsonFormData(
-      this.uploadedFiles,
-      thumbnailResponse.data.IpfsHash
-    );
-
-    console.log("original combined Json", originalCombinedJson);
-    console.log("originalJsonData", originalJsonData);
-    console.log("thumbnailCombinedJson", thumbnailCombinedJson);
-    console.log("thumbnailJsonData", thumbnailJsonData);
-
-    let combjson_originalResponse = await this.pinJsonToIPFS(
-      originalCombinedJson
-    );
-    let combjson_thumbnailResponse = await this.pinJsonToIPFS(
-      thumbnailCombinedJson
-    );
-
-    console.log("combined josn_original res", combjson_originalResponse);
-    console.log("combined josn_thumbnail res", combjson_thumbnailResponse);
-
-    //upload metadata
-    let metadata_response = await this.pinMultipleFilesToIPFS(
-      originalJsonData,
-      "json_metadata"
-    );
-    console.log("metadata_response", metadata_response);
-
-    //this.showUploadModal();
-
-    //update contract
-    this.setState({ uploadMessage: "updating score..." });
-    await this.set_totalandcurrent_supply(
-      this.uploadedFiles.length,
-      metadata_response.data.IpfsHash,
-      combjson_originalResponse,
-      combjson_thumbnailResponse
-    ).then(() => {
-      this.db.contracts.update(this.contractAddress, {
-        metahash_exist: true,
-      });
-      localStorage.setItem("HAS_METAHASH", true);
-      document.getElementById("uploadLoading").style.display = "none";
-      document.getElementById("uploadSuccess").style.display = "block";
-      this.setState({ uploadMessage: "files uploaded successfully!" });
-    });
-
-    await sleep(1000);
-    this.setState({ uploadMessage: "redirecting to launchpage..." });
-
-    await sleep(1500);
-    this.setState({ redirect: true });
-  };
-
-  handleDropFiles = async (event) => {
-    event.preventDefault();
-    const files = event.dataTransfer.files;
+  handleImagesOnChange = async (e) => {
+    e.preventDefault();
+    console.log(e.target.files);
+    const files = e.target.files;
     for (var i = 0; i < files.length; i++) {
       const imgBlob = URL.createObjectURL(files[i]);
       console.log(imgBlob);
@@ -321,33 +135,18 @@ class Dropzone extends Component {
         dataFile: files[i],
       });
     }
-
     this.setState({ file: this.uploadedFiles });
-    var x = document.getElementById("bruh");
-    x.style.display = "none";
   };
 
-  getTotalSupply = async () => {
-    const callObj = new IconBuilder.CallBuilder()
-      .from(null)
-      .to(this.contractAddress)
-      .method("getTotalSupply")
-      .build();
-
-    console.log(callObj);
-
-    let result = await this.iconService
-      .call(callObj)
-      .execute()
-      .then((response) => {
-        console.log("Total Supply is", response);
-        return response;
-      })
-      .catch((error) => {
-        console.log("Total Supply Error", error);
-        Promise.resolve({ error });
-      });
-    return result;
+  handleMetadataOnChange = async (e) => {
+    const uploadedMetadata = e.target.files[0];
+    console.log(uploadedMetadata);
+    let reader = new FileReader();
+    reader.readAsText(uploadedMetadata, "UTF-8");
+    reader.onload = () => {
+      let metadata = JSON.parse(reader.result);
+      console.log(metadata);
+    };
   };
 
   remove_file(file_index) {
@@ -359,112 +158,144 @@ class Dropzone extends Component {
     }
     this.uploadedFiles = updated_uploadedFile;
     this.setState({ file: this.uploadedFiles });
-    var x = document.getElementById("bruh");
-    if (this.uploadedFiles.length == 0) {
-      x.style.display = "block";
-    }
   }
 
   render() {
     return (
-      <Container
-        onDrop={this.handleDropFiles}
-        onDragOver={(e) => {
-          e.preventDefault();
-        }}
-        onDragEnter={(e) => {
-          e.preventDefault();
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault();
-        }}
-      >
-        <Row style={{ marginTop: "10px" }}>
-          <Col>
-            <Card className="upload-card unselectable">
-              <div
-                style={{
-                  paddingBottom: "10px",
-                  paddingTop: this.uploadedFiles.length == 0 ? "0px" : "5px",
-                  overflowY: "auto",
-                  overflowX: "hidden",
-                  maxHeight: "50vh",
-                }}
-              >
-                <div id="bruh">
-                  <PhotographIcon
-                    style={{ width: "10rem", color: "#494a66" }}
-                  />
-                  <span
-                    style={{
-                      display: "block",
-                      color: "#494a66",
-                      fontSize: "2rem",
-                      fontWeight: "500",
-                    }}
+      <>
+        <SimpleGrid columns={1} spacing={"1rem"} mt="1rem">
+          <Box h="60vh" px={[0, 50, 150, 250]}>
+            <Text layerStyle="section_title">Upload Files</Text>
+            <Box
+              border="2px solid #949494"
+              borderRadius={"xl"}
+              mt="1rem"
+              p="2rem"
+              textAlign="right"
+              _hover={
+                this.uploadedFiles.length == 0
+                  ? { backgroundColor: "#2f3136", cursor: "pointer" }
+                  : null
+              }
+              onClick={() => {
+                if (this.uploadedFiles.length == 0) {
+                  this.imagesUploadInput.current.click();
+                }
+              }}
+            >
+              <Box display={this.uploadedFiles.length > 0 ? "none" : "block"}>
+                <PhotographIcon
+                  color="white"
+                  width="3rem"
+                  class="m-auto"
+                  mt="1rem"
+                />
+                <Text lineHeight="" color="white" textAlign="center">
+                  File types supported: JPG, PNG, GIF
+                </Text>
+              </Box>
+
+              <VisuallyHiddenInput
+                type="file"
+                ref={this.imagesUploadInput}
+                accept="image/png, image/jpeg, image/gif"
+                onChange={(e) => this.handleImagesOnChange(e)}
+                multiple="true"
+              ></VisuallyHiddenInput>
+              <SimpleGrid columns={5} spacingX="1rem" spacingY="3rem">
+                {(this.uploadedFiles || []).map((data, i) => (
+                  <Box
+                    h="100px"
+                    w="100px"
+                    m="auto"
+                    bg="#595A5A"
+                    borderRadius="10"
+                    textAlign="right"
+                    position="relative"
                   >
-                    drag and drop files
-                  </span>
-                </div>
-                <Row>
-                  {(this.uploadedFiles || []).map((data, i) => (
-                    <Col key={i} xs={2} style={{ marginBottom: "10px" }}>
-                      <div style={{ padding: "5px", position: "relative" }}>
-                        <img
-                          src={data.blob}
-                          style={{
-                            width: "100%",
-                            display: "block",
-                            margin: "auto",
-                            border: "1px solid #c9c9c9",
-                          }}
-                        ></img>
-                        <i
-                          className="fa fa-times-circle"
-                          style={{
-                            fontSize: "25px",
-                            color: "red",
-                            position: "absolute",
-                            top: "0px",
-                            right: "-1px",
-                            opacity: "0.6",
-                          }}
-                          onClick={(e) => this.remove_file({ i })}
-                        ></i>
-                        <span style={{ fontWeight: "bold", fontSize: "12px" }}>
-                          {data.name}
-                        </span>
-                      </div>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-        <Button
-          id="btnUpload"
-          style={{ marginTop: "20px", padding: "0.5rem" }}
-          onClick={this.handleUploadFiles}
-        >
-          upload
-        </Button>
-        <Modal show={this.state.show}>
-          <div style={{ padding: "25px 25px" }}>
-            <div id="loading-container" style={{ display: "block" }}>
-              <Spinner
-                animation="border"
-                id="uploadLoading"
-                style={{ display: "block" }}
-              ></Spinner>
-              <SuccessComponent id="uploadSuccess" />
-              <FailureComponent id="uploadFailure" />
-              <span id="uploadText">{this.state.uploadMessage}</span>
-            </div>
-          </div>
-        </Modal>
-        {this.renderRedirect()}
-      </Container>
+                    <Image
+                      src={data.blob}
+                      maxHeight={100}
+                      maxWidth={100}
+                      p={3}
+                    ></Image>
+                    <XCircleIcon
+                      className="remove_image"
+                      onClick={(e) => this.remove_file({ i })}
+                    ></XCircleIcon>
+                    <Text
+                      layerStyle="card_content"
+                      textAlign="center"
+                      color="white"
+                      mt={1}
+                    >
+                      {data.name}
+                    </Text>
+                  </Box>
+                ))}
+              </SimpleGrid>
+              {this.uploadedFiles.length > 0 ? (
+                <Button
+                  mt="10"
+                  onClick={() => this.imagesUploadInput.current.click()}
+                  variant="modal_submit"
+                >
+                  Add Files
+                </Button>
+              ) : null}
+            </Box>
+
+            <Text layerStyle="section_title" mt="1rem">
+              Existing Metadata File
+              <Switch
+                float="right"
+                colorScheme="brand"
+                onChange={(e) =>
+                  this.setState({ showMetadataSection: e.target.checked })
+                }
+              />
+            </Text>
+            <Text color="white">
+              Toggle this option if you have existing metadata file
+            </Text>
+            <Text
+              layerStyle="section_title"
+              mt="1rem"
+              display={this.state.showMetadataSection ? "block" : "none"}
+            >
+              Upload Metadata File
+            </Text>
+            <Box
+              border="2px solid #949494"
+              borderRadius={"xl"}
+              mt="1rem"
+              p="2rem"
+              _hover={{ backgroundColor: "#2f3136", cursor: "pointer" }}
+              display={this.state.showMetadataSection ? "block" : "none"}
+              onClick={() => this.metadataUploadInput.current.click()}
+            >
+              <DocumentTextIcon
+                color="white"
+                width="3rem"
+                class="m-auto"
+                mt="1rem"
+              />
+              <Text color="white" textAlign="center">
+                File type supported: JSON
+              </Text>
+              <VisuallyHiddenInput
+                type="file"
+                ref={this.metadataUploadInput}
+                accept="application/json"
+                onChange={(e) => this.handleMetadataOnChange(e)}
+              ></VisuallyHiddenInput>
+            </Box>
+            <Button variant="modal_submit" float="right" mt={5}>
+              Upload to IPFS
+            </Button>
+          </Box>
+        </SimpleGrid>
+      </>
     );
   }
 }
