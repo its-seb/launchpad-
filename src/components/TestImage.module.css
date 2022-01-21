@@ -1,0 +1,109 @@
+.layerDiv {
+    position: relative;
+    margin-left: 5px;
+    display: flex;
+    background-color: #373737;
+    padding: 15px;
+    border-radius: 10px;
+    align-items: center;
+    text-align: left;
+    margin-bottom: 10px;
+    color: #E0E0E0;
+    cursor: pointer;
+    margin-left: 20px;
+    margin-right: 10px;
+}
+
+.layerDiv:focus {
+    outline: none;
+    box-shadow: none;
+    background-color: rgb(49, 49, 49);
+    border: 0.6px solid rgb(209, 209, 209);
+}
+
+.layerDiv:hover, .layerDiv:focus-visible{
+    border: 0.6px solid rgb(124, 124, 124);
+    box-shadow: none;
+    background-color: rgb(49, 49, 49);
+}
+
+.layerButton {
+    display: inline-block;
+    width: 100%;
+    color: #E0E0E0;
+}
+
+.layerButtonFocused {
+    border: 0.6px solid rgb(209, 209, 209);
+}
+
+.layerDelete {
+    vertical-align: middle;
+    float: right;
+    cursor: pointer;
+}
+
+.cardContainer {
+    margin-top: 20px;
+    padding-top: 10px;
+    width: 480px;
+    max-height: 400px;
+}
+
+.cardBody {
+    overflow: auto;
+}
+
+.raritySlider {
+    cursor: pointer;
+}
+
+::-webkit-scrollbar {
+    width: 18px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+    /* background-color: #23272a; */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #d6dee1;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #a8bbbf;
+}
+
+/* input[type=range]{
+    -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 300px;
+    height: 5px;
+    background: #ddd;
+    border: none;
+    border-radius: 3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: purple;
+    margin-top: -4px;
+}
+
+input[type=range]:focus {
+    outline: none;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+    background: red;
+} */
