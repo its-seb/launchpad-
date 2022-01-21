@@ -15,6 +15,7 @@ import NavigationComponent from "./components/NavigationComponent";
 import GenerateComponent from "./components/GenerateComponent";
 import { Box, Stack, Link, Button } from "@chakra-ui/react";
 
+
 class App extends Component {
   constructor(props) {
     super(props);

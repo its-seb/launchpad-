@@ -26,6 +26,8 @@
     "react-router-dom": "^6.1.1",
     "react-scripts": "4.0.3",
     "react-tagsinput": "^3.19.0",
+    "smooth-scrollbar": "^8.7.3",
+    "smooth-scrollbar-react": "^2.3.0",
     "sweetalert2": "^11.3.6",
     "web-vitals": "^1.0.1"
   },

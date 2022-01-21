@@ -1,4 +1,16 @@
 import { extendTheme } from "@chakra-ui/react";
+import { createBreakpoints } from '@chakra-ui/theme-tools'
+
+const breakpoints = createBreakpoints({
+  sm: '320px',
+  md: '768px',
+  lg: '960px',
+  xl: '1200px',
+  '2xl': '1400px',
+  '3xl': '1900px',
+
+})
+
 
 const theme = extendTheme({
   fonts: {
@@ -94,41 +106,38 @@ const theme = extendTheme({
         },
       },
     },
-    Box: {
-      baseStyle: {
-        padding: "10px 15px",
-        borderRadius: "10px",
-        backgroundColor: "#2f3136",
-        color: "white",
-      },
-    },
-    Button: {
-      variants: {
-        modal_cancel: {
-          mr: 3,
-          bg: "#2f3136",
-          _hover: { backgroundColor: "#2f3136" },
-          _active: { backgroundColor: "#2f3136" },
-          _focus: { boxShadow: "0" },
+    components: {
+      Link: {
+        baseStyle: {
+          fontSize: "l",
+          paddingRight: "2rem",
+          color: "white",
+          _hover: {
+            textDecoration: "none",
+            fontWeight: "600",
+            color: "white",
+          },
         },
-        modal_submit: {
-          bg: "#fed428",
-          color: "#2f3136",
-          _hover: { backgroundColor: "#fed428", boxShadow: "0" },
-          _active: { backgroundColor: "#fed428" },
-          _focus: { boxShadow: "0" },
-        },
-      },
-    },
-    Input: {
-      variants: {
-        modal_input: {
-          borderColor: "#4c4c4c",
-          _focus: { outlineColor: "#4c4c4c", outlineOffset: "0" },
+        variants: {
+          current: {
+            fontWeight: "bold",
+            _hover: {
+              fontWeight: "bold",
+            },
+          },
         },
       },
     },
   },
-});
+  Input: {
+    variants: {
+      modal_input: {
+        borderColor: "#4c4c4c",
+        _focus: { outlineColor: "#4c4c4c", outlineOffset: "0" },
+      },
+    },
+  },
+}, { breakpoints });
+
 
 export default theme;
