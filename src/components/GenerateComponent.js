@@ -428,18 +428,22 @@ export class GenerateComponent extends Component {
               >
                 {(this.state.image || []).map((data, i) => (
                   <Box
-                    h="100px"
-                    w="100px"
+                    h="120px"
+                    w="120px"
                     m="auto"
                     bg="#595A5A"
                     borderRadius="10"
-                    textAlign="right"
+                    textAlign="center"
                     position="relative"
+                    alignContent="center"
                   >
                     <Image
                       src={data.blob}
-                      maxHeight={100}
-                      maxWidth={100}
+                      maxHeight="75%"
+                      maxWidth="75%"
+                      minHeight="90px"
+                      minWidth="90px"
+                      ml="15px"
                       p={3}
                     ></Image>
                     <XCircleIcon
@@ -449,8 +453,10 @@ export class GenerateComponent extends Component {
                     <Text
                       layerStyle="card_content"
                       textAlign="center"
-                      color="white"
-                      mt={1}
+                      color="#FBFBFB"
+                      fontWeight="450"
+                      pl="7px"
+                      pr="7px"
                     >
                       {data.name}
                     </Text>
@@ -528,10 +534,10 @@ export class GenerateComponent extends Component {
           </GridItem>
 
           {/* Preview card */}
-          <GridItem rowSpan={6} colSpan={3} bg="tomato"></GridItem>
+          <GridItem rowSpan={6} colSpan={4} bg="#373737"></GridItem>
 
           {/* Project Name and Description card */}
-          <GridItem rowSpan={6} colSpan={5} bg="papayawhip"></GridItem>
+          <GridItem rowSpan={6} colSpan={4} bg="#292929"></GridItem>
         </Grid>
         <div
           style={{
