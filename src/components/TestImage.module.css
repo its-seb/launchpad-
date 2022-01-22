@@ -1,6 +1,5 @@
 .layerDiv {
     position: relative;
-    margin-left: 5px;
     display: flex;
     background-color: #373737;
     padding: 15px;
@@ -11,7 +10,7 @@
     color: #E0E0E0;
     cursor: pointer;
     margin-left: 20px;
-    margin-right: 10px;
+    margin-right: 25px;
 }
 
 .layerDiv:focus {

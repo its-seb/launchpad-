@@ -1,11 +1,16 @@
 import React, { Component } from "react";
-import { Text, Grid, GridItem, Box, Button } from "@chakra-ui/react";
-import { AddIcon } from '@chakra-ui/icons';
+import { Text, Grid, GridItem, Box, Button, SimpleGrid, Image } from "@chakra-ui/react";
+import { AddIcon, CloseIcon } from '@chakra-ui/icons';
 import { Container, Col, Row, InputGroup, SplitButton, FormControl, Modal } from "react-bootstrap";
 import Dexie from 'dexie';
 import imageStyle from "./TestImage.module.css";
 import SortableComponent from "./LayerDnd";
 import db from "../db.js"
+import { Scrollbar } from 'smooth-scrollbar-react';
+import {
+  XCircleIcon,
+} from "@heroicons/react/solid";
+
 // import GenerateNFT from "./GenerateNFT.jsx";
 
 export class GenerateComponent extends Component {
@@ -316,6 +321,7 @@ export class GenerateComponent extends Component {
   render() {
     return (
       <>
+        {/* Layer card */}
         <Grid
           h='90vh'
           templateRows='repeat(12, 1fr)'
@@ -325,15 +331,22 @@ export class GenerateComponent extends Component {
         >
           <GridItem rowSpan={6} colSpan={4} bg='#292929' p={5} borderRadius="7">
             <Text fontWeight="bold" pb={3} color="#FBFBFB">Layers</Text>
-            <Box overflow="auto" height="70%">
-              <SortableComponent
-                layerName={this.layerName.slice(1)}
-                handleToUpdate={this.handleToUpdate}
-                viewLayerImages={this.viewLayerImages}
-                handleShow={this.handleShow}
-                retrieveLayers={this.retrieveLayers}
-              />
-            </Box>
+            < Scrollbar
+              plugins={{
+                overscroll: {
+                  effect: 'bounce',
+                },
+              }}>
+              <Box overflow="auto" height="70%" >
+                <SortableComponent
+                  layerName={this.layerName.slice(1)}
+                  handleToUpdate={this.handleToUpdate}
+                  viewLayerImages={this.viewLayerImages}
+                  handleShow={this.handleShow}
+                  retrieveLayers={this.retrieveLayers}
+                />
+              </Box>
+            </Scrollbar>
             <Button
               leftIcon={<AddIcon />}
               fontWeight="bold"
@@ -353,13 +366,70 @@ export class GenerateComponent extends Component {
               Add New Layer
             </Button>
           </GridItem>
-          <GridItem rowSpan={1} colSpan={8} bg='papayawhip' />
-          <GridItem rowSpan={5} colSpan={8} bg='papayawhip' />
-          <GridItem rowSpan={6} colSpan={4} bg='#292929' p={5} overflow="auto" borderRadius="7">
+
+          {/* Upload Images Header */}
+          <GridItem rowSpan={1} colSpan={8} pt={4}>
+            <Text color="#F7F7F7" fontSize={23} fontWeight="bold">Upload Images</Text>
           </GridItem>
-          <GridItem rowSpan={6} colSpan={3} bg='tomato' />
-          <GridItem rowSpan={6} colSpan={5} bg='papayawhip' />
-        </Grid>
+
+          {/* Drag drop card */}
+          <GridItem rowSpan={5} colSpan={8} bg='#373737' borderRadius="10" overflow="auto">
+            <Box
+              onDrop={this.handleDropEvent}
+              onDragOver={(event) => {
+                event.preventDefault();
+              }}
+            >
+              <SimpleGrid columns={4} spacingX="40px" spacingY="20px" p="20px 40px">
+                {(this.state.image || []).map((data, i) => (
+                  <Box key={i} >
+                    <Box textAlign="center">
+                      <Box bg="#595A5A" borderRadius="10" display="inline-block" p="40px 40px">
+                        <Image boxSize="50px" maxHeight={100} maxWidth={100} objectFit="cover" src={data.blob} />
+                      </Box>
+                      <Button cursor="pointer" zIndex="1" borderRadius="full" colorScheme="red" size="xs" float="right" as="span" onClick={() => this.deleteSingleImage(data.imageID)}><CloseIcon color="white" w={2} h={2} /></Button>
+                      <Box textAlign="center" w="100%">
+                        <Text color="#FBFBFB">
+                          {data.name}
+                        </Text>
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </Box>
+          </GridItem>
+
+          {/* Image Rarity card */}
+          <GridItem rowSpan={6} colSpan={4} bg='#292929' p={5} overflow="auto" borderRadius="7">
+            <Box d="inline-block">
+              <Text fontWeight="bold" pb={3} color="#FBFBFB" float="left">Image Rarity - {'\u00A0'}</Text>
+              <Text fontWeight="bold" color="#FED428" float="right"> {this.state.currentLayer}</Text>
+            </Box>
+            {(Object.keys(this.state.image).length !== 0) ? (this.state.image || []).map((data, i) => (
+              <SimpleGrid columns={3} spacing={3} ml="20px" pb="20px" alignItems="center">
+
+                <Box color="#FBFBFB" key={i}>
+                  <span>{data.name}</span>
+                </Box>
+                <Box>
+                  <input id={data.imageID} type="range" min="1" max="100" step="1" value={data.rarity} class={imageStyle.raritySlider} onChange={this.handleRarityChange}></input> {''}
+                </Box>
+                <Box display="block" color="#FBFBFB" textAlign="center" ml="30px" bg="#373737" pt="10px" pb="10px" borderRadius="7px" >
+                  <Box as='span' fontSize={14} >{data.rarityPercent}%</Box>
+                </Box>
+              </SimpleGrid>
+            )) : <Box> <Text color="#FBFBFB">* Upload images to start *</Text></Box>}
+          </GridItem>
+
+          {/* Preview card */}
+          <GridItem rowSpan={6} colSpan={3} bg='tomato'>
+          </GridItem>
+
+          {/* Project Name and Description card */}
+          <GridItem rowSpan={6} colSpan={5} bg='papayawhip'>
+          </GridItem>
+        </Grid >
         <div
           style={{
             padding: "25px 25px",
