@@ -2,8 +2,6 @@ import IconService from "icon-sdk-js";
 import "./app_content.css";
 import React, { Component } from "react";
 import ICONexConnection, { sleep } from "./utils/interact.js";
-import FailureComponent from "./FailureComponent.js";
-import SuccessComponent from "./SuccessComponent.js";
 import Dexie from "dexie";
 import Compressor from "compressorjs";
 import { Navigate } from "react-router-dom";
@@ -15,7 +13,11 @@ import {
   VisuallyHiddenInput,
   Button,
   Image,
+  CloseButton,
+  Spinner,
 } from "@chakra-ui/react";
+import FailureComponent from "./FailureComponent.js";
+import SuccessComponent from "./SuccessComponent.js";
 import {
   PhotographIcon,
   DocumentTextIcon,
@@ -42,6 +44,10 @@ class Dropzone extends Component {
       complete: false,
       redirect: false,
       showMetadataSection: false,
+      metadataJson: "",
+      showStatusModal: false,
+      statusTitle: "",
+      statusText: "",
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -66,6 +72,10 @@ class Dropzone extends Component {
 
     this.imagesUploadInput = React.createRef();
     this.metadataUploadInput = React.createRef();
+    this.statusModal = React.createRef();
+    this.statusSuccess = React.createRef();
+    this.statusFail = React.createRef();
+    this.statusLoading = React.createRef();
   }
 
   set_totalandcurrent_supply = async (
@@ -145,7 +155,7 @@ class Dropzone extends Component {
     reader.readAsText(uploadedMetadata, "UTF-8");
     reader.onload = () => {
       let metadata = JSON.parse(reader.result);
-      console.log(metadata);
+      this.setState({ metadataJson: metadata });
     };
   };
 
@@ -159,6 +169,73 @@ class Dropzone extends Component {
     this.uploadedFiles = updated_uploadedFile;
     this.setState({ file: this.uploadedFiles });
   }
+
+  handleUploadFiles = async () => {
+    //display status modal
+    this.statusModal.current.style.display = "block";
+
+    if (this.uploadedFiles.length == 0) {
+      this.statusLoading.current.style.display = "none";
+      this.statusFail.current.style.display = "block";
+      this.setState({ statusTitle: "Oops..." });
+      this.setState({
+        statusText: "Make sure you have uploaded the files",
+      });
+      return;
+    }
+
+    this.setState({ statusText: "pinning image files to pinata..." });
+    let originalData = this.createOriginalImageFormData(this.uploadedFiles);
+    let thumbnailData = this.createThumbnailImageFormData(this.uploadedFiles);
+
+    console.log(originalData);
+    console.log(thumbnailData);
+
+    console.log("uploaded Files", this.uploadedFiles.length);
+    console.log("metadata file", this.state.metadataJson.length);
+  };
+
+  // Create Form
+  createThumbnailImageFormData = (files) => {
+    let thumbnailData = new FormData();
+    for (var i = 0; i < files.length; i++) {
+      console.log("createThumbnailImageFormData", files[i].name);
+      //For Compressed File
+
+      let x = new Compressor(files[i].dataFile, {
+        quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
+        convertSize: Infinity,
+        success: (compressedResult) => {
+          // compressedResult has the compressed file.
+          // Use the compressed file to upload the images to your server.
+          console.log(compressedResult);
+          thumbnailData.append(
+            `file`,
+            compressedResult,
+            `file/${compressedResult.name}`
+          );
+        },
+      });
+    }
+    console.log(thumbnailData);
+    return thumbnailData;
+  };
+
+  createOriginalImageFormData = (files) => {
+    let originalData = new FormData();
+    for (var i = 0; i < files.length; i++) {
+      console.log("createOriginalImageFormData", files[i]);
+      //For original full Resolution File
+      originalData.append(`file`, files[i].dataFile, `file/${files[i].name}`);
+    }
+    return originalData;
+  };
+
+  closeStatusModal = () => {
+    this.statusSuccess.current.style.display = "none";
+    this.statusFail.current.style.display = "none";
+    this.statusModal.current.style.display = "none";
+  };
 
   render() {
     return (
@@ -187,7 +264,7 @@ class Dropzone extends Component {
                 <PhotographIcon
                   color="white"
                   width="3rem"
-                  class="m-auto"
+                  className="m-auto"
                   mt="1rem"
                 />
                 <Text lineHeight="" color="white" textAlign="center">
@@ -200,7 +277,7 @@ class Dropzone extends Component {
                 ref={this.imagesUploadInput}
                 accept="image/png, image/jpeg, image/gif"
                 onChange={(e) => this.handleImagesOnChange(e)}
-                multiple="true"
+                multiple={true}
               ></VisuallyHiddenInput>
               <SimpleGrid columns={5} spacingX="1rem" spacingY="3rem">
                 {(this.uploadedFiles || []).map((data, i) => (
@@ -277,7 +354,7 @@ class Dropzone extends Component {
               <DocumentTextIcon
                 color="white"
                 width="3rem"
-                class="m-auto"
+                className="m-auto"
                 mt="1rem"
               />
               <Text color="white" textAlign="center">
@@ -290,11 +367,42 @@ class Dropzone extends Component {
                 onChange={(e) => this.handleMetadataOnChange(e)}
               ></VisuallyHiddenInput>
             </Box>
-            <Button variant="modal_submit" float="right" mt={5}>
+            <Button
+              variant="modal_submit"
+              float="right"
+              mt={5}
+              onClick={this.handleUploadFiles}
+            >
               Upload to IPFS
             </Button>
           </Box>
         </SimpleGrid>
+
+        <Box
+          id="statusModal"
+          layerStyle="modal_container"
+          ref={this.statusModal}
+        >
+          <Box layerStyle="modal_content" alignItems="center">
+            <CloseButton
+              position="absolute"
+              right={3}
+              top={3}
+              onClick={this.closeStatusModal}
+            />
+            <Spinner
+              variant="loading_spinner"
+              thickness="4px"
+              speed="0.65s"
+              ref={this.statusLoading}
+            ></Spinner>
+            <SuccessComponent _ref={this.statusSuccess} _show="none" />
+            <FailureComponent _ref={this.statusFail} _show="none" />
+
+            <Text layerStyle="modal_title">{this.state.statusTitle}</Text>
+            <Text layerStyle="modal_text">{this.state.statusText}</Text>
+          </Box>
+        </Box>
       </>
     );
   }

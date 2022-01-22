@@ -13,6 +13,7 @@ import {
   FormLabel,
   Spinner,
   Text,
+  Box,
 } from "@chakra-ui/react";
 import IconService from "icon-sdk-js";
 import Dexie from "dexie";
@@ -33,6 +34,7 @@ class NewCollectionModal extends Component {
 
     this.state = {
       showStatusModal: false,
+      deploymentStatusText: "deploying collection...",
     };
 
     this.db = new Dexie("contracts_deployed");
@@ -75,13 +77,13 @@ class NewCollectionModal extends Component {
 
     let deploymentSuccess = document.getElementById("deploymentSuccess");
     let deploymentFailure = document.getElementById("deploymentFailure");
-    let deploymentStatusText = document.getElementById("deployText");
+    //let deploymentStatusText = document.getElementById("deployText");
     this.props.hide();
     this.setState({ showStatusModal: true });
 
-    console.log(deploymentStatusText);
-    deploymentStatusText.innerText = "deploying collection...";
-    deploymentStatusText.style.display = "block";
+    //console.log(deploymentStatusText);
+    //deploymentStatusText.innerText = "deploying collection...";
+    //deploymentStatusText.style.display = "block";
 
     const txParams = {
       _name: collectionName, //based on user input
@@ -94,7 +96,7 @@ class NewCollectionModal extends Component {
     );
 
     console.log("steplimitinhex", stepLimitInHex);
-
+    this.setState({ deploymentStatusText: "hello world" });
     const stepLimit = IconConverter.toNumber(stepLimitInHex);
     const txObj = new IconBuilder.DeployTransactionBuilder()
       .nid("0x53") //0x53 for sejong - https://www.icondev.io/introduction/the-icon-network/testnet
@@ -147,17 +149,21 @@ class NewCollectionModal extends Component {
       this.props.updateContractInfo(walletAddress);
 
       deploymentSuccess.style.display = "block";
-      deploymentStatusText.innerText = "new collection has been created";
+      this.setState({
+        deploymentStatusText: "new collection has been created",
+      });
+
+      //deploymentStatusText.innerText = "new collection has been created";
       await sleep(2000);
       deploymentSuccess.style.display = "none";
-      deploymentStatusText.style.display = "none";
+      this.setState({ deploymentStatusText: "" });
       this.props.hideModal();
     } catch (e) {
       ////alert("User cancelled transaction");
       deploymentFailure.style.display = "block";
-      deploymentStatusText.innerText = "deployment cancelled by user";
+      this.setState({ deploymentStatusText: "deployment cancelled by user" });
       await sleep(2000);
-      deploymentStatusText.style.display = "none";
+      //deploymentStatusText.style.display = "none";
       deploymentFailure.style.display = "none";
 
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
@@ -225,10 +231,15 @@ class NewCollectionModal extends Component {
                 h="5rem"
                 borderColor="#626262"
               ></Spinner>
-              <SuccessComponent id="deploymentSuccess" />
+              <Box
+                id="deploymentSuccess"
+                className="w4rAnimated_checkmark load-success"
+              >
+                <SuccessComponent />
+              </Box>
               <FailureComponent id="deploymentFailure" />
               <Text fontSize="1.2rem" pt="15px" id="deployText">
-                deploying collection...
+                {this.state.deploymentStatusText}
               </Text>
             </ModalBody>
           </ModalContent>

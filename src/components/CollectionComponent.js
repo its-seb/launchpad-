@@ -158,8 +158,8 @@ export class CollectionComponent extends Component {
             <Text layerStyle="card_content">deploy a new nft contract</Text>
           </Box>
 
-          {this.state.contractInfo.map((info) => (
-            <RouteLink to="/file">
+          {this.state.contractInfo.map((info, i) => (
+            <RouteLink to="/file" key={i}>
               <Box
                 layerStyle="card_collection"
                 type="button"
@@ -171,7 +171,7 @@ export class CollectionComponent extends Component {
                 }
                 to="/file"
               >
-                <Flex as="a" _hover={{ color: "white" }}>
+                <Flex _hover={{ color: "white" }}>
                   <Text layerStyle="card_title">{info.name}</Text>
                   <ArrowForwardIcon layerStyle="card_icon" />
                 </Flex>

@@ -1,15 +1,29 @@
 import React, { Component } from "react";
-import { Text, Grid, GridItem, Box, Button, SimpleGrid, Image } from "@chakra-ui/react";
-import { AddIcon, CloseIcon } from '@chakra-ui/icons';
-import { Container, Col, Row, InputGroup, SplitButton, FormControl, Modal } from "react-bootstrap";
-import Dexie from 'dexie';
+import {
+  Text,
+  Grid,
+  GridItem,
+  Box,
+  Button,
+  SimpleGrid,
+  Image,
+} from "@chakra-ui/react";
+import { AddIcon, CloseIcon } from "@chakra-ui/icons";
+import {
+  Container,
+  Col,
+  Row,
+  InputGroup,
+  SplitButton,
+  FormControl,
+  Modal,
+} from "react-bootstrap";
+import Dexie from "dexie";
 import imageStyle from "./TestImage.module.css";
 import SortableComponent from "./LayerDnd";
-import db from "../db.js"
-import { Scrollbar } from 'smooth-scrollbar-react';
-import {
-  XCircleIcon,
-} from "@heroicons/react/solid";
+import db from "../db.js";
+import { Scrollbar } from "smooth-scrollbar-react";
+import { XCircleIcon } from "@heroicons/react/solid";
 
 // import GenerateNFT from "./GenerateNFT.jsx";
 
@@ -32,7 +46,7 @@ export class GenerateComponent extends Component {
       newLayer: "",
       slidingImageTimeout: 0,
       slidingLayerTimeout: 0,
-      typingLayerTimeout: 0
+      typingLayerTimeout: 0,
     };
   }
 
@@ -43,26 +57,28 @@ export class GenerateComponent extends Component {
 
   //Retrieve all unique layers in the database
   retrieveLayers = async () => {
-    var count = await db.layerNames.orderBy('layer').count();
+    var count = await db.layerNames.orderBy("layer").count();
     //console.log(count);
 
     if (count === 0) {
       await db.layerNames.add({
         layer: "background",
         index: 0,
-        rarity: 100
+        rarity: 100,
       });
       this.layerName.push({
         name: "background",
         layerid: 1,
         index: 0,
-        rarity: 100
+        rarity: 100,
       });
     } else {
       this.layerName.length = 0;
-      await db.layerNames.orderBy('index').toArray()
-        .then(theList => {
-          theList.forEach(item => {
+      await db.layerNames
+        .orderBy("index")
+        .toArray()
+        .then((theList) => {
+          theList.forEach((item) => {
             //console.log(item.id);
             this.layerName.push({
               name: item.layer,
@@ -70,50 +86,56 @@ export class GenerateComponent extends Component {
               index: item.index,
               rarity: item.rarity,
               xOffset: 0,
-              yOffset: 0
+              yOffset: 0,
             });
-          })
+          });
         });
-
     }
     this.setState({ layer: this.layerName }, () => {
       console.log(this.state.layer);
     });
-
   };
 
   handleLayerRarityChange = async (event) => {
     event.preventDefault();
-    let objIndex = this.layerName.findIndex((obj => obj.layerid === parseInt(event.target.id)));
+    let objIndex = this.layerName.findIndex(
+      (obj) => obj.layerid === parseInt(event.target.id)
+    );
     this.layerName[objIndex].rarity = parseFloat(event.target.value);
 
     if (this.state.slidingLayerTimeout) {
       clearTimeout(this.state.slidingLayerTimeout);
-    };
+    }
 
     this.setState({
       layer: this.layerName,
       slidingLayerTimeout: setTimeout(function () {
         console.log("Uploaded rarity changes to db");
         console.log(event.target.value);
-        db.layerNames.update(parseInt(event.target.id), { rarity: parseFloat(event.target.value) });
-      }, 500)
+        db.layerNames.update(parseInt(event.target.id), {
+          rarity: parseFloat(event.target.value),
+        });
+      }, 500),
     });
-
-  }
+  };
 
   // Updates **images database of new rarity adjusted by the range slider
   handleRarityChange = async (event) => {
     event.preventDefault();
     //Finds image in this.imageData and changes the rarity value according to the slider value
-    let objIndex = this.imageData.findIndex((obj => obj.imageID === parseInt(event.target.id)));
+    let objIndex = this.imageData.findIndex(
+      (obj) => obj.imageID === parseInt(event.target.id)
+    );
     this.imageData[objIndex].rarity = parseFloat(event.target.value);
 
     //fancy js method of adding up values in array XD
-    var totalRarity = this.imageData.reduce((a, b) => a + parseFloat((b['rarity'] || 0)), 0);
+    var totalRarity = this.imageData.reduce(
+      (a, b) => a + parseFloat(b["rarity"] || 0),
+      0
+    );
 
     //Re-computing the rarity percentage for each image
-    this.imageData.forEach(image => {
+    this.imageData.forEach((image) => {
       image.rarityPercent = (image.rarity / totalRarity) * 100;
       image.rarityPercent = Math.round(image.rarityPercent * 100) / 100;
     });
@@ -130,78 +152,85 @@ export class GenerateComponent extends Component {
       // sliding: false,
       slidingImageTimeout: setTimeout(function () {
         console.log("Uploaded rarity changes to db");
-        db.layers.update(parseInt(event.target.id), { rarity: parseFloat(event.target.value) });
-      }, 500)
+        db.layers.update(parseInt(event.target.id), {
+          rarity: parseFloat(event.target.value),
+        });
+      }, 500),
     });
-
-  }
+  };
 
   // Computes total rarity value
   computeImageRarity = async (layer) => {
     var totalRarity = 0;
 
     await db.layers
-      .where('layerid')
+      .where("layerid")
       .equals(layer.id)
       .toArray()
-      .then(theList => {
-        theList.forEach(item => {
+      .then((theList) => {
+        theList.forEach((item) => {
           if (item.image !== undefined) {
             totalRarity = totalRarity + item.rarity;
           }
         });
       });
     return totalRarity;
-  }
+  };
 
   // Querying database (Select * From LayersDB Where layerID = xxxxxx)
   queryDatabase = async (layerid) => {
     this.imageData.length = 0;
     const allLayers = await db.layers
-      .where('layerid').equals(layerid)
+      .where("layerid")
+      .equals(layerid)
       .toArray();
 
     return allLayers;
   };
 
-
   // View images inside layers
   viewLayerImages = async (layer) => {
-    var count = await db.layers.where('layerid').equals(layer.id).count();
-    this.setState({
-      currentLayer: layer.name,
-      currentLayerId: layer.id,
-    }, () => {
-      // console.log("image state", this.state.image);
-      //console.log("Current Layer", this.state.currentLayer);
-    });
+    var count = await db.layers.where("layerid").equals(layer.id).count();
+    this.setState(
+      {
+        currentLayer: layer.name,
+        currentLayerId: layer.id,
+      },
+      () => {
+        // console.log("image state", this.state.image);
+        //console.log("Current Layer", this.state.currentLayer);
+      }
+    );
 
     this.imageData.length = 0;
 
     //Check if layer has images
     if (count !== 0) {
       var totalRarity = await this.computeImageRarity(layer);
-      await this.queryDatabase(layer.id)
-        .then(theList => {
-          theList.forEach(item => {
-            if (item.image !== undefined) {
-              const imgBlob = URL.createObjectURL(item.image);
-              // compute rarity percentage
-              var rarity = (item.rarity / totalRarity) * 100;
-              rarity = Math.round(rarity * 100) / 100;
-              this.imageData.push({ imageID: item.id, name: item.name, blob: imgBlob, rarity: item.rarity, rarityPercent: rarity });
-            }
-          });
+      await this.queryDatabase(layer.id).then((theList) => {
+        theList.forEach((item) => {
+          if (item.image !== undefined) {
+            const imgBlob = URL.createObjectURL(item.image);
+            // compute rarity percentage
+            var rarity = (item.rarity / totalRarity) * 100;
+            rarity = Math.round(rarity * 100) / 100;
+            this.imageData.push({
+              imageID: item.id,
+              name: item.name,
+              blob: imgBlob,
+              rarity: item.rarity,
+              rarityPercent: rarity,
+            });
+          }
         });
-
-    };
+      });
+    }
 
     this.setState({ image: this.imageData }, () => {
       // console.log("image state", this.state.image);
       //console.log("Current Layer", this.state.currentLayer);
     });
-  }
-
+  };
 
   // Adding uploaded image to database
   addToDatabase = async (files) => {
@@ -213,13 +242,13 @@ export class GenerateComponent extends Component {
         layer: this.state.currentLayer,
         name: files[fileIndex].name,
         image: files[fileIndex],
-        rarity: 50
+        rarity: 50,
       });
     }
     this.setState({ file: this.blobData }, () => {
       this.viewLayerImages({
         name: this.state.currentLayer,
-        id: this.state.currentLayerId
+        id: this.state.currentLayerId,
       });
     });
   };
@@ -233,7 +262,7 @@ export class GenerateComponent extends Component {
       this.addToDatabase(files);
     } else {
       console.log("not allowed");
-    };
+    }
   };
 
   handleBrowseFiles = (event) => {
@@ -244,22 +273,24 @@ export class GenerateComponent extends Component {
       this.addToDatabase(files);
     } else {
       console.log("not allowed");
-    };
+    }
   };
 
   validateFileExtension = (files) => {
     var allowedTypes = ["jpg", "jpeg", "bmp", "gif", "png", "PNG"];
     for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      if (allowedTypes.includes(files[fileIndex].name.split('.').pop()) === false) {
+      if (
+        allowedTypes.includes(files[fileIndex].name.split(".").pop()) === false
+      ) {
         return false;
       }
-    };
+    }
     return true;
-  }
+  };
 
   handleLayerNameChange = (event) => {
     var id = parseInt(this.state.currentLayerId);
-    let objIndex = this.layerName.findIndex((obj => obj.layerid === id));
+    let objIndex = this.layerName.findIndex((obj) => obj.layerid === id);
     this.layerName[objIndex].name = event.target.value;
 
     if (this.state.typingLayerTimeout) {
@@ -270,21 +301,20 @@ export class GenerateComponent extends Component {
       currentLayer: event.target.value,
       typingLayerTimeout: setTimeout(async function () {
         // Update layers database
-        await new GenerateComponent().queryDatabase(id).then(theList => {
-          theList.forEach(item => {
+        await new GenerateComponent().queryDatabase(id).then((theList) => {
+          theList.forEach((item) => {
             if (item.layerid === id) {
               db.layers.update(item.id, { layer: event.target.value });
-            };
+            }
           });
         });
         // Update layerNames database
         db.layerNames.update(id, { layer: event.target.value });
-
-      }, 5000)
+      }, 5000),
     });
   };
 
-  // Adds layer name to state upon input by users 
+  // Adds layer name to state upon input by users
   handleNewLayer = (event) => {
     this.setState({ newLayer: "event.target.value" });
   };
@@ -297,11 +327,10 @@ export class GenerateComponent extends Component {
     await db.layerNames.add({
       layer: "",
       index: count,
-      rarity: 100
+      rarity: 100,
     });
 
     this.retrieveLayers();
-
   };
 
   // Deletes selected image
@@ -309,35 +338,38 @@ export class GenerateComponent extends Component {
     await db.layers.where("id").equals(imageID).delete();
     await this.viewLayerImages({
       id: this.state.currentLayerId,
-      name: this.state.currentLayer
+      name: this.state.currentLayer,
     });
-  }
+  };
 
   // For layerdnd.jsx to call
   handleToUpdate = async () => {
     //this.setState({layer: args});
     await this.retrieveLayers();
-  }
+  };
   render() {
     return (
       <>
         {/* Layer card */}
         <Grid
-          h='90vh'
-          templateRows='repeat(12, 1fr)'
-          templateColumns='repeat(12, 1fr)'
+          h="90vh"
+          templateRows="repeat(12, 1fr)"
+          templateColumns="repeat(12, 1fr)"
           gap={6}
           pt={5}
         >
-          <GridItem rowSpan={6} colSpan={4} bg='#292929' p={5} borderRadius="7">
-            <Text fontWeight="bold" pb={3} color="#FBFBFB">Layers</Text>
-            < Scrollbar
+          <GridItem rowSpan={6} colSpan={4} bg="#292929" p={5} borderRadius="7">
+            <Text fontWeight="bold" pb={3} color="#FBFBFB">
+              Layers
+            </Text>
+            <Scrollbar
               plugins={{
                 overscroll: {
-                  effect: 'bounce',
+                  effect: "bounce",
                 },
-              }}>
-              <Box overflow="auto" height="70%" >
+              }}
+            >
+              <Box overflow="auto" height="70%">
                 <SortableComponent
                   layerName={this.layerName.slice(1)}
                   handleToUpdate={this.handleToUpdate}
@@ -369,31 +401,59 @@ export class GenerateComponent extends Component {
 
           {/* Upload Images Header */}
           <GridItem rowSpan={1} colSpan={8} pt={4}>
-            <Text color="#F7F7F7" fontSize={23} fontWeight="bold">Upload Images</Text>
+            <Text color="#F7F7F7" fontSize={23} fontWeight="bold">
+              Upload Images
+            </Text>
           </GridItem>
 
           {/* Drag drop card */}
-          <GridItem rowSpan={5} colSpan={8} bg='#373737' borderRadius="10" overflow="auto">
+          <GridItem
+            rowSpan={5}
+            colSpan={8}
+            bg="#373737"
+            borderRadius="10"
+            overflow="auto"
+          >
             <Box
               onDrop={this.handleDropEvent}
               onDragOver={(event) => {
                 event.preventDefault();
               }}
             >
-              <SimpleGrid columns={4} spacingX="40px" spacingY="20px" p="20px 40px">
+              <SimpleGrid
+                columns={4}
+                spacingX="40px"
+                spacingY="20px"
+                p="20px 40px"
+              >
                 {(this.state.image || []).map((data, i) => (
-                  <Box key={i} >
-                    <Box textAlign="center">
-                      <Box bg="#595A5A" borderRadius="10" display="inline-block" p="40px 40px">
-                        <Image boxSize="50px" maxHeight={100} maxWidth={100} objectFit="cover" src={data.blob} />
-                      </Box>
-                      <Button cursor="pointer" zIndex="1" borderRadius="full" colorScheme="red" size="xs" float="right" as="span" onClick={() => this.deleteSingleImage(data.imageID)}><CloseIcon color="white" w={2} h={2} /></Button>
-                      <Box textAlign="center" w="100%">
-                        <Text color="#FBFBFB">
-                          {data.name}
-                        </Text>
-                      </Box>
-                    </Box>
+                  <Box
+                    h="100px"
+                    w="100px"
+                    m="auto"
+                    bg="#595A5A"
+                    borderRadius="10"
+                    textAlign="right"
+                    position="relative"
+                  >
+                    <Image
+                      src={data.blob}
+                      maxHeight={100}
+                      maxWidth={100}
+                      p={3}
+                    ></Image>
+                    <XCircleIcon
+                      className="remove_image"
+                      onClick={(e) => this.deleteSingleImage(data.imageID)}
+                    ></XCircleIcon>
+                    <Text
+                      layerStyle="card_content"
+                      textAlign="center"
+                      color="white"
+                      mt={1}
+                    >
+                      {data.name}
+                    </Text>
                   </Box>
                 ))}
               </SimpleGrid>
@@ -401,35 +461,78 @@ export class GenerateComponent extends Component {
           </GridItem>
 
           {/* Image Rarity card */}
-          <GridItem rowSpan={6} colSpan={4} bg='#292929' p={5} overflow="auto" borderRadius="7">
+          <GridItem
+            rowSpan={6}
+            colSpan={4}
+            bg="#292929"
+            p={5}
+            overflow="auto"
+            borderRadius="7"
+          >
             <Box d="inline-block">
-              <Text fontWeight="bold" pb={3} color="#FBFBFB" float="left">Image Rarity - {'\u00A0'}</Text>
-              <Text fontWeight="bold" color="#FED428" float="right"> {this.state.currentLayer}</Text>
+              <Text fontWeight="bold" pb={3} color="#FBFBFB" float="left">
+                Image Rarity - {"\u00A0"}
+              </Text>
+              <Text fontWeight="bold" color="#FED428" float="right">
+                {" "}
+                {this.state.currentLayer}
+              </Text>
             </Box>
-            {(Object.keys(this.state.image).length !== 0) ? (this.state.image || []).map((data, i) => (
-              <SimpleGrid columns={3} spacing={3} ml="20px" pb="20px" alignItems="center">
-
-                <Box color="#FBFBFB" key={i}>
-                  <span>{data.name}</span>
-                </Box>
-                <Box>
-                  <input id={data.imageID} type="range" min="1" max="100" step="1" value={data.rarity} class={imageStyle.raritySlider} onChange={this.handleRarityChange}></input> {''}
-                </Box>
-                <Box display="block" color="#FBFBFB" textAlign="center" ml="30px" bg="#373737" pt="10px" pb="10px" borderRadius="7px" >
-                  <Box as='span' fontSize={14} >{data.rarityPercent}%</Box>
-                </Box>
-              </SimpleGrid>
-            )) : <Box> <Text color="#FBFBFB">* Upload images to start *</Text></Box>}
+            {Object.keys(this.state.image).length !== 0 ? (
+              (this.state.image || []).map((data, i) => (
+                <SimpleGrid
+                  columns={3}
+                  spacing={3}
+                  ml="20px"
+                  pb="20px"
+                  alignItems="center"
+                >
+                  <Box color="#FBFBFB" key={i}>
+                    <span>{data.name}</span>
+                  </Box>
+                  <Box>
+                    <input
+                      id={data.imageID}
+                      type="range"
+                      min="1"
+                      max="100"
+                      step="1"
+                      value={data.rarity}
+                      class={imageStyle.raritySlider}
+                      onChange={this.handleRarityChange}
+                    ></input>{" "}
+                    {""}
+                  </Box>
+                  <Box
+                    display="block"
+                    color="#FBFBFB"
+                    textAlign="center"
+                    ml="30px"
+                    bg="#373737"
+                    pt="10px"
+                    pb="10px"
+                    borderRadius="7px"
+                  >
+                    <Box as="span" fontSize={14}>
+                      {data.rarityPercent}%
+                    </Box>
+                  </Box>
+                </SimpleGrid>
+              ))
+            ) : (
+              <Box>
+                {" "}
+                <Text color="#FBFBFB">* Upload images to start *</Text>
+              </Box>
+            )}
           </GridItem>
 
           {/* Preview card */}
-          <GridItem rowSpan={6} colSpan={3} bg='tomato'>
-          </GridItem>
+          <GridItem rowSpan={6} colSpan={3} bg="tomato"></GridItem>
 
           {/* Project Name and Description card */}
-          <GridItem rowSpan={6} colSpan={5} bg='papayawhip'>
-          </GridItem>
-        </Grid >
+          <GridItem rowSpan={6} colSpan={5} bg="papayawhip"></GridItem>
+        </Grid>
         <div
           style={{
             padding: "25px 25px",
@@ -438,7 +541,7 @@ export class GenerateComponent extends Component {
             height: "50vh",
             overflowY: "auto",
             width: "50%",
-            float: "right"
+            float: "right",
           }}
           onDrop={this.handleDropEvent}
           onDragOver={(event) => {
@@ -447,7 +550,11 @@ export class GenerateComponent extends Component {
         >
           <span style={{ color: "#5d2985" }}>Drag & Drop Files / </span>
 
-          <label onChange={this.handleBrowseFiles} htmlFor="browseFiles" style={{ color: "red", cursor: "pointer" }}>
+          <label
+            onChange={this.handleBrowseFiles}
+            htmlFor="browseFiles"
+            style={{ color: "red", cursor: "pointer" }}
+          >
             <input
               type="file"
               id="browseFiles"
@@ -479,7 +586,17 @@ export class GenerateComponent extends Component {
                     <span style={{ fontWeight: "bold", fontSize: "12px" }}>
                       {data.name}
                     </span>
-                    <span onClick={() => this.deleteSingleImage(data.imageID)} style={{ float: "right", color: "red", fontWeight: "bold", cursor: "pointer" }}>X</span>
+                    <span
+                      onClick={() => this.deleteSingleImage(data.imageID)}
+                      style={{
+                        float: "right",
+                        color: "red",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                      }}
+                    >
+                      X
+                    </span>
                   </div>
                 </Col>
               ))}
@@ -488,7 +605,9 @@ export class GenerateComponent extends Component {
         </div>
 
         {/* Layers card */}
-        <div className={` card text-white bg-dark mb-3 ${imageStyle.cardContainer}`}>
+        <div
+          className={` card text-white bg-dark mb-3 ${imageStyle.cardContainer}`}
+        >
           <div className="card-header">
             <Row>
               <Col>
@@ -496,8 +615,19 @@ export class GenerateComponent extends Component {
               </Col>
               <Col>
                 <InputGroup size="sm" style={{ float: "right" }}>
-                  <FormControl value={this.state.newLayer} onChange={this.handleNewLayer} placeholder="Add a New Layer" />
-                  <Button variant="secondary" style={{ fontSize: "15px" }} onClick={this.addNewLayer} disabled={this.state.newLayer === "" ? true : false} >+</Button>
+                  <FormControl
+                    value={this.state.newLayer}
+                    onChange={this.handleNewLayer}
+                    placeholder="Add a New Layer"
+                  />
+                  <Button
+                    variant="secondary"
+                    style={{ fontSize: "15px" }}
+                    onClick={this.addNewLayer}
+                    disabled={this.state.newLayer === "" ? true : false}
+                  >
+                    +
+                  </Button>
                 </InputGroup>
               </Col>
             </Row>
@@ -506,7 +636,14 @@ export class GenerateComponent extends Component {
             <Row>
               <div style={{ marginBottom: "-16px" }}>
                 <ul>
-                  <span className={imageStyle.layerButton} onClick={() => this.viewLayerImages({ id: 1, name: "background" })}>background</span>
+                  <span
+                    className={imageStyle.layerButton}
+                    onClick={() =>
+                      this.viewLayerImages({ id: 1, name: "background" })
+                    }
+                  >
+                    background
+                  </span>
                 </ul>
               </div>
               <SortableComponent
@@ -518,18 +655,41 @@ export class GenerateComponent extends Component {
               />
             </Row>
           </div>
-        </div >
+        </div>
 
         {/* Layer settings card  */}
-        < div className={`card text-white bg-dark mb-3 ${imageStyle.cardContainer}`
-        }>
+        <div
+          className={`card text-white bg-dark mb-3 ${imageStyle.cardContainer}`}
+        >
           <div className="card-header">
             <span>Layer Settings</span>
-            {this.state.currentLayerId === 1 ?
-              <input style={{ float: "right", backgroundColor: "transparent", border: "none", color: "white", textAlign: "right" }} type="text" value={this.state.currentLayer} disabled />
-              :
-              <input onChange={this.handleLayerNameChange} style={{ float: "right", backgroundColor: "transparent", border: "none", color: "white", textAlign: "right" }} type="text" value={this.state.currentLayer} />
-            }
+            {this.state.currentLayerId === 1 ? (
+              <input
+                style={{
+                  float: "right",
+                  backgroundColor: "transparent",
+                  border: "none",
+                  color: "white",
+                  textAlign: "right",
+                }}
+                type="text"
+                value={this.state.currentLayer}
+                disabled
+              />
+            ) : (
+              <input
+                onChange={this.handleLayerNameChange}
+                style={{
+                  float: "right",
+                  backgroundColor: "transparent",
+                  border: "none",
+                  color: "white",
+                  textAlign: "right",
+                }}
+                type="text"
+                value={this.state.currentLayer}
+              />
+            )}
           </div>
           <div className={`card-body ${imageStyle.cardBody}`}>
             <div>
@@ -538,30 +698,67 @@ export class GenerateComponent extends Component {
                   <span>{this.state.currentLayer}'s Rarity</span>
                 </Col>
                 <Col className="col-5">
-                  <input id={this.state.currentLayerId} type="range" min="1" max="100" step="1" value={this.layerName.filter(x => x.layerid === this.state.currentLayerId).map(x => x.rarity)} class={imageStyle.raritySlider} onChange={this.handleLayerRarityChange}></input> {''}
+                  <input
+                    id={this.state.currentLayerId}
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value={this.layerName
+                      .filter((x) => x.layerid === this.state.currentLayerId)
+                      .map((x) => x.rarity)}
+                    class={imageStyle.raritySlider}
+                    onChange={this.handleLayerRarityChange}
+                  ></input>{" "}
+                  {""}
                 </Col>
                 <Col>
-                  <span>{this.layerName.filter(x => x.layerid === this.state.currentLayerId).map(x => x.rarity)}%</span>
+                  <span>
+                    {this.layerName
+                      .filter((x) => x.layerid === this.state.currentLayerId)
+                      .map((x) => x.rarity)}
+                    %
+                  </span>
                 </Col>
               </Row>
             </div>
-            {(Object.keys(this.state.image).length !== 0) ? (this.state.image || []).map((data, i) => (
+            {Object.keys(this.state.image).length !== 0 ? (
+              (this.state.image || []).map((data, i) => (
+                <div>
+                  <Row
+                    style={{ paddingBottom: "15px", paddingTop: "10px" }}
+                    key={i}
+                  >
+                    <Col key={i} className="col-5">
+                      <span>{data.name}</span>
+                    </Col>
+                    <Col className="col-5">
+                      <input
+                        id={data.imageID}
+                        type="range"
+                        min="1"
+                        max="100"
+                        step="1"
+                        value={data.rarity}
+                        class={imageStyle.raritySlider}
+                        onChange={this.handleRarityChange}
+                      ></input>{" "}
+                      {""}
+                    </Col>
+                    <Col>
+                      <span>{data.rarityPercent}%</span>
+                    </Col>
+                  </Row>
+                </div>
+              ))
+            ) : (
               <div>
-                <Row style={{ paddingBottom: "15px", paddingTop: "10px" }} key={i}>
-                  <Col key={i} className="col-5">
-                    <span>{data.name}</span>
-                  </Col>
-                  <Col className="col-5">
-                    <input id={data.imageID} type="range" min="1" max="100" step="1" value={data.rarity} class={imageStyle.raritySlider} onChange={this.handleRarityChange}></input> {''}
-                  </Col>
-                  <Col>
-                    <span>{data.rarityPercent}%</span>
-                  </Col>
-                </Row>
+                {" "}
+                <p>* Upload images to start *</p>
               </div>
-            )) : <div> <p>* Upload images to start *</p></div>}
+            )}
           </div>
-        </div >
+        </div>
         <div style={{ height: "auto", width: "auto" }}>
           {/* <GenerateNFT layers={this.state.layer} /> */}
           {/* <canvas id="previewNFT"></canvas> */}

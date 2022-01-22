@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import "./style.css";
+import { Box } from "@chakra-ui/react";
 
 export class FailureComponent extends Component {
   render() {
     return (
-      <div
+      <Box
+        ref={this.props._ref}
         className="w4rAnimated_checkmark load-fail"
-        style={{ display: "none" }}
-        id={this.props.id}
+        display={this.props._show}
       >
         <svg
           version="1.1"
@@ -49,7 +50,7 @@ export class FailureComponent extends Component {
             y2="92.2"
           />
         </svg>
-      </div>
+      </Box>
     );
   }
 }

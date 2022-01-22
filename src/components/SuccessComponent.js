@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import "./style.css";
+import { Box } from "@chakra-ui/react";
 
 export class SuccessComponent extends Component {
   render() {
     return (
-      <div
+      <Box
+        ref={this.props._ref}
         className="w4rAnimated_checkmark load-success"
-        style={{ display: "none" }}
-        id={this.props.id}
+        display={this.props._show}
       >
         <svg
           version="1.1"
@@ -17,7 +18,7 @@ export class SuccessComponent extends Component {
           <circle
             className="path circle"
             fill="none"
-            stroke="#ffcd00"
+            stroke="#5cb85c"
             strokeWidth="6"
             strokeMiterlimit="10"
             cx="65.1"
@@ -27,14 +28,14 @@ export class SuccessComponent extends Component {
           <polyline
             className="path check"
             fill="none"
-            stroke="#ffcd00"
+            stroke="#5cb85c"
             strokeWidth="6"
             strokeLinecap="round"
             strokeMiterlimit="10"
             points="100.2,40.2 51.5,88.8 29.8,67.5 "
           />
         </svg>
-      </div>
+      </Box>
     );
   }
 }

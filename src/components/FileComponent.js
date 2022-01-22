@@ -65,8 +65,8 @@ export class FileComponent extends Component {
     }
 
     //check if user has configured pinata cloud api
-    // this.state.pinataKey = localStorage.getItem("PINATA_KEY");
-    // this.state.pinataSecret = localStorage.getItem("PINATA_SECRET");
+    this.state.pinataKey = localStorage.getItem("PINATA_KEY");
+    this.state.pinataSecret = localStorage.getItem("PINATA_SECRET");
     if (this.state.pinataKey == null || this.state.pinataSecret == null) {
       this.showPinataModal(); //configure to continue
     }
