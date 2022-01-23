@@ -118,6 +118,29 @@ class Dropzone extends Component {
     return rpcResponse;
   };
 
+  getTotalSupply = async () => {
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(this.contractAddress)
+      .method("getTotalSupply")
+      .build();
+
+    console.log(callObj);
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        console.log("Total Supply is", response);
+        return response;
+      })
+      .catch((error) => {
+        console.log("Total Supply Error", error);
+        Promise.resolve({ error });
+      });
+    return result;
+  };
+
   renderRedirect = () => {
     if (this.state.redirect) {
       return <Navigate to="/launch" />;
@@ -184,15 +207,84 @@ class Dropzone extends Component {
       return;
     }
 
+    //step 1 - generate form data for original resolution image & compressed image (for thumbnail)
     this.setState({ statusText: "pinning image files to pinata..." });
     let originalData = this.createOriginalImageFormData(this.uploadedFiles);
     let thumbnailData = this.createThumbnailImageFormData(this.uploadedFiles);
 
+    console.log("original data", originalData);
+    console.log("thumbnailData", thumbnailData);
     console.log(originalData);
     console.log(thumbnailData);
 
-    console.log("uploaded Files", this.uploadedFiles.length);
-    console.log("metadata file", this.state.metadataJson.length);
+    //step 2 - pin files to IPFS
+    let originalResponse = await this.pinMultipleFilesToIPFS(
+      originalData,
+      "original_res"
+    );
+    let thumbnailResponse = await this.pinMultipleFilesToIPFS(
+      thumbnailData,
+      "thumbnail_res"
+    );
+
+    console.log("original res", originalResponse);
+    console.log("thumbnail res", thumbnailResponse);
+
+    //step 3 - generate metadata json file
+    this.setState({ statusText: "pinning metadata to pinata..." });
+    let [originalCombinedJson, originalJsonData] = this.createJsonFormData(
+      this.uploadedFiles,
+      originalResponse.data.IpfsHash
+    );
+    let [thumbnailCombinedJson, thumbnailJsonData] = this.createJsonFormData(
+      this.uploadedFiles,
+      thumbnailResponse.data.IpfsHash
+    );
+
+    console.log("original combined Json", originalCombinedJson);
+    console.log("originalJsonData", originalJsonData);
+    console.log("thumbnailCombinedJson", thumbnailCombinedJson);
+    console.log("thumbnailJsonData", thumbnailJsonData);
+
+    //step 4 - pin json to ipfs
+    let combjson_originalResponse = await this.pinJsonToIPFS(
+      originalCombinedJson
+    );
+    let combjson_thumbnailResponse = await this.pinJsonToIPFS(
+      thumbnailCombinedJson
+    );
+
+    console.log("combined josn_original res", combjson_originalResponse);
+    console.log("combined josn_thumbnail res", combjson_thumbnailResponse);
+
+    let metadata_response = await this.pinMultipleFilesToIPFS(
+      originalJsonData,
+      "json_metadata"
+    );
+    console.log("metadata_response", metadata_response);
+
+    //update contract
+    this.setState({ statusText: "updating smart contract..." });
+    await this.set_totalandcurrent_supply(
+      this.uploadedFiles.length,
+      metadata_response.data.IpfsHash,
+      combjson_originalResponse,
+      combjson_thumbnailResponse
+    ).then(() => {
+      this.db.contracts.update(this.contractAddress, {
+        metahash_exist: true,
+      });
+      localStorage.setItem("HAS_METAHASH", true);
+      this.statusLoading.current.style.display = "none";
+      this.statusSuccess.current.style.display = "block";
+      this.setState({ statusText: "files uploaded successfully!" });
+    });
+
+    await sleep(1000);
+    this.setState({ statusText: "redirecting to launchpage..." });
+
+    await sleep(1500);
+    this.setState({ redirect: true });
   };
 
   // Create Form
@@ -229,6 +321,57 @@ class Dropzone extends Component {
       originalData.append(`file`, files[i].dataFile, `file/${files[i].name}`);
     }
     return originalData;
+  };
+
+  //pinning function
+  pinJsonToIPFS = async (content) => {
+    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
+    let response = await axios
+      .post(pinataEndpoint, content, {
+        headers: {
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        },
+      })
+      .then((response) => {
+        console.log("pinJsonToIPFS", response);
+        return response.data.IpfsHash;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    return response;
+  };
+
+  pinMultipleFilesToIPFS = async (formData, displayedObjName) => {
+    const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    const metadata = JSON.stringify({ name: displayedObjName });
+    formData.append("pinataMetadata", metadata);
+    let response = await axios
+      .post(pinataEndpoint, formData, {
+        maxContentLength: "Infinity",
+        headers: {
+          "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
+          pinata_api_key: this.pinataKey,
+          pinata_secret_api_key: this.pinataSecret,
+        },
+        onUploadProgress: (progressEvent) => {
+          const { loaded, total } = progressEvent;
+          console.log("total ", total, " for ", displayedObjName);
+          const currentProgress = Math.round(((loaded * 100) / total) * 0.5);
+
+          console.log(
+            "current progress for ",
+            displayedObjName,
+            currentProgress
+          );
+        },
+      })
+      .then((res) => {
+        //        console.log(displayedObjName, "   ", res);
+        return res;
+      }); //will probably have to handle error here
+    return response;
   };
 
   closeStatusModal = () => {
@@ -403,6 +546,8 @@ class Dropzone extends Component {
             <Text layerStyle="modal_text">{this.state.statusText}</Text>
           </Box>
         </Box>
+
+        {this.renderRedirect()}
       </>
     );
   }
