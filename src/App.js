@@ -29,8 +29,8 @@ class App extends Component {
             <Route exact element={<LandingComponent />} path="/"></Route>
           </Routes>
 
-          <NavigationComponent></NavigationComponent>
-          <Box
+          {/* <NavigationComponent></NavigationComponent> */}
+          {/* <Box
             h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
             bg={"#202225"}
           >
@@ -54,7 +54,7 @@ class App extends Component {
                 ></Route>
               </Routes>
             </Box>
-          </Box>
+          </Box> */}
         </Router>
       </>
     );
