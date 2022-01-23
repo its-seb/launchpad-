@@ -7,6 +7,9 @@ import {
   Button,
   SimpleGrid,
   Image,
+  Input,
+  Textarea,
+  Icon
 } from "@chakra-ui/react";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import {
@@ -23,7 +26,7 @@ import imageStyle from "./TestImage.module.css";
 import SortableComponent from "./LayerDnd";
 import db from "../db.js";
 import { Scrollbar } from "smooth-scrollbar-react";
-import { XCircleIcon } from "@heroicons/react/solid";
+import { XCircleIcon, UploadIcon } from "@heroicons/react/solid";
 
 // import GenerateNFT from "./GenerateNFT.jsx";
 
@@ -370,6 +373,18 @@ export class GenerateComponent extends Component {
               }}
             >
               <Box overflow="auto" height="70%">
+                <div className={imageStyle.layerDiv}>
+                  <ul>
+                    <span
+                      className={imageStyle.layerButton}
+                      onClick={() =>
+                        this.viewLayerImages({ id: 1, name: "background" })
+                      }
+                    >
+                      background
+                    </span>
+                  </ul>
+                </div>
                 <SortableComponent
                   layerName={this.layerName.slice(1)}
                   handleToUpdate={this.handleToUpdate}
@@ -411,7 +426,7 @@ export class GenerateComponent extends Component {
             rowSpan={5}
             colSpan={8}
             bg="#373737"
-            borderRadius="10"
+            borderRadius="15"
             overflow="auto"
           >
             <Box
@@ -419,50 +434,60 @@ export class GenerateComponent extends Component {
               onDragOver={(event) => {
                 event.preventDefault();
               }}
+              h="100%"
             >
-              <SimpleGrid
-                columns={4}
-                spacingX="40px"
-                spacingY="20px"
-                p="20px 40px"
-              >
-                {(this.state.image || []).map((data, i) => (
-                  <Box
-                    h="120px"
-                    w="120px"
-                    m="auto"
-                    bg="#595A5A"
-                    borderRadius="10"
-                    textAlign="center"
-                    position="relative"
-                    alignContent="center"
-                  >
-                    <Image
-                      src={data.blob}
-                      maxHeight="75%"
-                      maxWidth="75%"
-                      minHeight="90px"
-                      minWidth="90px"
-                      ml="15px"
-                      p={3}
-                    ></Image>
-                    <XCircleIcon
-                      className="remove_image"
-                      onClick={(e) => this.deleteSingleImage(data.imageID)}
-                    ></XCircleIcon>
-                    <Text
-                      layerStyle="card_content"
+              {Object.keys(this.state.image).length !== 0 ?
+                <SimpleGrid
+                  columns={4}
+                  spacingX="40px"
+                  spacingY="20px"
+                  p="20px 40px"
+                >
+                  {(this.state.image || []).map((data, i) => (
+                    <Box
+                      h="120px"
+                      w="120px"
+                      m="auto"
+                      bg="#595A5A"
+                      borderRadius="10"
                       textAlign="center"
-                      color="#FBFBFB"
-                      fontWeight="450"
-                      pl="7px"
-                      pr="7px"
+                      position="relative"
+                      alignContent="center"
                     >
-                      {data.name}
-                    </Text>
+                      <Image
+                        src={data.blob}
+                        maxHeight="75%"
+                        maxWidth="75%"
+                        minHeight="90px"
+                        minWidth="90px"
+                        ml="15px"
+                        p={3}
+                      ></Image>
+                      <XCircleIcon
+                        className="remove_image"
+                        onClick={(e) => this.deleteSingleImage(data.imageID)}
+                      ></XCircleIcon>
+                      <Text
+                        layerStyle="card_content"
+                        textAlign="center"
+                        color="#FBFBFB"
+                        fontWeight="450"
+                        pl="7px"
+                        pr="7px"
+                      >
+                        {data.name}
+                      </Text>
+                    </Box>
+                  ))}
+                </SimpleGrid> :
+                <Box display="flex" justifyContent="center" alignItems="center" h="100%">
+                  <Box textAlign="center">
+                    <Icon as={UploadIcon} w={75} h={75} color="gray.200"></Icon>
+                    <Text color="#FBFBFB">Click or drop your images here!</Text>
+                    <Text color="#FBFBFB">(image/png, Max size: 10mb)</Text>
                   </Box>
-                ))}
-              </SimpleGrid>
+                </Box>
+              }
             </Box>
           </GridItem>
 
@@ -484,6 +509,7 @@ export class GenerateComponent extends Component {
                 {this.state.currentLayer}
               </Text>
             </Box>
+
             {Object.keys(this.state.image).length !== 0 ? (
               (this.state.image || []).map((data, i) => (
                 <SimpleGrid
@@ -493,6 +519,7 @@ export class GenerateComponent extends Component {
                   pb="20px"
                   alignItems="center"
                 >
+
                   <Box color="#FBFBFB" key={i}>
                     <span>{data.name}</span>
                   </Box>
@@ -534,13 +561,32 @@ export class GenerateComponent extends Component {
           </GridItem>
 
           {/* Preview card */}
-          <GridItem rowSpan={6} colSpan={4} bg="#373737"></GridItem>
+          <GridItem rowSpan={6} colSpan={4} bg="#373737" borderRadius="15">
+            <Box h='87%' display="flex" justifyContent="center" alignItems="center">
+              <Box bg="#595A5A" h="80%" w="80%" borderRadius="15">
+                {/* Insert preview of image here */}
+              </Box>
+
+            </Box>
+            <Box height='13%'>
+              <Text color="#F7F7F7" fontSize={23} fontWeight="550" pl={5}>Preview</Text>
+            </Box>
+          </GridItem>
 
           {/* Project Name and Description card */}
-          <GridItem rowSpan={6} colSpan={4} bg="#292929"></GridItem>
+          <GridItem rowSpan={6} colSpan={4}>
+            <Text color="#F7F7F7" fontSize={23} fontWeight="550">Project Name</Text>
+            <Input color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" placeholder="Title"></Input>
+            <Text color="#F7F7F7" fontSize={23} fontWeight="550">Description</Text>
+            <Textarea color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" minHeight="50%" maxHeight="50%" maxLength="250" placeholder="What is your collection about? (250 characters max)"></Textarea>
+            <Button colorScheme="yellow" float="right">Generate Images</Button>
+          </GridItem>
         </Grid>
+
+
         <div
           style={{
+            marginTop: "50px",
             padding: "25px 25px",
             border: "1px solid #5d2985",
             borderRadius: "0.25rem",
