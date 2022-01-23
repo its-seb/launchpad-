@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Flex, Button, Box, Text, Select, Center, Spacer, Heading, HStack } from '@chakra-ui/react'
+import { Flex, Button, Box, Text, Select, Center, Spacer, Heading, HStack, ButtonGroup, SimpleGrid } from '@chakra-ui/react'
 import { Link } from '@chakra-ui/react'
 import { Link as ReachLink } from "react-router-dom"
 import { Grid, GridItem } from '@chakra-ui/react'
@@ -8,97 +8,247 @@ import { Scrollbar } from 'smooth-scrollbar-react';
 import gif1 from "../assets/gif1.gif";
 import gif2 from "../assets/gif2.gif";
 import gif3 from "../assets/gif3.gif";
-import magicdoor from "../assets/magic_door.png";
 import logo from "../assets/launchpad_logo.svg";
+import book from "../assets/book.png";
+import dice from "../assets/dice.png";
+import gift from "../assets/gift-box.png";
+import scroll from "../assets/scroll.png";
+import wand from "../assets/wand.png";
+import ticket from "../assets/ticket.png";
+import { BsGithub } from 'react-icons/bs';
+import { AiOutlineMedium } from "react-icons/ai";
 
 
 export class LandingComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { featureone: true, featuretwo: false, };
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick(e, feature) {
+    if (feature == "one") {
+      this.setState({ featureone: true });
+      this.setState({ featuretwo: false });
+    }
+    else {
+      this.setState({ featuretwo: true });
+      this.setState({ featureone: false });
+    }
+  }
+
   render() {
     return (
-      <Flex minH="100vh">
-        <Scrollbar
-          plugins={{
-            overscroll: {
-              effect: 'bounce',
-            },
-          }}>
-          <Box className="left_outer" width={{ '2xl': "74%", '3xl': "75.5%" }} bg="white">
+      <Flex minH="100vh" overflow={"hidden"} >
+        <Box width={{ 'xl': "75%" }}>
+          <Grid
+            templateRows='repeat(10, 1fr)'
+            h={'100%'}
+          >
+            <GridItem bg="white" rowSpan={5}>
+              <Grid
+                h={'100%'}
+                templateColumns='repeat(7, 1fr)'
+                gap={0}
+              >
+                <GridItem colSpan={4}>
+                  <Image src={logo} alt='Dan Abramov' width={"250px"} marginLeft={"30px"} marginTop={"10px"} />
 
-            <Box className="navbar" w="90%" h="65px">
-              <Link as={ReachLink} to='/collection'>
-                <Image src={logo} alt='Dan Abramov' style={{ width: "210px", float: "left" }} />
-              </Link>
-              <Flex style={{ float: "right" }} >
-                <a className="left_inner_text" href="https://www.youtube.com/watch?v=K9377oH1qVU">About</a>
-                <a className="left_inner_text" href="https://www.youtube.com/watch?v=IqgERtJEgu8">Github</a>
-                <a className="left_inner_text" href="https://www.youtube.com/watch?v=GvUqOA2ULoI">Get Started</a>
-              </Flex>
-            </Box>
-
-            <Grid
-              templateRows='repeat(3, 1fr)'
-            >
-              <GridItem rowSpan={30} h='400px' bg='white' >
-                <Box>
-                  <Box className="left_body" width={{ '2xl': "55%", '3xl': "60%" }}  >
-                    <h1 className="first_row_title">
-                      launchpad.
-                    </h1>
-                    <Text style={{ lineHeight: "180%" }} fontSize={{ '2xl': '2xl', '3xl': '2xl' }} w={{ '2xl': "450px", '3xl': "1000px" }}>A solution for artwork generation, decentralized storage & distribution of NFTs</Text>
-                    <Text fontSize={{ '2xl': 'xl', '3xl': '2xl' }} color='purple'>No codes required!</Text>
-                    <Text style={{ lineHeight: "190%" }} fontSize={{ '2xl': 'md', '3xl': 'xl' }} color='#2F4F4F'>Empowering artist by bridging the gap between artist and technology</Text>
-                    <HStack style={{ marginTop: "20px" }}>
-                      <Button colorScheme='facebook' h='50px'>
-                        Generate Collections
+                  <Flex h='100%' paddingTop={"50px"} display={"block"} paddingLeft={"40px"}>
+                    <Box textStyle='h1' width={{ one: "450px", two: "500px", four: "500px", five: "600px", six: "700px" }}> A solution for artwork generation, decentralized storage & distribution of NFTs</Box>
+                    <Box textStyle='h2' color='purple' marginTop={"10px"}>No codes required!</Box>
+                    <Text color='#2F4F4F' marginTop={"5px"} fontSize={{ one: "16px", two: "16px", four: "17px", "five": "18px", "six": "23px" }} width={{ one: "500px", two: "500px", four: "600px", five: "600px", six: "700px" }}>Empowering artist by bridging the gap between artist and technology</Text>
+                    <HStack marginTop={"20px"}>
+                      <Button bg="#E6E6FA" leftIcon={<BsGithub size={25} />} h='40px' border='1px'
+                        borderColor='black' width='140px' as='a' href='https://github.com/boonyeow/launchpad' target="_blank">
+                        Github
                       </Button>
-                      <Button colorScheme='twitter' h='50px'>
-                        Bulk-mint Collections
+                      <Button bg='#F0F8FF' leftIcon={<AiOutlineMedium size={25} />} h='40px' border='1px'
+                        borderColor='black' width='140px'>
+                        Medium
                       </Button>
                     </HStack>
+                  </Flex>
+                </GridItem>
+                <GridItem colSpan={3}>
+                  <Center h='100%' marginRight={{ one: "20px", two: "25px", four: "55px", "five": "60px", "six": "100px" }}>
+                    <Image src={gif1} display="inline-block" boxSize={{ one: "180px", two: "200px", three: "210px", four: "220px", five: "230px", six: '280px' }} ></Image>
+                    <Image display="inline-block" boxSize={{ one: "180px", two: "200px", three: "210px", four: "220px", five: "230px", six: '280px' }} src={gif2}></Image>
+                    <Image display="inline-block" boxSize={{ one: "180px", two: "200px", three: "210px", four: "220px", five: "230px", six: '280px' }} src={gif3}></Image>
+                  </Center>
+                </GridItem>
+              </Grid>
+            </GridItem>
+
+
+            <GridItem bg='#faf8fc' rowSpan={5}>
+              <Grid
+                h={'100%'}
+                templateColumns='repeat(8, 1fr)'
+                gap={0}
+                marginTop={{ six: "10px" }}
+              >
+                <GridItem colSpan={5} marginRight={"auto"} marginLeft={"auto"} >
+                  <Box>
+                    <Box textStyle='h3' color='#2F4F4F' textAlign={"center"} marginBottom={"20px"} marginTop={"10px"}>How does it work?</Box>
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/AKQmBX1JLU4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                   </Box>
 
-                  <Box className="right_body" width={{ '2xl': "45%", '3xl': "40%" }}>
-                    <img className="first_row_pic" src={magicdoor} ></img>
+                </GridItem>
+                <GridItem colSpan={3} marginRight={{ one: "30px", six: "60px" }}>
+                  <Box textStyle='h3' color='#2F4F4F' textAlign={"center"} marginTop={"10px"} marginBottom={"5px"}>Our Features</Box>
+                  <Box textAlign={"center"} >
+
+
+                    <ButtonGroup variant='ghost' spacing='20' color='#2F4F4F'>
+                      <Button colorScheme='purple' isActive={this.state.featureone}
+                        onClick={(e) => this.handleClick(e, "one")}
+                      >
+                        <Text>Art Generator</Text>
+                      </Button>
+
+                      <Button colorScheme='purple' isActive={this.state.featuretwo}
+                        onClick={(e) => this.handleClick(e, "tw0")}
+
+                      >
+                        <Text >Bulk Minting</Text>
+                      </Button>
+                    </ButtonGroup>
                   </Box>
 
-                </Box>
-              </GridItem>
-              <GridItem rowSpan={25} h='400px' bg='#FAF8FC'>
-                <Box>
+                  <Center h='70%' display={"block"} marginTop={"10px"}>
+                    {this.state.featureone
+                      ?
+                      <div>
+                        <SimpleGrid
+                          bg='gray.50'
+                          columns='1'
+                          rounded='lg'
+                          color='black'
+                        >
+                          <Box boxShadow='md' marginBottom={"5px"} rounded='md' bg='white' paddingLeft={'4'} paddingRight={'4'} paddingBottom={'4'} paddingTop={'2'}>
+                            <Flex>
+                              <Center w='50px'>
+                                <Image src={book} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
+                              </Center>
+                              <Box flex='1' textAlign='center'>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Easy To Use </Text>
+                                <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>No coding required. Create your layers, import your assets, click Generate and you are done!
+                                </Text>
 
-                </Box>
-              </GridItem>
-              <GridItem rowSpan={25} h='400px' bg='white'>
-                <img style={{ width: "200px", display: "inline-block" }} src={gif1}></img>
-                <img style={{ width: "200px", display: "inline-block" }} src={gif2}></img>
-                <img style={{ width: "200px", display: "inline-block" }} src={gif3}></img>
+                              </Box>
+                            </Flex>
+                          </Box>
+                          <Box boxShadow='md' marginBottom={"5px"} rounded='md' bg='white' paddingLeft={'4'} paddingRight={'4'} paddingBottom={'4'} paddingTop={'2'}>
+                            <Flex>
+                              <Center w='50px'>
+                                <Image src={gift} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
+                              </Center>
+                              <Box flex='1' textAlign='center'>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Export to images or gifs</Text>
+                                <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>You can import images and gifs and we will generate your collection in the specific format.
+                                </Text>
 
-              </GridItem>
-            </Grid>
-          </Box>
-        </Scrollbar>
+                              </Box>
+                            </Flex>
+                          </Box>
+                          <Box boxShadow='md' marginBottom={"5px"} rounded='md' bg='white' paddingLeft={'4'} paddingRight={'4'} paddingBottom={'4'} paddingTop={'2'}>
+                            <Flex>
+                              <Center w='50px'>
+                                <Image src={dice} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
+                              </Center>
+                              <Box flex='1' textAlign='center'>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Layer and Attribute Rarity </Text>
+                                <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>Easily configure certain layers and attributes to be more rare than others.
+                                </Text>
+
+                              </Box>
+                            </Flex>
+                          </Box>
+
+                        </SimpleGrid>
+                      </div>
+
+
+                      :
+                      <div>
+                        <SimpleGrid
+                          bg='gray.50'
+                          columns='1'
+                          rounded='lg'
+                          color='black'
+                        >
+                          <Box boxShadow='md' marginBottom={"5px"} rounded='md' bg='white' paddingLeft={'4'} paddingRight={'4'} paddingBottom={'4'} paddingTop={'2'}>
+                            <Flex>
+                              <Center w='50px'>
+                                <Image src={scroll} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
+                              </Center>
+                              <Box flex='1' textAlign='center'>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Deploy Smart Contract</Text>
+                                <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>Customize and Deploy a smart contract to ICON for every art collection of yours!
+                                </Text>
+
+                              </Box>
+                            </Flex>
+                          </Box>
+                          <Box boxShadow='md' marginBottom={"5px"} rounded='md' bg='white' paddingLeft={'4'} paddingRight={'4'} paddingBottom={'4'} paddingTop={'2'}>
+                            <Flex>
+                              <Center w='50px'>
+                                <Image src={wand} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
+                              </Center>
+                              <Box flex='1' textAlign='center'>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Generate your own unqiue dApp</Text>
+                                <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>Just like Wix, create and configure your very own dApp to sell your collection.
+                                </Text>
+
+                              </Box>
+                            </Flex>
+                          </Box>
+                          <Box boxShadow='md' marginBottom={"5px"} rounded='md' bg='white' paddingLeft={'4'} paddingRight={'4'} paddingBottom={'4'} paddingTop={'2'}>
+                            <Flex>
+                              <Center w='50px'>
+                                <Image src={ticket} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
+                              </Center>
+                              <Box flex='1' textAlign='center'>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Bulk Minting from your Collection </Text>
+                                <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>Market your generated dApp and allow users around the world to bulk mint your collection!
+                                </Text>
+
+                              </Box>
+                            </Flex>
+                          </Box>
+
+                        </SimpleGrid>
+                      </div>
+
+
+                    }
+
+                  </Center>
+                </GridItem>
+              </Grid>
+
+            </GridItem>
+          </Grid>
+        </Box >
 
 
         <Box
-          width={{ '2xl': "26%", '3xl': "24.5%" }}
+          width={{ 'xl': "25%" }}
           bg="#202225"
           opacity="97%"
           color="white"
         >
-          <Box className="right_outer">
+          <Box position={"relative"} margin={0} top={"45%"} left={"50%"} transform={"translate(-50%, -50%)"} display={"inline-block"} maxW={"100%"} marginLeft={"auto"} marginRight={"auto"}>
             <Text fontSize="2xl">Welcome!</Text>
             <p>Sign in with your wallet to continue.</p>
 
             <Box my="20px">
               <label for="wallet" className="mb-2">Wallet:</label>
               <Select placeholder='Select option' name="wallet" mb="10px">
-                <option value='icon_wallet'>ICON Wallet</option>
+                <option value='icon_wallet' selected>ICON Wallet</option>
               </Select>
 
-              <label for="network" className="mb-2">Network:</label>
-              <Select placeholder='Select option' name="network">
-                <option value='Sejong'>Testnet Sejong</option>
-              </Select>
             </Box>
 
             <Button
@@ -114,6 +264,7 @@ export class LandingComponent extends Component {
           </Box>
         </Box>
       </Flex >
+
     );
   }
 }
