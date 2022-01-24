@@ -96,13 +96,12 @@ export class FileComponent extends Component {
   };
 
   hidePinataModal = () => {
-    this.setState({ showPinataModal: false });
-    // if (
-    //   localStorage.getItem("PINATA_KEY") != null &&
-    //   localStorage.getItem("PINATA_SECRET") != null
-    // ) {
-    //   this.setState({ showPinataModal: false });
-    // }
+    if (
+      localStorage.getItem("PINATA_KEY") != null &&
+      localStorage.getItem("PINATA_SECRET") != null
+    ) {
+      this.setState({ showPinataModal: false });
+    }
   };
 
   render() {

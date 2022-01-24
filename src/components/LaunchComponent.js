@@ -8,10 +8,20 @@ import {
   GridItem,
   Input,
   FormControl,
-  FormLabel,
+  Image,
   Button,
   VisuallyHiddenInput,
   Text,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  FormLabel,
+  ModalCloseButton,
+  Spinner,
+  CloseButton,
 } from "@chakra-ui/react";
 import {
   BrowserRouter as Router,
@@ -23,7 +33,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import TagsInput from "react-tagsinput";
 import "./style.css";
 import ICONexConnection, { sleep } from "./utils/interact.js";
-import { PhotographIcon, XIcon } from "@heroicons/react/solid";
+import { PhotographIcon, XCircleIcon } from "@heroicons/react/solid";
 import PreviewComponent from "./PreviewComponent.js";
 import FailureComponent from "./FailureComponent.js";
 import SuccessComponent from "./SuccessComponent.js";
@@ -45,6 +55,8 @@ export class LaunchComponent extends Component {
       tags: [],
       modalStatusText: "publishing launch site...",
       showLoadingModal: false,
+      statusTitle: "",
+      statusText: "",
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -62,6 +74,10 @@ export class LaunchComponent extends Component {
     this.tbCollectionName = React.createRef();
     this.tbMintPrice = React.createRef();
     this.coverImageUploadInput = React.createRef();
+    this.statusModal = React.createRef();
+    this.statusSuccess = React.createRef();
+    this.statusFail = React.createRef();
+    this.statusLoading = React.createRef();
   }
 
   handleChange = (tags) => {
@@ -92,6 +108,7 @@ export class LaunchComponent extends Component {
   };
 
   async componentDidMount() {
+    console.log(this.state.isUploaded);
     if (this.walletAddress == null) {
       alert("Please connect your wallet.");
       return;
@@ -134,11 +151,10 @@ export class LaunchComponent extends Component {
     let response = await this.executeCall(this.contractAddress, "getSiteInfo");
     if (Object.keys(response).length != 0) {
       //site info set
-      document.getElementById("tbCollectionName").value =
-        response.collectionTitle;
+      this.tbCollectionName.current.value = response.collectionTitle;
 
       let _nftMintPrice = IconConverter.toNumber(response.mintCost) / 10 ** 18;
-      document.getElementById("tbMintPrice").value = _nftMintPrice;
+      this.tbMintPrice.current.value = _nftMintPrice;
       this.setState({
         collectionCover: response.coverImage,
         collectionName: response.collectionTitle,
@@ -197,10 +213,12 @@ export class LaunchComponent extends Component {
   };
 
   handlePublishDapp = async () => {
-    let collectionName = document.getElementById("tbCollectionName").value;
-    let mintPrice = parseInt(document.getElementById("tbMintPrice").value);
+    let collectionName = this.tbCollectionName.current.value;
+    let mintPrice = parseInt(this.tbMintPrice.current.value);
     let collectionCover = this.state.collectionCover;
-
+    console.log("collectionName", collectionName);
+    console.log("mintprice", mintPrice);
+    console.log("ccollection cover", collectionCover);
     if (
       collectionName.length == 0 ||
       Number.isNaN(mintPrice) ||
@@ -212,7 +230,11 @@ export class LaunchComponent extends Component {
       return;
     }
 
-    this.setState({ showLoadingModal: true });
+    //show modal
+    this.statusModal.current.style.display = "block";
+    this.setState({ statusText: "publishing website to IPFS" });
+
+    //this.setState({ showLoadingModal: true });
 
     //upload collection cover to pinata
     let response = await this.pinSingleFileToIPFS(
@@ -424,7 +446,7 @@ export class LaunchComponent extends Component {
     let publishedDapp = `https://gateway.pinata.cloud/ipfs/${dappResponse.data.IpfsHash}`;
     console.log(publishedDapp);
 
-    this.setState({ modalStatusText: "updating score..." });
+    this.setState({ statusText: "updating score..." });
     //set siteInfo
     await this.executeCallTransaction(
       this.walletAddress,
@@ -439,8 +461,11 @@ export class LaunchComponent extends Component {
       // document.getElementById("publishLoading").style.display = "none";
       // document.getElementById("publishSuccess").style.display = "block";
       // document.getElementById("close-loading-modal").style.display = "block";
+      this.statusLoading.current.style.display = "none";
+      this.statusSuccess.current.style.display = "block";
+      this.setState({ statusTitle: "Success" });
       this.setState({
-        modalStatusText: "launch site published successfully!",
+        statusText: "launch site published successfully!",
       });
       await sleep(1500);
       window.open(publishedDapp, "_blank");
@@ -547,7 +572,23 @@ export class LaunchComponent extends Component {
     return data.split(new RegExp(separators.join("|"))).map((d) => d.trim());
   }
 
-  coverImageOnChange = (e) => {};
+  coverImageOnChange = (e) => {
+    e.preventDefault();
+    const imgBlob = URL.createObjectURL(e.target.files[0]); //creating a blob url
+    console.log(imgBlob);
+
+    // document.getElementById("dragAndDropPrompt").style.display = "none";
+    // document.getElementById("dragAndDropPreview").style.display = "block";
+    this.setState({ isUploaded: true });
+    this.setState({ collectionCover: imgBlob });
+    this.setState({ collectionCoverFile: e.target.files[0] });
+  };
+
+  closeStatusModal = () => {
+    this.statusSuccess.current.style.display = "none";
+    this.statusFail.current.style.display = "none";
+    this.statusModal.current.style.display = "none";
+  };
 
   render() {
     console.log("state", typeof this.hasMetahash);
@@ -607,18 +648,57 @@ export class LaunchComponent extends Component {
                 borderRadius={"xl"}
                 mt="1rem"
                 p="2rem"
-                _hover={{ backgroundColor: "#2f3136", cursor: "pointer" }}
-                onClick={() => this.coverImageUploadInput.current.click()}
+                _hover={
+                  this.state.isUploaded == false
+                    ? { backgroundColor: "#2f3136", cursor: "pointer" }
+                    : null
+                }
+                onClick={() => {
+                  if (!this.state.isUploaded) {
+                    this.coverImageUploadInput.current.click();
+                  }
+                }}
               >
-                <PhotographIcon
-                  color="white"
-                  width="3rem"
-                  className="m-auto"
-                  mt="1rem"
-                />
-                <Text color="white" textAlign="center">
-                  File type supported: JPG, PNG, GIF
-                </Text>
+                <Box
+                  w="100%"
+                  h="60px"
+                  display={this.state.isUploaded ? "none" : "block"}
+                >
+                  <PhotographIcon
+                    color="white"
+                    width="3rem"
+                    className="m-auto"
+                    mt="1rem"
+                  />
+                  <Text color="white" textAlign="center">
+                    File type supported: JPG, PNG, GIF
+                  </Text>
+                </Box>
+                {console.log("hellotest", this.state.collectionCoverFile)}
+                {this.state.collectionCoverFile == "" ? (
+                  <Box></Box>
+                ) : (
+                  <Box position="relative">
+                    <Image
+                      src={this.state.collectionCover}
+                      maxHeight={100}
+                      maxWidth={100}
+                      p={3}
+                    ></Image>
+                    <XCircleIcon
+                      style={{
+                        width: "20px",
+                        color: "red",
+                        position: "absolute",
+                        top: "-40px",
+                        left: "100px",
+                        height: "100px",
+                      }}
+                      onClick={this.removeCoverImage}
+                    ></XCircleIcon>
+                  </Box>
+                )}
+
                 <VisuallyHiddenInput
                   type="file"
                   ref={this.coverImageUploadInput}
@@ -626,24 +706,112 @@ export class LaunchComponent extends Component {
                   onChange={(e) => this.coverImageOnChange(e)}
                 ></VisuallyHiddenInput>
               </Box>
-              <Button variant="modal_cancel" mt={5}>
+              <Button
+                variant="modal_cancel"
+                mt={5}
+                onClick={() => this.setState({ showAdvancedSettings: true })}
+              >
                 Optional Settings
               </Button>
               <Button
                 variant="modal_submit"
                 float="right"
                 mt={5}
-                onClick={console.log("hello")}
+                onClick={this.handlePublishDapp}
               >
                 Publish to IPFS
               </Button>
             </GridItem>
-            <GridItem rowSpan={2} colSpan={4} bg="tomato">
-              <Box>
-                <FormControl>Hello</FormControl>
-              </Box>
+            <GridItem
+              rowSpan={2}
+              colSpan={4}
+              p="2rem"
+              bg="blue"
+              borderRadius="5px"
+              bg="#323232"
+            >
+              <PreviewComponent
+                previewData={this.state}
+                previewSiteInfo={this.siteInfo}
+              />
             </GridItem>
           </Grid>
+          <Modal
+            closeOnOverlayClick={false}
+            isOpen={this.state.showAdvancedSettings}
+            onClose={this.hideSettingsModal}
+          >
+            <ModalOverlay />
+            <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
+              <ModalHeader borderBottom="1px solid #4c4c4c">
+                Optional Setting
+              </ModalHeader>
+              <ModalCloseButton top={4} />
+              <ModalBody pb={2} pt={2}>
+                <FormControl>
+                  <FormLabel>Launch Date</FormLabel>
+                  <DatePicker
+                    timeInputLabel="Time:"
+                    dateFormat="MM/dd/yyyy h:mm aa"
+                    showTimeInput
+                    className="launch-date-picker"
+                    placeholderText="Launch Date - optional"
+                    selected={this.state.selectedDate}
+                    minDate={new Date()}
+                    onChange={(date) => this.setState({ selectedDate: date })}
+                  />
+                </FormControl>
+
+                <FormControl mt={4}>
+                  <FormLabel>Whitelisted Address</FormLabel>
+                  <TagsInput
+                    value={this.state.tags}
+                    onChange={this.handleChange}
+                    pasteSplit={this.pasteSplit}
+                    addOnPaste="true"
+                    inputProps={{
+                      placeholder: "Add a whitelisted address - optional",
+                    }}
+                  />
+                </FormControl>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  variant="modal_submit"
+                  onClick={this.handleSaveOptional}
+                >
+                  Save
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+
+          <Box
+            id="statusModal"
+            layerStyle="modal_container"
+            ref={this.statusModal}
+          >
+            <Box layerStyle="modal_content" alignItems="center">
+              <CloseButton
+                position="absolute"
+                right={3}
+                top={3}
+                onClick={this.closeStatusModal}
+              />
+              <Spinner
+                variant="loading_spinner"
+                thickness="4px"
+                speed="0.65s"
+                ref={this.statusLoading}
+              ></Spinner>
+              <SuccessComponent _ref={this.statusSuccess} _show="none" />
+              <FailureComponent _ref={this.statusFail} _show="none" />
+
+              <Text layerStyle="modal_title">{this.state.statusTitle}</Text>
+              <Text layerStyle="modal_text">{this.state.statusText}</Text>
+            </Box>
+          </Box>
         </>
       );
     }

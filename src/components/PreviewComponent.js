@@ -1,5 +1,7 @@
 import React, { Component } from "react";
-import { Button, Card, Image } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
+
+import { Box, Text, Input, Image } from "@chakra-ui/react";
 import "./style.css";
 
 class PreviewComponent extends Component {
@@ -41,47 +43,51 @@ class PreviewComponent extends Component {
   render() {
     return (
       <>
-        <Card className="preview-card unselectable">
+        <Box height="100%" maxHeight="100%" position="relative">
           <Button className="preview-connect-wallet">Connect Wallet</Button>
-          <div className="preview-container">
-            <div className="preview-content">
-              <div className="preview-title">
-                <span>{this.state.collectionName}</span>
-              </div>
-              <div className="preview-cover-image">
+          <Box className="preview-container">
+            <Box className="preview-content">
+              <Box className="preview-title">
+                <Text as="span">{this.state.collectionName}</Text>
+              </Box>
+              <Box className="preview-cover-image">
                 <Image
                   src={this.state.collectionCover}
-                  style={{
-                    backgroundColor: "white",
-                    width: "100%",
-                    height: "100%",
-                  }}
+                  bg="white"
+                  h="8rem"
+                  m="auto"
                 ></Image>
-              </div>
-              <div className="preview-price">
-                <div
+              </Box>
+              <Box className="preview-price">
+                <Box
                   style={{
                     display: "inline-block",
                     width: "100%",
                     textAlign: "center",
                   }}
                 >
-                  <button onClick={() => this.handleQuantity("decrement")}>
+                  <Box
+                    as="button"
+                    onClick={() => this.handleQuantity("decrement")}
+                  >
                     -
-                  </button>
-                  <input
+                  </Box>
+                  <Input
                     id="mint_qty"
                     type="number"
                     className="preview-mint-qty unselectable"
                     readOnly
                     disabled
                     defaultValue="1"
-                  ></input>
-                  <button onClick={() => this.handleQuantity("increment")}>
+                  ></Input>
+                  <Box
+                    as="button"
+                    onClick={() => this.handleQuantity("increment")}
+                  >
                     +
-                  </button>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
               <Button
                 style={{
                   marginTop: "15px",
@@ -94,9 +100,9 @@ class PreviewComponent extends Component {
               >
                 Mint - {this.state.totalCost} ICX
               </Button>
-            </div>
-          </div>
-        </Card>
+            </Box>
+          </Box>
+        </Box>
       </>
     );
   }

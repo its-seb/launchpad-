@@ -14,6 +14,7 @@ import {
   Spinner,
   Text,
   Box,
+  CloseButton,
 } from "@chakra-ui/react";
 import IconService from "icon-sdk-js";
 import Dexie from "dexie";
@@ -35,6 +36,8 @@ class NewCollectionModal extends Component {
     this.state = {
       showStatusModal: false,
       deploymentStatusText: "deploying collection...",
+      statusTitle: "",
+      statusText: "",
     };
 
     this.db = new Dexie("contracts_deployed");
@@ -48,6 +51,11 @@ class NewCollectionModal extends Component {
     this.tbCollectionName = React.createRef();
     this.tbCollectionSymbol = React.createRef();
     this.deployText = React.createRef();
+
+    this.statusModal = React.createRef();
+    this.statusSuccess = React.createRef();
+    this.statusFail = React.createRef();
+    this.statusLoading = React.createRef();
   }
 
   connection = new ICONexConnection();
@@ -63,11 +71,12 @@ class NewCollectionModal extends Component {
       return;
     } else if (!collectionName.length || !collectionSymbol.length) {
       //remember to sanitize input-> allow alphanumeric only
-      Swal.fire({
-        title: "Oops...",
-        icon: "error",
-        text: "Make sure you have entered the mandatory fields",
-      }); //do consider replacing this -boon
+      this.statusLoading.current.style.display = "none";
+      this.statusFail.current.style.display = "block";
+      this.setState({ statusTitle: "Oops..." });
+      this.setState({
+        statusText: "Make sure you have entered the mandatory fields",
+      });
       return;
     }
 
@@ -75,15 +84,15 @@ class NewCollectionModal extends Component {
       "https://gateway.pinata.cloud/ipfs/QmcGEfBjWyHntPh9xAasAK4UcvG5GL7VrtUZguWfpooNky"
     );
 
-    let deploymentSuccess = document.getElementById("deploymentSuccess");
-    let deploymentFailure = document.getElementById("deploymentFailure");
+    // let deploymentSuccess = document.getElementById("deploymentSuccess");
+    // let deploymentFailure = document.getElementById("deploymentFailure");
     //let deploymentStatusText = document.getElementById("deployText");
     this.props.hide();
+
+    this.statusModal.current.style.display = "block";
     this.setState({ showStatusModal: true });
 
-    //console.log(deploymentStatusText);
-    //deploymentStatusText.innerText = "deploying collection...";
-    //deploymentStatusText.style.display = "block";
+    this.setState({ statusText: "deploying collection...." });
 
     const txParams = {
       _name: collectionName, //based on user input
@@ -148,26 +157,29 @@ class NewCollectionModal extends Component {
         });
       this.props.updateContractInfo(walletAddress);
 
-      deploymentSuccess.style.display = "block";
-      this.setState({
-        deploymentStatusText: "new collection has been created",
-      });
+      this.statusLoading.current.style.display = "none";
+      this.statusSuccess.current.style.display = "block";
+      this.setState({ statusText: "new collection has been created" });
 
-      //deploymentStatusText.innerText = "new collection has been created";
-      await sleep(2000);
-      deploymentSuccess.style.display = "none";
-      this.setState({ deploymentStatusText: "" });
+      this.setState({ statusText: "" });
       this.props.hideModal();
     } catch (e) {
       ////alert("User cancelled transaction");
-      deploymentFailure.style.display = "block";
-      this.setState({ deploymentStatusText: "deployment cancelled by user" });
-      await sleep(2000);
-      //deploymentStatusText.style.display = "none";
-      deploymentFailure.style.display = "none";
+
+      // this.statusLoading.current.style.display = "none";
+      // this.statusFail.current.style.display = "block";
+      // this.setState({ statusTitle: "Oops..." });
+      // this.setState({ statusText: "user cancelled transaction" });
+      //await sleep(2000);
+      //deploymentFailure.style.display = "none";
 
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
     }
+  };
+  closeStatusModal = () => {
+    this.statusSuccess.current.style.display = "none";
+    this.statusFail.current.style.display = "none";
+    this.statusModal.current.style.display = "none";
   };
 
   render() {
@@ -220,30 +232,31 @@ class NewCollectionModal extends Component {
           </ModalContent>
         </Modal>
 
-        <Modal closeOnOverlayClick={false} isOpen={this.state.showStatusModal}>
-          <ModalOverlay />
-          <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
-            <ModalBody py={10} textAlign="center">
-              <Spinner
-                thickness="4px"
-                speed="0.65s"
-                w="5rem"
-                h="5rem"
-                borderColor="#626262"
-              ></Spinner>
-              <Box
-                id="deploymentSuccess"
-                className="w4rAnimated_checkmark load-success"
-              >
-                <SuccessComponent />
-              </Box>
-              <FailureComponent id="deploymentFailure" />
-              <Text fontSize="1.2rem" pt="15px" id="deployText">
-                {this.state.deploymentStatusText}
-              </Text>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
+        <Box
+          id="statusModal"
+          layerStyle="modal_container"
+          ref={this.statusModal}
+        >
+          <Box layerStyle="modal_content" alignItems="center">
+            <CloseButton
+              position="absolute"
+              right={3}
+              top={3}
+              onClick={this.closeStatusModal}
+            />
+            <Spinner
+              variant="loading_spinner"
+              thickness="4px"
+              speed="0.65s"
+              ref={this.statusLoading}
+            ></Spinner>
+            <SuccessComponent _ref={this.statusSuccess} _show="none" />
+            <FailureComponent _ref={this.statusFail} _show="none" />
+
+            <Text layerStyle="modal_title">{this.state.statusTitle}</Text>
+            <Text layerStyle="modal_text">{this.state.statusText}</Text>
+          </Box>
+        </Box>
       </>
     );
   }

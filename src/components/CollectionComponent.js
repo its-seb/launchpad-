@@ -183,6 +183,7 @@ export class CollectionComponent extends Component {
         <NewCollectionModal
           show={this.state.showCollectionModal}
           hide={this.hideCollectionModal}
+          updateContractInfo={this.getContractInfo}
         />
       </>
     );
