@@ -1,3 +1,7 @@
+.layerName {
+    background-color: pink;
+}
+
 .layerDiv {
     position: relative;
     display: flex;

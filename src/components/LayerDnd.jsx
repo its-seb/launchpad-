@@ -136,6 +136,7 @@ class SortableComponent extends Component {
     }
 
     render() {
+        console.log(this.state.showConfirmation);
         return (
             <div>
                 {/* {Object.keys(this.props.layerName).length !== 0 && */}
@@ -154,7 +155,7 @@ class SortableComponent extends Component {
                     </Modal.Header>
                     <Modal.Body>Removing this layer will remove all images in this layer.</Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => this.handleClose}>
+                        <Button variant="secondary" onClick={this.handleClose}>
                             Cancel
                         </Button>
                         <Button variant="danger" onClick={() => this.deleteLayerButton({ id: this.state.currentLayerId, name: this.state.currentLayer })}>

@@ -20,14 +20,16 @@ import {
   SplitButton,
   FormControl,
   Modal,
+  Form
 } from "react-bootstrap";
 import Dexie from "dexie";
 import imageStyle from "./TestImage.module.css";
 import SortableComponent from "./LayerDnd";
 import db from "../db.js";
 import { Scrollbar } from "smooth-scrollbar-react";
-import { XCircleIcon, UploadIcon } from "@heroicons/react/solid";
-
+import { XCircleIcon, UploadIcon, PencilAltIcon } from "@heroicons/react/solid";
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 // import GenerateNFT from "./GenerateNFT.jsx";
 
 function MergeImages(props) {
@@ -91,6 +93,357 @@ function MergeImages(props) {
   return result;
 }
 
+function GetImageData(files, imageId) {
+  var result = [];
+  imageId = parseInt(imageId);
+  Object.keys(files).map((item, index) => {
+    if (Object.keys(files[item]["layerImages"]).length !== 0) {
+      const images = files[item]["layerImages"];
+
+      Object.keys(images).map((image) => {
+        if (images[image].imageId === imageId) {
+          //console.log(images[image].imageData);
+          result.push({ id: images[image].layerId, image: images[image].imageData });
+        }
+      });
+    }
+  });
+
+  return result[0];
+}
+
+function product(left, right, other) {
+  if (other) {
+    right = product.apply(this, [].slice.call(arguments, 1));
+  }
+
+  return left.reduce(function (ret, i) {
+    var ans = right.map(function (j) {
+      return [i].concat(j);
+    });
+
+    return ret.concat(ans);
+  }, []);
+}
+
+function count(animals) {
+  return animals.reduce((acc, arr) => {
+    for (const item of arr) {
+      acc[item] = acc[item] !== undefined ? acc[item] + 1 : 1
+    }
+    return acc
+  }, {})
+}
+
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+async function GetMergedImages(props) {
+  var indexes = [];
+  var imagesToGenerate = 100;
+  var allImages = [];
+  let files = props.files;
+  const noOfLayers = Object.keys(files).length;
+  var compiledListOfIds = [];
+
+  for (let i = 0; i < noOfLayers; i++) {
+    indexes[i] = [];
+    var listOfImageIds = [];
+
+    const totalRarity = files[i].totalRarity
+
+    //check if theres any images in the layer
+    if (totalRarity !== 0) {
+
+      const layerRarity = files[i].layerRarity;
+      const layersToGenerate = Math.round((layerRarity / 100) * imagesToGenerate);
+      indexes[i]["layerCount"] = layersToGenerate;
+
+      var layerCountRemaining = layersToGenerate;
+      var layersComputed = 0;
+
+      //Calculate the individual images
+      for (var image in files[i].layerImages) {
+        const imageRarity = files[i].layerImages[image].imageRarity;
+        const imageId = files[i].layerImages[image].imageId;
+
+        const imageCount = Math.round((imageRarity / totalRarity) * layersToGenerate);
+
+        indexes[i].push({ [imageId]: imageCount });
+        layerCountRemaining = layerCountRemaining - imageCount;
+        layersComputed = layersComputed + imageCount;
+
+        listOfImageIds = listOfImageIds.concat(Array(1).fill(imageId));
+      }
+
+      // //Deal with Remainders
+      if (layersComputed !== layersToGenerate) {
+        //Overgenerate
+        if (layersComputed > indexes[i].layerCount) {
+          for (let x = 0; x < layersComputed - layersToGenerate; x++) {
+
+            const noOfIds = listOfImageIds.length;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+
+            for (var image in indexes[i]) {
+              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
+                indexes[i][image][Object.keys(indexes[i][image])[0]] = total - 1;
+                break;
+              }
+            }
+          }
+        } else if (layersComputed < indexes[i].layerCount) {
+          //Undergenerate
+          for (let x = 0; x < layersToGenerate - layersComputed; x++) {
+
+            const noOfIds = listOfImageIds.length;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+
+            for (var image in indexes[i]) {
+              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
+                indexes[i][image][Object.keys(indexes[i][image])[0]] = total + 1;
+                break;
+              }
+            }
+          }
+        }
+      }
+      compiledListOfIds.push(listOfImageIds);
+
+    } else {
+      indexes[i]["layerCount"] = 0;
+    }
+  }
+
+  //Remove empty layers before processing
+  for (let i = indexes.length - 1; i >= 0; i--) {
+    if (indexes[i].layerCount === 0) {
+      indexes.splice(i, 1);
+    }
+  }
+
+  console.log("Indexes", indexes);
+
+  //Fill compiledListOfIds with 0 if the layer is required to generate lesser than total amt
+  //Populate rest of ids with 0
+  for (let i = 0; i < indexes.length; i++) {
+    if (indexes[i].layerCount !== imagesToGenerate && indexes[i].layerCount !== 0) {
+      compiledListOfIds[i] = compiledListOfIds[i].concat(Array(1).fill(0));
+    }
+  }
+
+  console.log("All Ids", compiledListOfIds);
+
+  const allTotalCombinations = product.apply(null, compiledListOfIds);
+  console.log(allTotalCombinations);
+
+  const totalCombinationCount = count(allTotalCombinations);
+  console.log(totalCombinationCount);
+
+  shuffle(allTotalCombinations);
+
+  loop:
+  for (let i = 0; i < indexes.length; i++) {
+    if (indexes[i].layerCount !== imagesToGenerate && indexes[i].layerCount !== 0) {
+
+      //ImageIds in the current layer
+      var imageIds = compiledListOfIds[i];
+
+      var zerosToHave = imagesToGenerate - indexes[i].layerCount;
+      var zerosTotal = totalCombinationCount[0];
+      var zerosToRemove = zerosTotal - zerosToHave;
+      var zerosRemoved = 0;
+      var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+
+      for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
+        if (allTotalCombinations[j][i] === 0) {
+          allTotalCombinations.splice(j, 1);
+          zerosRemoved++;
+          if (zerosRemoved === zerosToRemove) {
+            break;
+          }
+        }
+      }
+
+      //ImageIds in the current layer
+      var imageIds = compiledListOfIds[i];
+
+      var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+      //Iterate each layer in indexes to find out the counts
+      for (let j = 0; j < onlyValidValues.length; j++) {
+        const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
+        const currentImageCount = onlyValidValues[j][currentImageId];
+        const imagesToRemove = totalCombinationCount[currentImageId] - currentImageCount;
+
+        var removedId = 0;
+        var stop = false;
+        while (!stop) {
+          for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
+            if (currentImageId === allTotalCombinations[j][i]) {
+              allTotalCombinations.splice(j, 1);
+              removedId++;
+
+              if (removedId === imagesToRemove) {
+                break;
+              }
+            }
+          }
+          if (removedId === imagesToRemove) {
+            stop = true;
+          }
+        }
+      }
+
+      break loop;
+
+    }
+    else {
+      //ImageIds in the current layer
+      var imageIds = compiledListOfIds[i];
+
+      var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+      //Iterate each layer in indexes to find out the counts
+      for (let j = 0; j < onlyValidValues.length; j++) {
+        const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
+        const currentImageCount = onlyValidValues[j][currentImageId];
+        const imagesToRemove = totalCombinationCount[currentImageId] - currentImageCount;
+
+        var removedId = 0;
+        var stop = false;
+        while (!stop) {
+          for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
+            if (currentImageId === allTotalCombinations[j][i]) {
+              allTotalCombinations.splice(j, 1);
+              removedId++;
+
+              if (removedId === imagesToRemove) {
+                break;
+              }
+            }
+          }
+          if (removedId === imagesToRemove) {
+            stop = true;
+          }
+        }
+      }
+      break loop;
+    }
+  }
+
+  console.log(allTotalCombinations);
+
+  console.log(count(allTotalCombinations));
+
+  for (let i = 0; i < allTotalCombinations.length; i++) {
+    var images = [];
+    for (let j = 0; j < allTotalCombinations[i].length; j++) {
+      const imageId = allTotalCombinations[i][j];
+      if (imageId !== 0) {
+        const imageData = GetImageData(files, imageId);
+        images.push(imageData);
+      }
+    }
+    allImages.push(images);
+  }
+
+  console.log("All Layer Images", allImages);
+
+  //Merge Images
+  var mergedImages = [];
+  for (let i = 0; i < Object.keys(allImages).length; i++) {
+    const img = await MergeImages({
+      images: allImages[i],
+      height: 100,
+      width: 100,
+      layers: props.layers
+    });
+    mergedImages.push(img);
+  }
+  console.log("Merged Images ", mergedImages);
+
+  var zip = new JSZip();
+
+  //zip.file("Hello.txt", "Hello World\n");
+  var images = zip.folder("images");
+  var metadata = zip.folder("metadata");
+
+  for (let i = 0; i < allTotalCombinations.length; i++) {
+    var obj = new Object();
+    const no = (i + 1).toString();
+
+    obj.name = "#" + no;
+    obj.description = "";
+    obj.external_url = "";
+    obj.image = no + ".png";
+
+    var counter = 0;
+    obj.attributes = [];
+    for (let j = 0; j < allTotalCombinations[i].length; j++) {
+      Object.keys(files).map((item, index) => {
+        if (Object.keys(files[item]["layerImages"]).length !== 0) {
+          const layerName = files[item]["layerName"];
+          const images = files[item]["layerImages"];
+          const imageId = allTotalCombinations[i][j];
+
+          Object.keys(images).map((image) => {
+            if (images[image].imageId === imageId) {
+              obj.attributes[counter] = new Object();
+              console.log(layerName);
+              obj.attributes[counter].trait_type = layerName;
+
+              const layerValue = images[image].imageName.substr(0, images[image].imageName.lastIndexOf("."));
+              obj.attributes[counter].value = layerValue;
+              counter++;
+            }
+          });
+        }
+      });
+    }
+
+    obj.properties = new Object();
+    obj["properties"].category = "image";
+    obj["properties"].files = [];
+    obj["properties"]["files"][0] = new Object();
+    obj["properties"]["files"][0].uri = no + ".png";
+    obj["properties"]["files"][0].type = "image/png";
+    obj.compiler = "Launchpad";
+
+    console.log(JSON.stringify(obj, null, '\t'));
+
+    metadata.file(no + ".json", JSON.stringify(obj, null, '\t'));
+  }
+
+  for (let i = 0; i < mergedImages.length; i++) {
+    var idx = mergedImages[i].indexOf('base64,') + 'base64,'.length; // or = 28 if you're sure about the prefix
+    var content = mergedImages[i].substring(idx);
+    images.file(i + 1 + ".png", content, { base64: true });
+  }
+
+  await zip.generateAsync({ type: "blob" }).then(function (content) {
+    saveAs(content, "files.zip");
+  });
+
+  return mergedImages;
+}
+
+
 export class GenerateComponent extends Component {
   blobData = [];
   imageData = [];
@@ -111,7 +464,8 @@ export class GenerateComponent extends Component {
       slidingImageTimeout: 0,
       slidingLayerTimeout: 0,
       typingLayerTimeout: 0,
-      previewImage: ""
+      previewImage: "",
+      showPreview: false
     };
   }
 
@@ -356,6 +710,7 @@ export class GenerateComponent extends Component {
   };
 
   handleLayerNameChange = (event) => {
+    event.preventDefault();
     var id = parseInt(this.state.currentLayerId);
     let objIndex = this.layerName.findIndex((obj) => obj.layerid === id);
     this.layerName[objIndex].name = event.target.value;
@@ -371,13 +726,13 @@ export class GenerateComponent extends Component {
         await new GenerateComponent().queryDatabase(id).then((theList) => {
           theList.forEach((item) => {
             if (item.layerid === id) {
-              db.layers.update(item.id, { layer: event.target.value });
+              db.layers.update(item.layerid, { layer: event.target.value });
             }
           });
         });
         // Update layerNames database
-        db.layerNames.update(id, { layer: event.target.value });
-      }, 5000),
+        await db.layerNames.update(id, { layer: event.target.value });
+      }, 100),
     });
   };
 
@@ -392,7 +747,7 @@ export class GenerateComponent extends Component {
     var count = await db.layerNames.orderBy("id").count();
 
     await db.layerNames.add({
-      layer: "",
+      layer: "-",
       index: count,
       rarity: 100,
     });
@@ -457,6 +812,67 @@ export class GenerateComponent extends Component {
     }, () => {
       console.log(this.state.imagePreview);
     });
+  }
+
+  handleShow = () => {
+    this.setState({
+      showPreview: true
+    });
+  }
+
+  handleClose = () => {
+    this.setState({ showPreview: false });
+  }
+
+  //Generate
+  onClickGenerate = async () => {
+    await this.getAllData();
+    window.location.assign("/collection");
+
+  }
+
+  changeInputState = () => {
+    this.layerNameInput.focus()
+  }
+
+  getAllData = async () => {
+    var files = new Object();
+    await db.layerNames
+      .orderBy("index")
+      .toArray()
+      .then(theList => {
+        theList.forEach(item => {
+          files[item.index] = new Object();
+          files[item.index].layerId = item.id;
+          files[item.index].layerName = item.layer;
+          files[item.index].layerRarity = item.rarity;
+          files[item.index].totalRarity = 0;
+          files[item.index].layerImages = new Object();
+        });
+      });
+
+    await db.layers
+      .orderBy("rarity")
+      .reverse()
+      .toArray()
+      .then(theList => {
+        //console.log("list", theList);
+        theList.forEach((image, index) => {
+          for (let i = 0; i < Object.keys(files).length; i++) {
+            if (files[i].layerId === image.layerid) {
+              Object.assign(files[i], { totalRarity: files[i].totalRarity + image.rarity });
+              files[i]["layerImages"][index] = new Object();
+              Object.assign(files[i]["layerImages"][index], { imageId: image.id });
+              Object.assign(files[i]["layerImages"][index], { layerId: image.layerid });
+              Object.assign(files[i]["layerImages"][index], { imageName: image.name });
+              Object.assign(files[i]["layerImages"][index], { imageRarity: image.rarity });
+              Object.assign(files[i]["layerImages"][index], { imageData: URL.createObjectURL(image.image) });
+            }
+          }
+        });
+      });
+
+    const images = await GetMergedImages({ files: files, layers: this.state.layer });
   }
 
   render() {
@@ -592,7 +1008,7 @@ export class GenerateComponent extends Component {
                 <Box display="flex" justifyContent="center" alignItems="center" h="100%">
                   <Box textAlign="center">
                     <Icon as={UploadIcon} w={75} h={75} color="gray.200"></Icon>
-                    <Text color="#FBFBFB">Click or drop your images here!</Text>
+                    <Text color="#FBFBFB">Drop your images here!</Text>
                     <Text color="#FBFBFB">(image/png, Max size: 10mb)</Text>
                   </Box>
                 </Box>
@@ -613,9 +1029,11 @@ export class GenerateComponent extends Component {
               <Text fontWeight="bold" pb={3} color="#FBFBFB" float="left">
                 Image Rarity - {"\u00A0"}
               </Text>
-              <Text fontWeight="bold" color="#FED428" float="right">
-                {this.state.currentLayer}
-              </Text>
+              <Input fontWeight="bold" variant="unstyled" color="#FED428" w="40%" ref={x => this.layerNameInput = x}
+                value={this.state.currentLayer}
+                onChange={this.handleLayerNameChange}
+              />
+              <Icon as={PencilAltIcon} h={6} w={6} color="gray.200" cursor="pointer" verticalAlign="top" onClick={this.changeInputState} />
             </Box>
 
             {Object.keys(this.state.image).length !== 0 ? (
@@ -697,243 +1115,50 @@ export class GenerateComponent extends Component {
                 <Textarea color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" minHeight="39%" maxHeight="39%" maxLength="250" placeholder="What is your collection about? (250 characters max)"></Textarea>
               </Box>
               <Box h="15%">
-                <Button colorScheme="yellow" float="right">Generate Images</Button>
+                <Button onClick={this.handleShow} colorScheme="yellow" float="right">Generate Images</Button>
               </Box>
             </Box>
           </GridItem>
         </Grid>
 
-        <div
-          style={{
-            marginTop: "50px",
-            padding: "25px 25px",
-            border: "1px solid #5d2985",
-            borderRadius: "0.25rem",
-            height: "50vh",
-            overflowY: "auto",
-            width: "50%",
-            float: "right",
-          }}
-          onDrop={this.handleDropEvent}
-          onDragOver={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <span style={{ color: "#5d2985" }}>Drag & Drop Files / </span>
-
-          <label
-            onChange={this.handleBrowseFiles}
-            htmlFor="browseFiles"
-            style={{ color: "red", cursor: "pointer" }}
-          >
-            <input
-              type="file"
-              id="browseFiles"
-              ref={(input) => (this.fileUploader = input)}
-              multiple
-              accept="image/png, image/jpeg"
-              hidden
-            ></input>
-            Upload
-          </label>
-
-          <div
-            id="gallery"
-            style={{ paddingTop: this.imageData.length === 0 ? "0px" : "25px" }}
-          >
-            <Row>
-              {(this.state.image || []).map((data, i) => (
-                <Col key={i} xs={2} style={{ marginBottom: "15px" }}>
-                  <div style={{ padding: "5px" }}>
-                    <img
-                      src={data.blob}
-                      style={{
-                        width: "100%",
-                        display: "block",
-                        margin: "auto",
-                        border: "1px solid #c9c9c9",
-                      }}
-                    ></img>
-                    <span style={{ fontWeight: "bold", fontSize: "12px" }}>
-                      {data.name}
-                    </span>
-                    <span
-                      onClick={() => this.deleteSingleImage(data.imageID)}
-                      style={{
-                        float: "right",
-                        color: "red",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                      }}
-                    >
-                      X
-                    </span>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          </div>
-        </div>
-
-        {/* Layers card */}
-        <div
-          className={` card text-white bg-dark mb-3 ${imageStyle.cardContainer}`}
-        >
-          <div className="card-header">
-            <Row>
-              <Col>
-                <span>Layers</span>
-              </Col>
-              <Col>
-                <InputGroup size="sm" style={{ float: "right" }}>
-                  <FormControl
-                    value={this.state.newLayer}
-                    onChange={this.handleNewLayer}
-                    placeholder="Add a New Layer"
-                  />
-                  <Button
-                    variant="secondary"
-                    style={{ fontSize: "15px" }}
-                    onClick={this.addNewLayer}
-                    disabled={this.state.newLayer === "" ? true : false}
-                  >
-                    +
-                  </Button>
-                </InputGroup>
-              </Col>
-            </Row>
-          </div>
-          <div className={`card-body ${imageStyle.cardBody}`}>
-            <Row>
-              <div style={{ marginBottom: "-16px" }}>
-                <ul>
-                  <span
-                    className={imageStyle.layerButton}
-                    onClick={() =>
-                      this.viewLayerImages({ id: 1, name: "background" })
-                    }
-                  >
-                    background
-                  </span>
-                </ul>
-              </div>
-              <SortableComponent
-                layerName={this.layerName.slice(1)}
-                handleToUpdate={this.handleToUpdate}
-                viewLayerImages={this.viewLayerImages}
-                handleShow={this.handleShow}
-                retrieveLayers={this.retrieveLayers}
-              />
-            </Row>
-          </div>
-        </div>
-
-        {/* Layer settings card  */}
-        <div
-          className={`card text-white bg-dark mb-3 ${imageStyle.cardContainer}`}
-        >
-          <div className="card-header">
-            <span>Layer Settings</span>
-            {this.state.currentLayerId === 1 ? (
-              <input
-                style={{
-                  float: "right",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  color: "white",
-                  textAlign: "right",
-                }}
-                type="text"
-                value={this.state.currentLayer}
-                disabled
-              />
-            ) : (
-              <input
-                onChange={this.handleLayerNameChange}
-                style={{
-                  float: "right",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  color: "white",
-                  textAlign: "right",
-                }}
-                type="text"
-                value={this.state.currentLayer}
-              />
-            )}
-          </div>
-          <div className={`card-body ${imageStyle.cardBody}`}>
-            <div>
-              <Row style={{ paddingBottom: "15px", paddingTop: "10px" }}>
-                <Col className="col-5">
-                  <span>{this.state.currentLayer}'s Rarity</span>
-                </Col>
-                <Col className="col-5">
-                  <input
-                    id={this.state.currentLayerId}
-                    type="range"
-                    min="1"
-                    max="100"
-                    step="1"
-                    value={this.layerName
-                      .filter((x) => x.layerid === this.state.currentLayerId)
-                      .map((x) => x.rarity)}
-                    class={imageStyle.raritySlider}
-                    onChange={this.handleLayerRarityChange}
-                  ></input>{" "}
-                  {""}
-                </Col>
-                <Col>
-                  <span>
-                    {this.layerName
-                      .filter((x) => x.layerid === this.state.currentLayerId)
-                      .map((x) => x.rarity)}
-                    %
-                  </span>
-                </Col>
-              </Row>
-            </div>
-            {Object.keys(this.state.image).length !== 0 ? (
-              (this.state.image || []).map((data, i) => (
-                <div>
-                  <Row
-                    style={{ paddingBottom: "15px", paddingTop: "10px" }}
-                    key={i}
-                  >
-                    <Col key={i} className="col-5">
-                      <span>{data.name}</span>
-                    </Col>
-                    <Col className="col-5">
-                      <input
-                        id={data.imageID}
-                        type="range"
-                        min="1"
-                        max="100"
-                        step="1"
-                        value={data.rarity}
-                        class={imageStyle.raritySlider}
-                        onChange={this.handleRarityChange}
-                      ></input>{" "}
-                      {""}
-                    </Col>
-                    <Col>
-                      <span>{data.rarityPercent}%</span>
-                    </Col>
-                  </Row>
-                </div>
-              ))
-            ) : (
-              <div>
-                {" "}
-                <p>* Upload images to start *</p>
-              </div>
-            )}
-          </div>
-        </div>
-        <div style={{ height: "auto", width: "auto" }}>
-          {/* <GenerateNFT layers={this.state.layer} /> */}
-          {/* <canvas id="previewNFT"></canvas> */}
-        </div>
+        <Modal show={this.state.showPreview} onHide={this.handleClose} >
+          <Modal.Header closeButton>
+            <Modal.Title>Settings</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Label>You can generate up to 100 unique images</Form.Label>
+              <Form.Control type="text" value="100" disabled />
+            </Form>
+            {/* {
+                  this.state.imagePreview === "" ?
+                  <span>Loading Preview...</span>
+                  :
+                  <img id="previewNFT" src={this.state.imagePreview}  style={{display: "block", marginLeft:"auto", marginRight:"auto"}} />
+              }
+              {
+                  this.state.layers.map((layer,i) =>{
+                      return (
+                          <div key={i} style={{width:"100%", height:"auto", margin:"0 auto", padding:"5px", position:"relative", alignItems:"center"}}>
+                              <div style={{textAlign:"right"}}>
+                                  <span style={{marginRight:"5px"}}>{layer.name}</span>
+                                  X:<input type="number" style={{width: "5em", marginLeft:"10px"}} id={layer.layerid + "x"} onChange={this.handleXY} defaultValue={0}/>
+                                  Y:<input type="number" style={{width: "5em", marginLeft:"10px"}} id={layer.layerid + "y"} onChange={this.handleXY} defaultValue={0}/>
+                              </div>
+                          </div>
+                      )
+                  })
+              } */}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.handleClose}>
+              Cancel
+            </Button>
+            <Button onClick={this.onClickGenerate} variant="dark">
+              Generate
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
