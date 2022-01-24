@@ -6,7 +6,7 @@ import {
   Box,
   Button,
   SimpleGrid,
-  Image,
+  Image as Img,
   Input,
   Textarea,
   Icon
@@ -30,6 +30,67 @@ import { XCircleIcon, UploadIcon } from "@heroicons/react/solid";
 
 // import GenerateNFT from "./GenerateNFT.jsx";
 
+function MergeImages(props) {
+  console.log(props);
+  //var result = [];
+  const layers = props.layers;
+  //console.log(props);
+
+  const initialize = (images) => {
+    // images are loaded here 
+    const canvas = document.createElement("canvas");
+    canvas.width = props.width;
+    canvas.height = props.height;
+
+    const ctx = canvas.getContext("2d");
+
+    Object.values(images).forEach((e, index) => {
+      for (let i = 0; i < Object.keys(layers).length; i++) {
+        if (layers[i].layerid === parseInt(e.alt)) {
+          var w = e.width;
+          var h = e.height;
+          var hRatio = canvas.width / w;
+          var vRatio = canvas.height / h;
+          var ratio = Math.min(hRatio, vRatio);
+          ctx.drawImage(e, layers[i].xOffset, layers[i].yOffset, w, h, 0, 0, w * ratio, h * ratio);
+        }
+      }
+    });
+
+    //BASE 64
+    const img = canvas.toDataURL();
+    return img;
+
+    // Blob
+    // canvas.toBlob(function(blob){
+    //     canvas.href = URL.createObjectURL(blob);
+    //     //console.log(blob);
+    //     //console.log(canvas.href); // this line should be here
+    //     result.push(canvas.href);
+    // });
+
+  };
+
+  const result = Promise.all(Object.keys(props.images).map((e, i) =>
+    new Promise((resolve, reject) => {
+      var imageObj = [];
+      imageObj[i] = new Image();
+      imageObj[i].onload = () => resolve(imageObj[i]);
+      imageObj[i].onerror = reject;
+      imageObj[i].src = props.images[e].image;
+      imageObj[i].alt = props.images[e].id;
+    })
+  )).then(images => {
+    //console.log(images);
+    var imgResult = initialize(images);
+    console.log(imgResult);
+    return imgResult
+  });
+
+  //console.log(result);
+  return result;
+}
+
 export class GenerateComponent extends Component {
   blobData = [];
   imageData = [];
@@ -50,6 +111,7 @@ export class GenerateComponent extends Component {
       slidingImageTimeout: 0,
       slidingLayerTimeout: 0,
       typingLayerTimeout: 0,
+      previewImage: ""
     };
   }
 
@@ -96,7 +158,9 @@ export class GenerateComponent extends Component {
     }
     this.setState({ layer: this.layerName }, () => {
       console.log(this.state.layer);
+      this.getPreviewData(this.state.layer);
     });
+
   };
 
   handleLayerRarityChange = async (event) => {
@@ -350,6 +414,51 @@ export class GenerateComponent extends Component {
     //this.setState({layer: args});
     await this.retrieveLayers();
   };
+
+  //Preview Images
+  getPreviewData = async (layers) => {
+    var img = undefined;
+    var files = [];
+    console.log("State Layers", layers);
+
+    await db.layers
+      .orderBy("rarity")
+      .reverse()
+      .toArray()
+      .then(theList => {
+        console.log("list", theList);
+        for (let i = 0; i < Object.keys(this.state.layer).length; i++) {
+          var BreakException = {};
+          try {
+            theList.forEach((image) => {
+              if (layers[i].layerid === image.layerid) {
+                files.push({ id: image.layerid, image: URL.createObjectURL(image.image) });
+                throw BreakException;
+              }
+            });
+          } catch (e) {
+            if (e !== BreakException) throw e;
+          }
+        }
+      });
+
+    console.log("files", files);
+
+    img = await MergeImages({
+      images: files,
+      height: 100,
+      width: 100,
+      layers: layers
+    });
+    console.log("Merged Preview", img);
+
+    this.setState({
+      imagePreview: img
+    }, () => {
+      console.log(this.state.imagePreview);
+    });
+  }
+
   render() {
     return (
       <>
@@ -374,16 +483,14 @@ export class GenerateComponent extends Component {
             >
               <Box overflow="auto" height="70%">
                 <div className={imageStyle.layerDiv}>
-                  <ul>
-                    <span
-                      className={imageStyle.layerButton}
-                      onClick={() =>
-                        this.viewLayerImages({ id: 1, name: "background" })
-                      }
-                    >
-                      background
-                    </span>
-                  </ul>
+                  <span
+                    className={imageStyle.layerButton}
+                    onClick={() =>
+                      this.viewLayerImages({ id: 1, name: "background" })
+                    }
+                  >
+                    background
+                  </span>
                 </div>
                 <SortableComponent
                   layerName={this.layerName.slice(1)}
@@ -442,6 +549,7 @@ export class GenerateComponent extends Component {
                   spacingX="40px"
                   spacingY="20px"
                   p="20px 40px"
+                  onClick={() => console.log("LOL")}
                 >
                   {(this.state.image || []).map((data, i) => (
                     <Box
@@ -454,7 +562,7 @@ export class GenerateComponent extends Component {
                       position="relative"
                       alignContent="center"
                     >
-                      <Image
+                      <Img
                         src={data.blob}
                         maxHeight="75%"
                         maxWidth="75%"
@@ -462,7 +570,7 @@ export class GenerateComponent extends Component {
                         minWidth="90px"
                         ml="15px"
                         p={3}
-                      ></Image>
+                      />
                       <XCircleIcon
                         className="remove_image"
                         onClick={(e) => this.deleteSingleImage(data.imageID)}
@@ -480,6 +588,7 @@ export class GenerateComponent extends Component {
                     </Box>
                   ))}
                 </SimpleGrid> :
+
                 <Box display="flex" justifyContent="center" alignItems="center" h="100%">
                   <Box textAlign="center">
                     <Icon as={UploadIcon} w={75} h={75} color="gray.200"></Icon>
@@ -505,7 +614,6 @@ export class GenerateComponent extends Component {
                 Image Rarity - {"\u00A0"}
               </Text>
               <Text fontWeight="bold" color="#FED428" float="right">
-                {" "}
                 {this.state.currentLayer}
               </Text>
             </Box>
@@ -563,10 +671,16 @@ export class GenerateComponent extends Component {
           {/* Preview card */}
           <GridItem rowSpan={6} colSpan={4} bg="#373737" borderRadius="15">
             <Box h='87%' display="flex" justifyContent="center" alignItems="center">
-              <Box bg="#595A5A" h="80%" w="80%" borderRadius="15">
-                {/* Insert preview of image here */}
+              <Box bg="#595A5A" h="80%" w="80%" borderRadius="15" display="flex" justifyContent="center" alignItems="center">
+                <Img
+                  id="previewNFT"
+                  src={this.state.imagePreview}
+                  maxHeight="75%"
+                  maxWidth="75%"
+                  minHeight="50%"
+                  minWidth="50%"
+                />
               </Box>
-
             </Box>
             <Box height='13%'>
               <Text color="#F7F7F7" fontSize={23} fontWeight="550" pl={5}>Preview</Text>
@@ -575,14 +689,19 @@ export class GenerateComponent extends Component {
 
           {/* Project Name and Description card */}
           <GridItem rowSpan={6} colSpan={4}>
-            <Text color="#F7F7F7" fontSize={23} fontWeight="550">Project Name</Text>
-            <Input color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" placeholder="Title"></Input>
-            <Text color="#F7F7F7" fontSize={23} fontWeight="550">Description</Text>
-            <Textarea color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" minHeight="50%" maxHeight="50%" maxLength="250" placeholder="What is your collection about? (250 characters max)"></Textarea>
-            <Button colorScheme="yellow" float="right">Generate Images</Button>
+            <Box h="100%">
+              <Box h="85%" overflow="auto">
+                <Text color="#F7F7F7" fontSize={23} fontWeight="550">Project Name</Text>
+                <Input color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" placeholder="Title"></Input>
+                <Text color="#F7F7F7" fontSize={23} fontWeight="550">Description</Text>
+                <Textarea color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" minHeight="39%" maxHeight="39%" maxLength="250" placeholder="What is your collection about? (250 characters max)"></Textarea>
+              </Box>
+              <Box h="15%">
+                <Button colorScheme="yellow" float="right">Generate Images</Button>
+              </Box>
+            </Box>
           </GridItem>
         </Grid>
-
 
         <div
           style={{

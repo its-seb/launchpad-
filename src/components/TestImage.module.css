@@ -2,7 +2,7 @@
     position: relative;
     display: flex;
     background-color: #373737;
-    padding: 15px;
+    /* padding: 15px; */
     border-radius: 10px;
     align-items: center;
     text-align: left;
@@ -11,6 +11,7 @@
     cursor: pointer;
     margin-left: 20px;
     margin-right: 25px;
+    
 }
 
 .layerDiv:focus {
@@ -28,13 +29,15 @@
 
 .layerButton {
     display: inline-block;
-    width: 100%;
+    width: 92%;
     color: #E0E0E0;
+    padding: 18px;
 }
 
 .layerButtonFocused {
     border: 0.6px solid rgb(209, 209, 209);
 }
+
 
 .layerDelete {
     vertical-align: middle;
