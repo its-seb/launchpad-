@@ -9,6 +9,7 @@ import {
   Input,
   FormControl,
   FormLabel,
+  Button,
   VisuallyHiddenInput,
   Text,
 } from "@chakra-ui/react";
@@ -588,7 +589,6 @@ export class LaunchComponent extends Component {
                   onChange={this.handleCollectionName}
                 />
               </FormControl>
-
               <FormControl mt={4}>
                 <Input
                   ref={this.tbMintPrice}
@@ -602,7 +602,6 @@ export class LaunchComponent extends Component {
                   onChange={this.handleMintPrice}
                 />
               </FormControl>
-
               <Box
                 border="2px solid #949494"
                 borderRadius={"xl"}
@@ -627,6 +626,17 @@ export class LaunchComponent extends Component {
                   onChange={(e) => this.coverImageOnChange(e)}
                 ></VisuallyHiddenInput>
               </Box>
+              <Button variant="modal_cancel" mt={5}>
+                Optional Settings
+              </Button>
+              <Button
+                variant="modal_submit"
+                float="right"
+                mt={5}
+                onClick={console.log("hello")}
+              >
+                Publish to IPFS
+              </Button>
             </GridItem>
             <GridItem rowSpan={2} colSpan={4} bg="tomato">
               <Box>

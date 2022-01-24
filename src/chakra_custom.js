@@ -213,6 +213,7 @@ const theme = extendTheme(
           modal_cancel: {
             mr: 3,
             bg: "#2f3136",
+            color: "white",
             _hover: { backgroundColor: "#2f3136" },
             _active: { backgroundColor: "#2f3136" },
             _focus: { boxShadow: "0" },

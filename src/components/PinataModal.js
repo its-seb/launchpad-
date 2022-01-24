@@ -12,6 +12,9 @@ import {
   FormControl,
   FormLabel,
   Text,
+  Box,
+  CloseButton,
+  Spinner,
 } from "@chakra-ui/react";
 import FailureComponent from "./FailureComponent.js";
 import SuccessComponent from "./SuccessComponent.js";
@@ -25,14 +28,21 @@ class PinataModal extends Component {
       showStatusModal: false,
       statusTitle: "",
       statusText: "",
+      hide: this.props.hide,
     };
 
     this.tbPinataKey = React.createRef();
     this.tbPinataSecret = React.createRef();
+    this.statusModal = React.createRef();
+    this.statusSuccess = React.createRef();
+    this.statusFail = React.createRef();
+    this.statusLoading = React.createRef();
   }
   savePinataConfig = async (e) => {
     e.preventDefault();
 
+    this.statusModal.current.style.zIndex = "1000000";
+    this.statusModal.current.style.display = "block";
     let pinataKey = this.tbPinataKey.current.value;
     let pinataSecret = this.tbPinataSecret.current.value;
     let authenticated = await this.checkPinataAuthentication(
@@ -46,13 +56,19 @@ class PinataModal extends Component {
       this.setState({ showStatusModal: true });
       this.setState({ statusTitle: "Success" });
       this.setState({ statusText: "API has been configured" });
-      document.getElementById("statusSuccess").style.display = "block";
+
+      this.statusLoading.current.style.display = "none";
+      this.statusSuccess.current.style.display = "block";
+
+      //document.getElementById("statusSuccess").style.display = "block";
       this.props.hide();
     } else {
       this.setState({ showStatusModal: true });
       this.setState({ statusTitle: "Oops..." });
       this.setState({ statusText: "API Key & Secret must be valid" });
-      document.getElementById("statusFailure").style.display = "block";
+
+      this.statusLoading.current.style.display = "none";
+      this.statusFail.current.style.display = "block";
     }
   };
 
@@ -76,9 +92,10 @@ class PinataModal extends Component {
   };
 
   closeStatusModal = () => {
-    document.getElementById("statusSuccess").style.display = "none";
-    document.getElementById("statusFailure").style.display = "none";
     this.setState({ showStatusModal: false });
+    this.statusSuccess.current.style.display = "none";
+    this.statusFail.current.style.display = "none";
+    this.statusModal.current.style.display = "none";
   };
 
   render() {
@@ -123,26 +140,32 @@ class PinataModal extends Component {
             </ModalFooter>
           </ModalContent>
         </Modal>
-        <Modal
-          closeOnOverlayClick={false}
-          isOpen={this.state.showStatusModal}
-          onClose={this.closeStatusModal}
+
+        <Box
+          id="statusModal"
+          layerStyle="modal_container"
+          ref={this.statusModal}
         >
-          <ModalOverlay />
-          <ModalContent bg="#2f3136" color="white" borderRadius={"xl"}>
-            <ModalCloseButton top={4} />
-            <ModalBody py={10} textAlign="center">
-              <SuccessComponent id="statusSuccess" />
-              <FailureComponent id="statusFailure" />
-              <Text fontSize="1.8rem" fontWeight="600" pt="15px">
-                {this.state.statusTitle}
-              </Text>
-              <Text fontSize="1rem" pt="5px">
-                {this.state.statusText}
-              </Text>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
+          <Box layerStyle="modal_content" alignItems="center">
+            <CloseButton
+              position="absolute"
+              right={3}
+              top={3}
+              onClick={this.closeStatusModal}
+            />
+            <Spinner
+              variant="loading_spinner"
+              thickness="4px"
+              speed="0.65s"
+              ref={this.statusLoading}
+            ></Spinner>
+            <SuccessComponent _ref={this.statusSuccess} _show="none" />
+            <FailureComponent _ref={this.statusFail} _show="none" />
+
+            <Text layerStyle="modal_title">{this.state.statusTitle}</Text>
+            <Text layerStyle="modal_text">{this.state.statusText}</Text>
+          </Box>
+        </Box>
       </>
     );
   }
