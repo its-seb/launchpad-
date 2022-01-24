@@ -482,7 +482,9 @@ input[type="number"] {
 /* User Gallery CSS */
 
 #usergallery {
-  background-color: "#202225";
+  background-color: #202225;
+  color: white;
+  height: 100vh;
 }
 
 #usergallery > h1 {
@@ -506,6 +508,7 @@ input[type="number"] {
 #usergallery > div > div > a > span {
   text-align: center;
   display: block;
+  color: white;
 }
 
 #usergallery > div > div > a > img {
