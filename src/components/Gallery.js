@@ -1,8 +1,12 @@
 import IconService from "icon-sdk-js";
-import "./app_content.css";
+// import "./app_content.css";
+// import React, { Component } from "react";
+// import "./global.css";
+// import "./style.css";
 import React, { Component } from "react";
-import "./global.css";
-import "./style.css";
+import { Image, Grid, GridItem, Flex, Button, Box, Text, Select, Center, HStack, ButtonGroup, SimpleGrid, Link } from '@chakra-ui/react'
+import { Scrollbar } from 'smooth-scrollbar-react';
+import ICONexConnection from "./utils/interact.js";
 const axios = require("axios");
 const { IconBuilder } = IconService;
 
@@ -115,20 +119,56 @@ class Gallery extends Component {
       // <div>
       //     {(this.state.uploadedFiles).map((data) => <li>{data}</li>)}
       // </div>
-      <div id="gallery" className="row mx-2">
+      // <div id="gallery" className="row mx-2" >
+      //   {this.state.thumbnailFiles.map((data, index) => (
+      //     <div className="col-lg-4 col-md-12 mt-4 mb-lg-0">
+      //       <a
+      //         target="_blank"
+      //         rel="noreferrer"
+      //         href={this.state.uploadedFiles[index].link}
+      //       >
+      //         <img src={"https://" + this.gateway[index] + data.link.slice(28)} className="w-100 shadow-1-strong rounded" />
+      //         <span>{data.name}</span>
+      //       </a>
+      //     </div>
+      //   ))}
+      // </div>
+
+
+      <SimpleGrid columns={4} overflow={"auto"} marginRight={"auto"} marginLeft={"auto"}
+        columns={4}
+        spacing='5'
+        p='10'
+      >
         {this.state.thumbnailFiles.map((data, index) => (
-          <div className="col-lg-4 col-md-12 mt-4 mb-lg-0">
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href={this.state.uploadedFiles[index].link}
-            >
-              <img src={"https://" + this.gateway[index] + data.link.slice(28)} className="w-100 shadow-1-strong rounded" />
-              <span>{data.name}</span>
-            </a>
-          </div>
-        ))}
-      </div>
+          // <div className="col-lg-4 col-md-12 mt-4 mb-lg-0">
+          //   <a
+          //     target="_blank"
+          //     rel="noreferrer"
+          //     href={this.state.uploadedFiles[index].link}
+          //   >
+          //     <img src={"https://" + this.gateway[index] + data.link.slice(28)} className="w-100 shadow-1-strong rounded" />
+          //     <span>{data.name}</span>
+          //   </a>
+          // </div>
+          <Box>
+            <Link target="_blank" href={this.state.uploadedFiles[index].link}>
+              <Image src={"https://" + this.gateway[index] + data.link.slice(28)} width={"100%"} boxShadow='md' rounded='md' />
+              <Text
+                layerStyle="card_content"
+                textAlign="center"
+                color="white"
+                mt={1}
+              >
+                {data.name}
+              </Text>
+            </Link>
+          </Box>
+        ))
+        }
+      </SimpleGrid>
+
+
     );
   }
 }

@@ -24,38 +24,76 @@ class App extends Component {
   render() {
     return (
       <>
-        <Router>
-          <Routes>
-            <Route exact element={<LandingComponent />} path="/"></Route>
-          </Routes>
-
-          <NavigationComponent></NavigationComponent>
-          <Box
-            h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
-            bg={"#202225"}
-          >
-            <Box mx="auto" maxW="1300px" px={"5"}>
-              <Routes>
-                <Route
-                  exact
-                  element={<CollectionComponent />}
-                  path="/collection"
-                ></Route>
-                <Route exact element={<FileComponent />} path="/file"></Route>
-                <Route
-                  exact
-                  element={<LaunchComponent />}
-                  path="/launch"
-                ></Route>
-                <Route
-                  exact
-                  element={<GenerateComponent />}
-                  path="/generate"
-                ></Route>
-              </Routes>
+        {localStorage.getItem("USER_WALLET_ADDRESS") == null ? (
+          <Router>
+            <Routes>
+              <Route exact element={<LandingComponent />} path="/"></Route>
+            </Routes>
+          </Router>) : (<Router>
+            <NavigationComponent></NavigationComponent>
+            {/* <Routes>
+              <Route exact element={<CollectionComponent />} path="/collection"></Route>
+            </Routes> */}
+            <Box
+              h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
+              bg={"#202225"}
+            >
+              <Box mx="auto" maxW="1300px" px={"5"}>
+                <Routes>
+                  <Route
+                    exact
+                    element={<CollectionComponent />}
+                    path="/collection"
+                  ></Route>
+                  <Route exact element={<FileComponent />} path="/file"></Route>
+                  <Route
+                    exact
+                    element={<LaunchComponent />}
+                    path="/launch"
+                  ></Route>
+                  <Route
+                    exact
+                    element={<GenerateComponent />}
+                    path="/generate"
+                  ></Route>
+                </Routes>
+              </Box>
             </Box>
-          </Box>
-        </Router>
+          </Router >)
+          // ) : (
+          //   <Router>
+          //     <Routes>
+          //       <NavigationComponent></NavigationComponent>
+          //       <Box
+          //         h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
+          //         bg={"#202225"}
+          //       >
+          //         <Box mx="auto" maxW="1300px" px={"5"}>
+          //           <Routes>
+          //             <Route
+          //               exact
+          //               element={<CollectionComponent />}
+          //               path="/collection"
+          //             ></Route>
+          //             <Route exact element={<FileComponent />} path="/file"></Route>
+          //             <Route
+          //               exact
+          //               element={<LaunchComponent />}
+          //               path="/launch"
+          //             ></Route>
+          //             <Route
+          //               exact
+          //               element={<GenerateComponent />}
+          //               path="/generate"
+          //             ></Route>
+          //           </Routes>
+          //         </Box>
+          //       </Box>
+          //     </Routes>
+          //   </Router>
+          // )
+        }
+
       </>
     );
   }

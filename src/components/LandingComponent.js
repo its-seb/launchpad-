@@ -1,10 +1,7 @@
 import React, { Component } from "react";
-import { Flex, Button, Box, Text, Select, Center, Spacer, Heading, HStack, ButtonGroup, SimpleGrid } from '@chakra-ui/react'
-import { Link } from '@chakra-ui/react'
-import { Link as ReachLink } from "react-router-dom"
-import { Grid, GridItem } from '@chakra-ui/react'
-import { Image } from '@chakra-ui/react'
+import { Image, Grid, GridItem, Flex, Button, Box, Text, Select, Center, HStack, ButtonGroup, SimpleGrid } from '@chakra-ui/react'
 import { Scrollbar } from 'smooth-scrollbar-react';
+import ICONexConnection from "./utils/interact.js";
 import gif1 from "../assets/gif1.gif";
 import gif2 from "../assets/gif2.gif";
 import gif3 from "../assets/gif3.gif";
@@ -25,6 +22,7 @@ export class LandingComponent extends Component {
     this.state = { featureone: true, featuretwo: false, };
     this.handleClick = this.handleClick.bind(this);
   }
+  connection = new ICONexConnection();
 
   handleClick(e, feature) {
     if (feature == "one") {
@@ -36,6 +34,22 @@ export class LandingComponent extends Component {
       this.setState({ featureone: false });
     }
   }
+
+  handleWalletEvent = async (event) => {
+    if (localStorage.getItem("USER_WALLET_ADDRESS") == null) {
+      //signing in
+      let _walletAddress = await this.connection.getWalletAddress();
+      if (_walletAddress != null) {
+        localStorage.setItem("USER_WALLET_ADDRESS", _walletAddress);
+        console.log(localStorage.getItem("USER_WALLET_ADDRESS"));
+        window.location.assign("/collection");
+      } else {
+        console.log("user cancelled login");
+      }
+    }
+
+    event.preventDefault();
+  };
 
   render() {
     return (
@@ -56,9 +70,9 @@ export class LandingComponent extends Component {
 
                   <Flex h='100%' paddingTop={"50px"} display={"block"} paddingLeft={"40px"}>
                     <Box textStyle='h1' width={{ one: "450px", two: "500px", four: "500px", five: "600px", six: "700px" }}> A solution for artwork generation, decentralized storage & distribution of NFTs</Box>
-                    <Box textStyle='h2' color='purple' marginTop={"10px"}>No codes required!</Box>
-                    <Text color='#2F4F4F' marginTop={"5px"} fontSize={{ one: "16px", two: "16px", four: "17px", "five": "18px", "six": "23px" }} width={{ one: "500px", two: "500px", four: "600px", five: "600px", six: "700px" }}>Empowering artist by bridging the gap between artist and technology</Text>
-                    <HStack marginTop={"20px"}>
+                    <Box textStyle='h2' color='purple' marginTop={"5px"} py={"10px"}>No codes required!</Box>
+                    <Text color='#2F4F4F' fontSize={{ one: "16px", two: "16px", four: "17px", "five": "18px", "six": "23px" }} width={{ one: "500px", two: "500px", four: "600px", five: "600px", six: "700px" }}>Empowering artist by bridging the gap between artist and technology</Text>
+                    <HStack marginTop={"15px"}>
                       <Button bg="#E6E6FA" leftIcon={<BsGithub size={25} />} h='40px' border='1px'
                         borderColor='black' width='140px' as='a' href='https://github.com/boonyeow/launchpad' target="_blank">
                         Github
@@ -258,6 +272,7 @@ export class LandingComponent extends Component {
               border='2px'
               borderColor='purple'
               colorScheme='purple' variant='solid'
+              onClick={this.handleWalletEvent}
             >
               Sign In
             </Button>

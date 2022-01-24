@@ -1,4 +1,4 @@
-import { extendTheme } from "@chakra-ui/react";
+import { color, extendTheme } from "@chakra-ui/react";
 import { createBreakpoints } from "@chakra-ui/theme-tools";
 
 const breakpoints = createBreakpoints({
@@ -171,6 +171,7 @@ const theme = extendTheme(
         pt: "5px",
         textAlign: "center",
       },
+
     },
     components: {
       Link: {

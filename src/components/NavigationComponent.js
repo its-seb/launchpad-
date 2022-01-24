@@ -16,9 +16,22 @@ import {
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
+import ICONexConnection from "./utils/interact.js";
 import { UserIcon } from "@heroicons/react/solid";
 
 export class NavigationComponent extends Component {
+
+  connection = new ICONexConnection();
+
+  handleWalletEvent = async (event) => {
+    localStorage.removeItem("USER_WALLET_ADDRESS");
+    localStorage.removeItem("SELECTED_CONTRACT_ADDRESS");
+    localStorage.removeItem("HAS_METAHASH");
+    window.location.assign("/");
+
+    event.preventDefault();
+  };
+
   render() {
     return (
       <>
@@ -63,8 +76,8 @@ export class NavigationComponent extends Component {
                   />
                 </MenuButton>
                 <MenuList>
-                  <MenuItem>Change Wallet</MenuItem>
-                  <MenuItem>Sign Out</MenuItem>
+                  {/* <MenuItem>Change Wallet</MenuItem> */}
+                  <MenuItem onClick={this.handleWalletEvent}>Sign Out</MenuItem>
                 </MenuList>
               </Menu>
             </Flex>
