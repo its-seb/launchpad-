@@ -465,6 +465,11 @@ input[type="number"] {
 }
 
 /* User Gallery CSS */
+
+#usergallery {
+  background-color: "#202225";
+}
+
 #usergallery > h1 {
   text-align: center;
   padding-top: 15px;
@@ -585,7 +590,6 @@ input[type="number"] {
     margin-bottom: 10px;
   }
 }
-
 
 @-webkit-keyframes dash {
   0% {
