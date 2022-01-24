@@ -119,17 +119,6 @@ export class FileComponent extends Component {
               Launch
             </Link>
           </Box>
-          <Stack justifyContent="flex-end" flexDirection="row" w="100%">
-            <Link
-              as={RouteLink}
-              pr="0"
-              mt="0.5rem"
-              to="/generate"
-              variant="notCurrent"
-            >
-              Generate
-            </Link>
-          </Stack>
         </Stack>
 
         {this.state.hasMetahash == "true" ? (

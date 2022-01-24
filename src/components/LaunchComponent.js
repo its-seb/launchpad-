@@ -1,15 +1,22 @@
 import React, { Component } from "react";
 import IconService from "icon-sdk-js";
 import {
-  Form,
-  Button,
-  Container,
-  Modal,
-  Row,
-  Col,
-  Card,
-  Spinner,
-} from "react-bootstrap";
+  Box,
+  Stack,
+  Link,
+  Grid,
+  GridItem,
+  Input,
+  FormControl,
+  FormLabel,
+  VisuallyHiddenInput,
+  Text,
+} from "@chakra-ui/react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Link as RouteLink,
+} from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TagsInput from "react-tagsinput";
@@ -49,6 +56,11 @@ export class LaunchComponent extends Component {
     this.pinataSecret = localStorage.getItem("PINATA_SECRET");
     this.connection = new ICONexConnection();
     this.hasMetahash = localStorage.getItem("HAS_METAHASH");
+
+    //
+    this.tbCollectionName = React.createRef();
+    this.tbMintPrice = React.createRef();
+    this.coverImageUploadInput = React.createRef();
   }
 
   handleChange = (tags) => {
@@ -79,7 +91,6 @@ export class LaunchComponent extends Component {
   };
 
   async componentDidMount() {
-    document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     if (this.walletAddress == null) {
       alert("Please connect your wallet.");
       return;
@@ -91,7 +102,7 @@ export class LaunchComponent extends Component {
 
     if (this.hasMetahash != "false") {
       if (this.state.collectionCover == "") {
-        document.getElementById("dragAndDropPreview").style.display = "none";
+        //document.getElementById("dragAndDropPreview").style.display = "none";
       }
     } else {
       alert("please upload files before generating launch site");
@@ -101,11 +112,11 @@ export class LaunchComponent extends Component {
     let response = await this.executeCall(this.contractAddress, "getSiteInfo");
     if (Object.keys(response).length != 0) {
       //site info set
-      document.getElementById("tbCollectionName").value =
-        response.collectionTitle;
+      // document.getElementById("tbCollectionName").value =
+      //   response.collectionTitle;
 
       let _nftMintPrice = IconConverter.toNumber(response.mintCost / 10 ** 18);
-      document.getElementById("tbMintPrice").value = _nftMintPrice;
+      // document.getElementById("tbMintPrice").value = _nftMintPrice;
 
       this.setState({
         collectionCover: response.coverImage,
@@ -138,7 +149,7 @@ export class LaunchComponent extends Component {
   //reflect updates immediately on change
   handleCollectionName = () => {
     this.setState({
-      collectionName: document.getElementById("tbCollectionName").value,
+      collectionName: this.tbCollectionName.current.value,
     });
   };
 
@@ -159,15 +170,15 @@ export class LaunchComponent extends Component {
     const imgBlob = URL.createObjectURL(event.dataTransfer.files[0]); //creating a blob url
     console.log(imgBlob);
 
-    document.getElementById("dragAndDropPrompt").style.display = "none";
-    document.getElementById("dragAndDropPreview").style.display = "block";
+    // document.getElementById("dragAndDropPrompt").style.display = "none";
+    // document.getElementById("dragAndDropPreview").style.display = "block";
     this.setState({ collectionCover: imgBlob });
     this.setState({ collectionCoverFile: event.dataTransfer.files[0] });
   };
 
   removeCoverImage = () => {
-    document.getElementById("dragAndDropPrompt").style.display = "block";
-    document.getElementById("dragAndDropPreview").style.display = "none";
+    // document.getElementById("dragAndDropPrompt").style.display = "block";
+    // document.getElementById("dragAndDropPreview").style.display = "none";
     this.setState({ collectionCover: "" });
   };
 
@@ -424,9 +435,9 @@ export class LaunchComponent extends Component {
         _coverImage: `https://gateway.pinata.cloud/ipfs/${collectionCoverHash}`,
       }
     ).then(async () => {
-      document.getElementById("publishLoading").style.display = "none";
-      document.getElementById("publishSuccess").style.display = "block";
-      document.getElementById("close-loading-modal").style.display = "block";
+      // document.getElementById("publishLoading").style.display = "none";
+      // document.getElementById("publishSuccess").style.display = "block";
+      // document.getElementById("close-loading-modal").style.display = "block";
       this.setState({
         modalStatusText: "launch site published successfully!",
       });
@@ -535,192 +546,95 @@ export class LaunchComponent extends Component {
     return data.split(new RegExp(separators.join("|"))).map((d) => d.trim());
   }
 
+  coverImageOnChange = (e) => {};
+
   render() {
     console.log("state", typeof this.hasMetahash);
     if (this.contractAddress == null || this.hasMetahash == "false") {
       return <div></div>;
     } else {
       return (
-        <div style={{ height: "75vh" }}>
-          <Container>
-            <Row style={{ marginTop: "10px" }}>
-              <Col xs={4} md={4} lg={4}>
-                <Form.Floating
-                  className="mb-3 unselectable"
-                  style={{ marginTop: "25px" }}
-                >
-                  <Form.Control
-                    id="tbCollectionName"
-                    type="text"
-                    placeholder="Collection Name"
-                    className="modal-form-control"
-                    onChange={this.handleCollectionName}
-                  />
-                  <label
-                    htmlFor="tbCollectionName"
-                    style={{ color: "#525252" }}
-                  >
-                    Collection Name
-                  </label>
-                </Form.Floating>
-
-                <Form.Floating
-                  className="mb-3 unselectable"
-                  style={{ marginTop: "25px" }}
-                >
-                  <Form.Control
-                    id="tbMintPrice"
-                    type="number"
-                    placeholder="Mint Price"
-                    className="modal-form-control"
-                    onChange={this.handleMintPrice}
-                  />
-                  <label htmlFor="tbMintPrice" style={{ color: "#525252" }}>
-                    Mint Price
-                  </label>
-                </Form.Floating>
-
-                <Form.Floating
-                  className="mb-3 unselectable"
-                  style={{ marginTop: "25px" }}
-                >
-                  <Card
-                    className="upload-card unselectable"
-                    onDrop={this.handleDropFile}
-                    onDragOver={this.handleDefaults}
-                    onDragEnter={this.handleDefaults}
-                    onDragLeave={this.handleDefaults}
-                  >
-                    <div
-                      id="dragAndDropPrompt"
-                      style={{ paddingBottom: "10px" }}
-                    >
-                      <PhotographIcon
-                        style={{ width: "5rem", color: "#494a66" }}
-                      />
-                      <span
-                        style={{
-                          display: "block",
-                          color: "#494a66",
-                          fontSize: "1rem",
-                          fontWeight: "500",
-                        }}
-                      >
-                        drag and drop collection cover image
-                      </span>
-                    </div>
-                    <Col
-                      id="dragAndDropPreview"
-                      xs={2}
-                      style={{ marginBottom: "10px" }}
-                    >
-                      <div style={{ padding: "5px", position: "relative" }}>
-                        <img
-                          src={this.state.collectionCover}
-                          style={{
-                            width: "100%",
-                            display: "block",
-                            margin: "auto",
-                            border: "1px solid #c9c9c9",
-                          }}
-                        ></img>
-                        <i
-                          className="fa fa-times-circle"
-                          style={{
-                            fontSize: "25px",
-                            color: "red",
-                            position: "absolute",
-                            top: "0px",
-                            right: "-1px",
-                            opacity: "0.6",
-                          }}
-                          onClick={this.removeCoverImage}
-                        ></i>
-                      </div>
-                    </Col>
-                  </Card>
-                </Form.Floating>
-
-                <Button
-                  id="btnPublish"
-                  className="modal-form-submit"
-                  style={{ marginTop: "5px", padding: "0.5rem" }}
-                  onClick={this.handlePublishDapp}
-                >
-                  publish
-                </Button>
-                <Button
-                  id="btnAdvancedSetting"
-                  onClick={this.handleSettingsModal}
-                >
-                  show optional features
-                </Button>
-              </Col>
-              <Col xs={8} md={8} lg={8}>
-                <PreviewComponent
-                  previewData={this.state}
-                  previewSiteInfo={this.siteInfo}
+        <>
+          <Stack flexDirection="row">
+            <Box mt="1rem">
+              <Link as={RouteLink} variant="notCurrent" to="/collection">
+                Collection
+              </Link>
+              <Link variant="notCurrent" href="/file">
+                File
+              </Link>
+              <Link variant="current" href="/launch">
+                Launch
+              </Link>
+            </Box>
+          </Stack>
+          <Grid
+            h="75vh"
+            templateRows="repeat(2, 1fr)"
+            templateColumns="repeat(6, 1fr)"
+            gap={4}
+            mt="1rem"
+          >
+            <GridItem rowSpan={2} colSpan={2}>
+              <FormControl>
+                <Input
+                  ref={this.tbCollectionName}
+                  bg="#373737"
+                  color="white"
+                  focusBorderColor="#373737"
+                  borderColor="#373737"
+                  _hover={{ borderColor: "#373737" }}
+                  placeholder="Collection Name"
+                  onChange={this.handleCollectionName}
                 />
-              </Col>
-            </Row>
-          </Container>
-          <Modal show={this.state.showAdvancedSettings}>
-            <div className="advanced-settings-modal">
-              <span className="modal-title">Advanced Settings</span>
-              <XIcon className="close-modal" onClick={this.hideSettingsModal} />
-              <Form.Floating style={{ marginTop: "10px" }}>
-                <DatePicker
-                  timeInputLabel="Time:"
-                  dateFormat="MM/dd/yyyy h:mm aa"
-                  showTimeInput
-                  className="modal-form-control"
-                  placeholderText="Launch Date - optional"
-                  selected={this.state.selectedDate}
-                  minDate={new Date()}
-                  onChange={(date) => this.setState({ selectedDate: date })}
-                />
-              </Form.Floating>
+              </FormControl>
 
-              <TagsInput
-                value={this.state.tags}
-                onChange={this.handleChange}
-                pasteSplit={this.pasteSplit}
-                addOnPaste="true"
-                inputProps={{
-                  placeholder: "Add a whitelisted address - optional",
-                }}
-              />
-              <Button
-                id="btnSave"
-                className="modal-form-submit"
-                style={{ padding: "0.5rem", marginBottom: "3px" }}
-                onClick={this.handleSaveOptional}
+              <FormControl mt={4}>
+                <Input
+                  ref={this.tbMintPrice}
+                  bg="#373737"
+                  color="white"
+                  type="number"
+                  focusBorderColor="#373737"
+                  borderColor="#373737"
+                  _hover={{ borderColor: "#373737" }}
+                  placeholder="Mint Price"
+                  onChange={this.handleMintPrice}
+                />
+              </FormControl>
+
+              <Box
+                border="2px solid #949494"
+                borderRadius={"xl"}
+                mt="1rem"
+                p="2rem"
+                _hover={{ backgroundColor: "#2f3136", cursor: "pointer" }}
+                onClick={() => this.coverImageUploadInput.current.click()}
               >
-                save
-              </Button>
-            </div>
-          </Modal>
-          <Modal show={this.state.showLoadingModal}>
-            <XIcon
-              id="close-loading-modal"
-              className="close-modal"
-              onClick={() => this.setState({ showLoadingModal: false })}
-              style={{ position: "absolute", right: "1rem", display: "none" }}
-            />
-            <div style={{ padding: "25px 25px" }}>
-              <div id="loading-container" style={{ display: "block" }}>
-                <Spinner
-                  animation="border"
-                  id="publishLoading"
-                  style={{ display: "block" }}
-                ></Spinner>
-                <SuccessComponent id="publishSuccess" />
-                <FailureComponent id="publishFailure" />
-                <span id="publishText">{this.state.modalStatusText}</span>
-              </div>
-            </div>
-          </Modal>
-        </div>
+                <PhotographIcon
+                  color="white"
+                  width="3rem"
+                  className="m-auto"
+                  mt="1rem"
+                />
+                <Text color="white" textAlign="center">
+                  File type supported: JPG, PNG, GIF
+                </Text>
+                <VisuallyHiddenInput
+                  type="file"
+                  ref={this.coverImageUploadInput}
+                  accept="image/png, image/jpeg, image/gif"
+                  onChange={(e) => this.coverImageOnChange(e)}
+                ></VisuallyHiddenInput>
+              </Box>
+            </GridItem>
+            <GridItem rowSpan={2} colSpan={4} bg="tomato">
+              <Box>
+                <FormControl>Hello</FormControl>
+              </Box>
+            </GridItem>
+          </Grid>
+        </>
       );
     }
   }
