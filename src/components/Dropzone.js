@@ -323,6 +323,29 @@ class Dropzone extends Component {
     return originalData;
   };
 
+  createJsonFormData = (files, ipfsHash) => {
+    let combinedJson = { files_link: [] };
+    const ipfsFolderHash = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`; //gateway might change so its stored as ipfs:// ; opensea decides gateway
+    let data = new FormData();
+
+    for (var i = 0; i < files.length; i++) {
+      combinedJson.files_link.push({
+        link: `${ipfsFolderHash}/${files[i].name}`,
+        name: `${files[i].name}`,
+      });
+
+      const individualJson = {
+        image: `${ipfsFolderHash}/${this.uploadedFiles[i].name}`,
+      };
+
+      const jsonFile = new File([JSON.stringify(individualJson)], `${i}.json`, {
+        type: "application/json",
+      });
+      data.append(`file`, jsonFile, `data/${i}.json`);
+    }
+    return [combinedJson, data];
+  };
+
   //pinning function
   pinJsonToIPFS = async (content) => {
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
