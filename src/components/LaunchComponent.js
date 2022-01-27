@@ -57,6 +57,10 @@ export class LaunchComponent extends Component {
       showLoadingModal: false,
       statusTitle: "",
       statusText: "",
+
+      showStatusModal: false,
+      statusTitle: "",
+      statusText: "",
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -74,6 +78,13 @@ export class LaunchComponent extends Component {
     this.tbCollectionName = React.createRef();
     this.tbMintPrice = React.createRef();
     this.coverImageUploadInput = React.createRef();
+    this.statusModal = React.createRef();
+    this.statusSuccess = React.createRef();
+    this.statusFail = React.createRef();
+    this.statusLoading = React.createRef();
+
+    ///
+
     this.statusModal = React.createRef();
     this.statusSuccess = React.createRef();
     this.statusFail = React.createRef();
@@ -197,6 +208,7 @@ export class LaunchComponent extends Component {
     // document.getElementById("dragAndDropPrompt").style.display = "block";
     // document.getElementById("dragAndDropPreview").style.display = "none";
     this.setState({ collectionCover: "" });
+    this.setState({ isUploaded: false })
   };
 
   handleDefaults = (event) => {
@@ -529,6 +541,9 @@ export class LaunchComponent extends Component {
 
   handleSaveOptional = async (event) => {
     event.preventDefault();
+    this.statusModal.current.style.zIndex = "1000000";
+    this.statusModal.current.style.display = "block";
+
 
     //get launch date time
     let timestamp =
@@ -552,6 +567,11 @@ export class LaunchComponent extends Component {
         _whitelistedAddress: whitelistedAddress,
       }
     ).then(() => {
+      this.setState({ showStatusModal: true });
+      this.setState({ statusTitle: "Saved" });
+      this.statusLoading.current.style.display = "none";
+      this.statusSuccess.current.style.display = "block";
+
       console.log("completed");
     });
   };
@@ -659,24 +679,22 @@ export class LaunchComponent extends Component {
                   }
                 }}
               >
-                <Box
-                  w="100%"
-                  h="60px"
-                  display={this.state.isUploaded ? "none" : "block"}
-                >
-                  <PhotographIcon
-                    color="white"
-                    width="3rem"
-                    className="m-auto"
-                    mt="1rem"
-                  />
-                  <Text color="white" textAlign="center">
-                    File type supported: JPG, PNG, GIF
-                  </Text>
-                </Box>
-                {console.log("hellotest", this.state.collectionCoverFile)}
-                {this.state.collectionCoverFile == "" ? (
-                  <Box></Box>
+                {this.state.collectionCover == "" ? (
+                  <Box
+                    w="100%"
+                    h="60px"
+                    display={this.state.isUploaded ? "none" : "block"}
+                  >
+                    <PhotographIcon
+                      color="white"
+                      width="3rem"
+                      className="m-auto"
+                      mt="1rem"
+                    />
+                    <Text color="white" textAlign="center">
+                      File type supported: JPG, PNG, GIF
+                    </Text>
+                  </Box>
                 ) : (
                   <Box position="relative">
                     <Image
@@ -783,6 +801,8 @@ export class LaunchComponent extends Component {
                 >
                   Save
                 </Button>
+
+
               </ModalFooter>
             </ModalContent>
           </Modal>
@@ -798,6 +818,34 @@ export class LaunchComponent extends Component {
                 right={3}
                 top={3}
                 onClick={this.closeStatusModal}
+              />
+              <Spinner
+                variant="loading_spinner"
+                thickness="4px"
+                speed="0.65s"
+                ref={this.statusLoading}
+              ></Spinner>
+              <SuccessComponent _ref={this.statusSuccess} _show="none" />
+              <FailureComponent _ref={this.statusFail} _show="none" />
+
+              <Text layerStyle="modal_title">{this.state.statusTitle}</Text>
+              <Text layerStyle="modal_text">{this.state.statusText}</Text>
+            </Box>
+          </Box>
+
+
+          <Box
+            id="statusModal"
+            layerStyle="modal_container"
+            ref={this.statusModal}
+          >
+            <Box layerStyle="modal_content" alignItems="center">
+              <CloseButton
+                position="absolute"
+                right={3}
+                top={3}
+                onClick={this.closeStatusModal}
+
               />
               <Spinner
                 variant="loading_spinner"

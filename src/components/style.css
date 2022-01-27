@@ -484,7 +484,7 @@ input[type="number"] {
 #usergallery {
   background-color: #202225;
   color: white;
-  height: 100vh;
+  height: 100%;
 }
 
 #usergallery > h1 {
@@ -493,10 +493,10 @@ input[type="number"] {
   padding-bottom: 15px;
 }
 
-#usergallery > div {
-  margin-left: 10px;
-  margin-right: 10px;
-}
+/* #usergallery > div {
+  margin-left: auto;
+  margin-right: auto;
+} */
 #usergallery > div > div {
   text-align: center;
 }
@@ -516,6 +516,8 @@ input[type="number"] {
   border-radius: 4px; /* Rounded border */
   padding: 5px; /* Some padding */
   max-width: 500px; /* Set a small width */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #usergallery > div > div > a {

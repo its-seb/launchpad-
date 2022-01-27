@@ -211,7 +211,7 @@ export class LandingComponent extends Component {
                                 <Image src={wand} maxW={"50px"} display={"inline-block"} paddingTop={'4'} />
                               </Center>
                               <Box flex='1' textAlign='center'>
-                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Generate your own unqiue dApp</Text>
+                                <Text color='#2F4F4F' display={"block"} fontWeight={"semibold"} paddingBottom={'1'} marginRight={"20px"}>Generate your own unique dApp</Text>
                                 <Text color='#2F4F4F' fontSize={{ one: "12px", five: "14px" }} textAlign={"justify"} marginLeft={"10px"}>Just like Wix, create and configure your very own dApp to sell your collection.
                                 </Text>
 
