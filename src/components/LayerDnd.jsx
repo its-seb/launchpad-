@@ -37,8 +37,11 @@ class SortableComponent extends Component {
         };
     }
 
-    shouldComponentUpdate(nextProps) {
-        return (this.props.layerName !== nextProps.layerName);
+    shouldComponentUpdate(nextProps, nextState) {
+        return (
+            this.props.layerName !== nextProps.layerName ||
+            this.state.showConfirmation != nextState.showConfirmation
+            );
     }
 
     onSortEnd = async ({ oldIndex, newIndex }) => {
@@ -136,7 +139,6 @@ class SortableComponent extends Component {
     }
 
     render() {
-        console.log(this.state.showConfirmation);
         return (
             <div>
                 {/* {Object.keys(this.props.layerName).length !== 0 && */}

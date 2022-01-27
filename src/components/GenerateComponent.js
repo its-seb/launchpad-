@@ -9,7 +9,15 @@ import {
   Image as Img,
   Input,
   Textarea,
-  Icon
+  Icon,
+  FormControl,
+  FormLabel,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Stack
 } from "@chakra-ui/react";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import {
@@ -18,7 +26,6 @@ import {
   Row,
   InputGroup,
   SplitButton,
-  FormControl,
   Modal,
   Form
 } from "react-bootstrap";
@@ -33,7 +40,7 @@ import { saveAs } from 'file-saver';
 // import GenerateNFT from "./GenerateNFT.jsx";
 
 function MergeImages(props) {
-  console.log(props);
+  //console.log(props);
   //var result = [];
   const layers = props.layers;
   //console.log(props);
@@ -155,7 +162,7 @@ function shuffle(array) {
 
 async function GetMergedImages(props) {
   var indexes = [];
-  var imagesToGenerate = 100;
+  var imagesToGenerate = parseInt(props.count);
   var allImages = [];
   let files = props.files;
   const noOfLayers = Object.keys(files).length;
@@ -244,6 +251,7 @@ async function GetMergedImages(props) {
   //Fill compiledListOfIds with 0 if the layer is required to generate lesser than total amt
   //Populate rest of ids with 0
   for (let i = 0; i < indexes.length; i++) {
+    console.log(imagesToGenerate);
     if (indexes[i].layerCount !== imagesToGenerate && indexes[i].layerCount !== 0) {
       compiledListOfIds[i] = compiledListOfIds[i].concat(Array(1).fill(0));
     }
@@ -259,62 +267,22 @@ async function GetMergedImages(props) {
 
   shuffle(allTotalCombinations);
 
-  loop:
+  var layerWithLeastCounts = 0;
+  var layerCounter = 0;
   for (let i = 0; i < indexes.length; i++) {
-    if (indexes[i].layerCount !== imagesToGenerate && indexes[i].layerCount !== 0) {
-
-      //ImageIds in the current layer
-      var imageIds = compiledListOfIds[i];
-
-      var zerosToHave = imagesToGenerate - indexes[i].layerCount;
-      var zerosTotal = totalCombinationCount[0];
-      var zerosToRemove = zerosTotal - zerosToHave;
-      var zerosRemoved = 0;
-      var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
-
-      for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
-        if (allTotalCombinations[j][i] === 0) {
-          allTotalCombinations.splice(j, 1);
-          zerosRemoved++;
-          if (zerosRemoved === zerosToRemove) {
-            break;
-          }
-        }
+    var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+    for (let j = 0; j < onlyValidValues.length; j++) {
+      const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
+      const currentImageCount = onlyValidValues[j][currentImageId];
+      if (currentImageCount < layerCounter) {
+        layerWithLeastCounts = i;
       }
-
-      //ImageIds in the current layer
-      var imageIds = compiledListOfIds[i];
-
-      var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
-      //Iterate each layer in indexes to find out the counts
-      for (let j = 0; j < onlyValidValues.length; j++) {
-        const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
-        const currentImageCount = onlyValidValues[j][currentImageId];
-        const imagesToRemove = totalCombinationCount[currentImageId] - currentImageCount;
-
-        var removedId = 0;
-        var stop = false;
-        while (!stop) {
-          for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
-            if (currentImageId === allTotalCombinations[j][i]) {
-              allTotalCombinations.splice(j, 1);
-              removedId++;
-
-              if (removedId === imagesToRemove) {
-                break;
-              }
-            }
-          }
-          if (removedId === imagesToRemove) {
-            stop = true;
-          }
-        }
-      }
-
-      break loop;
-
+      layerCounter = currentImageCount;
     }
-    else {
+  }
+
+  for (let i = 0; i < indexes.length; i++) {
+    if (i === layerWithLeastCounts) {
       //ImageIds in the current layer
       var imageIds = compiledListOfIds[i];
 
@@ -343,7 +311,7 @@ async function GetMergedImages(props) {
           }
         }
       }
-      break loop;
+      break;
     }
   }
 
@@ -443,6 +411,125 @@ async function GetMergedImages(props) {
   return mergedImages;
 }
 
+function getUniqueCount(props) {
+  var indexes = [];
+  let files = props.files;
+  const noOfLayers = Object.keys(files).length;
+  var compiledListOfIds = [];
+
+  for (let i = 0; i < noOfLayers; i++) {
+    var listOfImageIds = [];
+    const totalRarity = files[i].totalRarity
+
+    //check if theres any images in the layer
+    if (totalRarity !== 0) {
+      //Calculate the individual images
+      for (var image in files[i].layerImages) {
+        const imageId = files[i].layerImages[image].imageId;
+        listOfImageIds = listOfImageIds.concat(Array(1).fill(imageId));
+      }
+
+      compiledListOfIds.push(listOfImageIds);
+
+    }
+  }
+
+  const allTotalCombinations = product.apply(null, compiledListOfIds);
+
+  var imagesToGenerate = allTotalCombinations.length;
+  for (let i = 0; i < noOfLayers; i++) {
+    indexes[i] = [];
+    const totalRarity = files[i].totalRarity
+
+    //check if theres any images in the layer
+    if (totalRarity !== 0) {
+
+      const layerRarity = files[i].layerRarity;
+      const layersToGenerate = Math.round((layerRarity / 100) * imagesToGenerate);
+      indexes[i]["layerCount"] = layersToGenerate;
+
+      var layerCountRemaining = layersToGenerate;
+      var layersComputed = 0;
+
+      //Calculate the individual images
+      for (var image in files[i].layerImages) {
+        const imageRarity = files[i].layerImages[image].imageRarity;
+        const imageId = files[i].layerImages[image].imageId;
+
+        const imageCount = Math.round((imageRarity / totalRarity) * layersToGenerate);
+
+        indexes[i].push({ [imageId]: imageCount });
+        layerCountRemaining = layerCountRemaining - imageCount;
+        layersComputed = layersComputed + imageCount;
+      }
+
+      // //Deal with Remainders
+      if (layersComputed !== layersToGenerate) {
+        //Overgenerate
+        if (layersComputed > indexes[i].layerCount) {
+          for (let x = 0; x < layersComputed - layersToGenerate; x++) {
+
+            const noOfIds = listOfImageIds.length;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+
+            for (var image in indexes[i]) {
+              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
+                indexes[i][image][Object.keys(indexes[i][image])[0]] = total - 1;
+                break;
+              }
+            }
+          }
+        } else if (layersComputed < indexes[i].layerCount) {
+          //Undergenerate
+          for (let x = 0; x < layersToGenerate - layersComputed; x++) {
+
+            const noOfIds = listOfImageIds.length;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+
+            for (var image in indexes[i]) {
+              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
+                indexes[i][image][Object.keys(indexes[i][image])[0]] = total + 1;
+                break;
+              }
+            }
+          }
+        }
+      }
+    } else {
+      indexes[i]["layerCount"] = 0;
+    }
+  }
+
+  //Remove empty layers before processing
+  for (let i = indexes.length - 1; i >= 0; i--) {
+    if (indexes[i].layerCount === 0) {
+      indexes.splice(i, 1);
+    }
+  }
+
+  console.log(indexes);
+  console.log(count(allTotalCombinations));
+
+  const totalCombinations = count(allTotalCombinations);
+  var additionalDuplicates = 0;
+
+  for (let i = 0; i < indexes.length; i++) {
+    var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+    for (let j = 0; j < onlyValidValues.length; j++) {
+      const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
+      const currentImageCount = onlyValidValues[j][currentImageId];
+      if (currentImageCount > totalCombinations[currentImageId]) {
+        additionalDuplicates = additionalDuplicates + currentImageCount - totalCombinations[currentImageId];
+      }
+    }
+  }
+
+  console.log(additionalDuplicates);
+
+  return allTotalCombinations.length - additionalDuplicates;
+}
 
 export class GenerateComponent extends Component {
   blobData = [];
@@ -465,7 +552,10 @@ export class GenerateComponent extends Component {
       slidingLayerTimeout: 0,
       typingLayerTimeout: 0,
       previewImage: "",
-      showPreview: false
+      showPreview: false,
+      uniquecount: 0,
+      layersXY: [],
+      generateCount: 0
     };
   }
 
@@ -814,25 +904,31 @@ export class GenerateComponent extends Component {
     });
   }
 
-  handleShow = () => {
+  //Upon clicking generate images, shows the generating modal
+  handleShow = async () => {
+    const files = await this.getAllData();
+    const uniqueCount = await getUniqueCount({ files: files, layers: this.state.layer });
+
     this.setState({
-      showPreview: true
+      showPreview: true,
+      uniqueCount: uniqueCount
     });
   }
 
+  //Closes generating modal
   handleClose = () => {
     this.setState({ showPreview: false });
   }
 
   //Generate
   onClickGenerate = async () => {
-    await this.getAllData();
+    const files = await this.getAllData();
+    const images = await GetMergedImages({ files: files, layers: this.state.layer, count: this.state.generateCount });
     window.location.assign("/collection");
-
   }
 
   changeInputState = () => {
-    this.layerNameInput.focus()
+    this.layerNameInput.focus();
   }
 
   getAllData = async () => {
@@ -872,7 +968,33 @@ export class GenerateComponent extends Component {
         });
       });
 
-    const images = await GetMergedImages({ files: files, layers: this.state.layer });
+    return files;
+  }
+
+  //Offest X and Y
+  handleXY = (value,id) => {
+    var newLayers = this.state.layer;
+    for (let i =0; i < Object.keys(newLayers).length; i++) {
+      const layerId = parseInt(id.slice(0,-1));
+      const xOrY = id.substring(id.length -1);
+
+      if (newLayers[i].layerid == layerId) {
+        if (xOrY === "x") {
+          newLayers[i].xOffset = parseInt(value);
+        } else {
+          newLayers[i].yOffset = parseInt(value);
+        }
+      }
+    }
+
+    this.setState({layer: newLayers}, () => {
+      this.getPreviewData(this.state.layer);
+    });
+  }
+
+  //Handle generateCount
+  handleGenerateCount = (value) => {
+    this.setState({generateCount: value});
   }
 
   render() {
@@ -1126,29 +1248,48 @@ export class GenerateComponent extends Component {
             <Modal.Title>Settings</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form>
-              <Form.Label>You can generate up to 100 unique images</Form.Label>
-              <Form.Control type="text" value="100" disabled />
-            </Form>
-            {/* {
-                  this.state.imagePreview === "" ?
-                  <span>Loading Preview...</span>
-                  :
-                  <img id="previewNFT" src={this.state.imagePreview}  style={{display: "block", marginLeft:"auto", marginRight:"auto"}} />
-              }
+              <img id="previewNFT" src={this.state.imagePreview}  style={{display: "block", marginLeft:"auto", marginRight:"auto"}} />
+              <Container>
               {
-                  this.state.layers.map((layer,i) =>{
+                  this.state.layer.map((layer,i) =>{
                       return (
-                          <div key={i} style={{width:"100%", height:"auto", margin:"0 auto", padding:"5px", position:"relative", alignItems:"center"}}>
-                              <div style={{textAlign:"right"}}>
-                                  <span style={{marginRight:"5px"}}>{layer.name}</span>
-                                  X:<input type="number" style={{width: "5em", marginLeft:"10px"}} id={layer.layerid + "x"} onChange={this.handleXY} defaultValue={0}/>
-                                  Y:<input type="number" style={{width: "5em", marginLeft:"10px"}} id={layer.layerid + "y"} onChange={this.handleXY} defaultValue={0}/>
-                              </div>
-                          </div>
+                          <Row style={{marginTop:"10px"}}>
+                            <Col xs={6} md={4}>
+                              <FormLabel>{layer.name}</FormLabel>
+                            </Col>
+                            <Col xs={3} md={4}>
+                              <NumberInput defaultValue={layer.xOffset} id={layer.layerid + "x"} onChange={ e => this.handleXY(e, layer.layerid + "x")}>
+                                <NumberInputField/>
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper />
+                                  <NumberDecrementStepper />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </Col>
+                            <Col xs={3} md={4}>
+                              <NumberInput defaultValue={layer.yOffset} id={layer.layerid + "y"} onChange={ e => this.handleXY(e, layer.layerid + "y")}>
+                                <NumberInputField/>
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper />
+                                  <NumberDecrementStepper />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </Col>
+                          </Row>
                       )
                   })
-              } */}
+              }
+              </Container>
+              <FormControl>
+                <FormLabel>You can generate up to {this.state.uniqueCount} unique images</FormLabel>
+                <NumberInput onChange={this.handleGenerateCount} defaultValue={this.state.generateCount} max={this.state.uniqueCount} min={0}>
+                  <NumberInputField/>
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.handleClose}>
