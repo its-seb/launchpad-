@@ -78,16 +78,17 @@ export default class Usergallery extends Component {
         console.log(error);
       });
 
-    let rounds = this.state.mintedNFT.length / this.gateway.length;
-    if (rounds <= 1) {
-      this.setState({ gateway: this.gateway });
-    } else if (rounds > Math.floor(rounds)) {
-      this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
-      this.setState({ gateway: this.gateway });
-    } else {
-      this.gateway = Array(rounds).fill(this.gateway).flat();
-      this.setState({ gateway: this.gateway });
-    }
+    // let rounds = this.state.mintedNFT.length / this.gateway.length;
+    // if (rounds <= 1) {
+    //   this.setState({ gateway: this.gateway });
+    // } else if (rounds > Math.floor(rounds)) {
+    //   this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
+    //   this.setState({ gateway: this.gateway });
+    // } else {
+    //   this.gateway = Array(rounds).fill(this.gateway).flat();
+    //   this.setState({ gateway: this.gateway });
+    // }
+
     // console.log(this.state.gateway)
     console.log(this.state.mintedNFT);
     console.log(this.state.NFTName);

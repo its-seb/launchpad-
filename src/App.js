@@ -15,7 +15,6 @@ import NavigationComponent from "./components/NavigationComponent";
 import GenerateComponent from "./components/GenerateComponent";
 import { Box, Stack, Link, Button } from "@chakra-ui/react";
 
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -32,9 +31,8 @@ class App extends Component {
     this.setState({ user_contract_address: urlParams.get("collection") });
     this.setState({ user_walletaddress: urlParams.get("user") });
     this.setState({ user_contract_title: urlParams.get("title") });
-    console.log(this.state.user_contract_address)
-    console.log(this.state.user_walletaddress)
-
+    console.log(this.state.user_contract_address);
+    console.log(this.state.user_walletaddress);
   }
 
   render() {
@@ -42,7 +40,7 @@ class App extends Component {
       <>
         {
           this.state.user_contract_address != null &&
-            this.state.user_walletaddress != null ? (
+          this.state.user_walletaddress != null ? (
             <Router>
               <Routes>
                 <Route
@@ -59,44 +57,47 @@ class App extends Component {
                 ></Route>
               </Routes>
             </Router>
-          )
-
-            : localStorage.getItem("USER_WALLET_ADDRESS") == null && this.state.user_contract_address == null ? (
-              <Router>
-                <Routes>
-                  <Route exact element={<LandingComponent />} path="/"></Route>
-                </Routes>
-              </Router>) : (<Router>
-                <NavigationComponent></NavigationComponent>
-                {/* <Routes>
+          ) : localStorage.getItem("USER_WALLET_ADDRESS") == null &&
+            this.state.user_contract_address == null ? (
+            <Router>
+              <Routes>
+                <Route exact element={<LandingComponent />} path="/"></Route>
+              </Routes>
+            </Router>
+          ) : (
+            <Router>
+              <NavigationComponent></NavigationComponent>
+              {/* <Routes>
               <Route exact element={<CollectionComponent />} path="/collection"></Route>
             </Routes> */}
-                <Box
-                  h={["100%", "100%", "calc(100vh - 70px)", "calc(100vh - 70px)"]}
-                  bg={"#202225"}
-                >
-                  <Box mx="auto" maxW="1300px" px={"5"}>
-                    <Routes>
-                      <Route
-                        exact
-                        element={<CollectionComponent />}
-                        path="/collection"
-                      ></Route>
-                      <Route exact element={<FileComponent />} path="/file"></Route>
-                      <Route
-                        exact
-                        element={<LaunchComponent />}
-                        path="/launch"
-                      ></Route>
-                      <Route
-                        exact
-                        element={<GenerateComponent />}
-                        path="/generate"
-                      ></Route>
-                    </Routes>
-                  </Box>
+              <Box minH="calc(100vh - 70px)" bg={"#202225"}>
+                <Box mx="auto" maxW="1300px" px={"5"}>
+                  <Routes>
+                    <Route
+                      exact
+                      element={<CollectionComponent />}
+                      path="/collection"
+                    ></Route>
+                    <Route
+                      exact
+                      element={<FileComponent />}
+                      path="/file"
+                    ></Route>
+                    <Route
+                      exact
+                      element={<LaunchComponent />}
+                      path="/launch"
+                    ></Route>
+                    <Route
+                      exact
+                      element={<GenerateComponent />}
+                      path="/generate"
+                    ></Route>
+                  </Routes>
                 </Box>
-              </Router >)
+              </Box>
+            </Router>
+          )
           // ) : (
           //   <Router>
           //     <Routes>
@@ -130,7 +131,6 @@ class App extends Component {
           //   </Router>
           // )
         }
-
       </>
     );
   }

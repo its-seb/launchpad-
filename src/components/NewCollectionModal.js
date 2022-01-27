@@ -84,9 +84,6 @@ class NewCollectionModal extends Component {
       "https://gateway.pinata.cloud/ipfs/QmcGEfBjWyHntPh9xAasAK4UcvG5GL7VrtUZguWfpooNky"
     );
 
-    // let deploymentSuccess = document.getElementById("deploymentSuccess");
-    // let deploymentFailure = document.getElementById("deploymentFailure");
-    //let deploymentStatusText = document.getElementById("deployText");
     this.props.hide();
 
     this.statusModal.current.style.display = "block";
@@ -159,20 +156,14 @@ class NewCollectionModal extends Component {
 
       this.statusLoading.current.style.display = "none";
       this.statusSuccess.current.style.display = "block";
+      this.setState({ statusTitle: "Success" });
       this.setState({ statusText: "new collection has been created" });
-
-      this.setState({ statusText: "" });
-      this.props.hideModal();
+      this.props.hide();
     } catch (e) {
-      ////alert("User cancelled transaction");
-
-      // this.statusLoading.current.style.display = "none";
-      // this.statusFail.current.style.display = "block";
-      // this.setState({ statusTitle: "Oops..." });
-      // this.setState({ statusText: "user cancelled transaction" });
-      //await sleep(2000);
-      //deploymentFailure.style.display = "none";
-
+      this.statusLoading.current.style.display = "none";
+      this.statusFail.current.style.display = "block";
+      this.setState({ statusTitle: "Oops..." });
+      this.setState({ statusText: "user cancelled transaction" });
       console.log(e); //handle error here (e.g. user cancelled transaction; show message)
     }
   };
@@ -180,6 +171,9 @@ class NewCollectionModal extends Component {
     this.statusSuccess.current.style.display = "none";
     this.statusFail.current.style.display = "none";
     this.statusModal.current.style.display = "none";
+    this.statusLoading.current.style.display = "block";
+    this.setState({ statusTitle: "" });
+    this.setState({ statusText: "" });
   };
 
   render() {
