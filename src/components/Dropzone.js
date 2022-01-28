@@ -88,7 +88,7 @@ class Dropzone extends Component {
     const txObj = new IconBuilder.CallTransactionBuilder()
       .from(this.walletAddress)
       .to(this.contractAddress)
-      .stepLimit(IconConverter.toBigNumber(2000000))
+      .stepLimit(IconConverter.toBigNumber(2000000000))
       .nid("0x53")
       .nonce(IconConverter.toBigNumber(1))
       .version(IconConverter.toBigNumber(3)) //constant

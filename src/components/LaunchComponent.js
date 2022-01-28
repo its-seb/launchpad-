@@ -208,7 +208,7 @@ export class LaunchComponent extends Component {
     // document.getElementById("dragAndDropPrompt").style.display = "block";
     // document.getElementById("dragAndDropPreview").style.display = "none";
     this.setState({ collectionCover: "" });
-    this.setState({ isUploaded: false })
+    this.setState({ isUploaded: false });
   };
 
   handleDefaults = (event) => {
@@ -385,7 +385,7 @@ export class LaunchComponent extends Component {
         await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
           Swal.fire({
             title: "Success!",
-            text: "You have minted " + quantityToMint + " NFTs from" + ${collectionName},
+            text: "You have minted " + quantityToMint + " NFTs from ${collectionName}",
             confirmButtonText: "View Wallet",
             icon: "success",
           }).then((result) => {
@@ -544,7 +544,6 @@ export class LaunchComponent extends Component {
     this.statusModal.current.style.zIndex = "1000000";
     this.statusModal.current.style.display = "block";
 
-
     //get launch date time
     let timestamp =
       this.state.selectedDate == null
@@ -608,6 +607,9 @@ export class LaunchComponent extends Component {
     this.statusSuccess.current.style.display = "none";
     this.statusFail.current.style.display = "none";
     this.statusModal.current.style.display = "none";
+    this.statusLoading.current.style.display = "block";
+    this.setState({ statusTitle: "" });
+    this.setState({ statusText: "" });
   };
 
   render() {
@@ -801,8 +803,6 @@ export class LaunchComponent extends Component {
                 >
                   Save
                 </Button>
-
-
               </ModalFooter>
             </ModalContent>
           </Modal>
@@ -833,7 +833,6 @@ export class LaunchComponent extends Component {
             </Box>
           </Box>
 
-
           <Box
             id="statusModal"
             layerStyle="modal_container"
@@ -845,7 +844,6 @@ export class LaunchComponent extends Component {
                 right={3}
                 top={3}
                 onClick={this.closeStatusModal}
-
               />
               <Spinner
                 variant="loading_spinner"
