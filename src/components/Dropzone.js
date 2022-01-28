@@ -177,18 +177,10 @@ class Dropzone extends Component {
     const files = e.target.files;
 
     for (var i = 0; i < files.length; i++) {
-      let reader = new FileReader();
-
-      let p = new Promise((resolve, reject) => {
-        reader.onload = () => {
-          let metadata = JSON.parse(reader.result);
-          resolve(metadata);
-        };
-      });
-
-      reader.readAsText(files[i], "UTF-8");
+      let fileData = await files[i].text();
+      let metadata = JSON.parse(fileData);
+      this.uploadedJsonFiles.push(metadata);
     }
-    console.log("metadataonchange", this.uploadedJsonFiles);
     this.setState({ metadataJson: this.uploadedJsonFiles });
   };
 
@@ -201,6 +193,17 @@ class Dropzone extends Component {
     }
     this.uploadedFiles = updated_uploadedFile;
     this.setState({ file: this.uploadedFiles });
+  }
+
+  remove_json(file_index) {
+    let updated_uploadedJsonFiles = [];
+    for (let i = 0; i < this.uploadedJsonFiles.length; i++) {
+      if (i != file_index.i) {
+        updated_uploadedJsonFiles.push(this.uploadedJsonFiles[i]);
+      }
+    }
+    this.uploadedJsonFiles = updated_uploadedJsonFiles;
+    this.setState({ metadataJson: this.uploadedJsonFiles });
   }
 
   handleUploadFiles = async () => {
@@ -217,110 +220,130 @@ class Dropzone extends Component {
       return;
     }
 
-    //   //step 1 - generate form data for original resolution image & compressed image (for thumbnail)
-    //   this.setState({ statusText: "pinning image files to pinata..." });
-    //   let originalData = this.createOriginalImageFormData(this.uploadedFiles);
-    //   let thumbnailData = this.createThumbnailImageFormData(this.uploadedFiles);
+    //check if number of files uploaded matches,
+    //assumption here is user uploads unique files (uniquelynamed*)
+    if (this.state.showMetadataSection) {
+      if (this.uploadedFiles.length != this.uploadedJsonFiles.length) {
+        this.statusLoading.current.style.display = "none";
+        this.statusFail.current.style.display = "block";
+        this.setState({ statusTitle: "Oops..." });
+        this.setState({
+          statusText: "Make sure each file is associated with metadata json",
+        });
+        return;
+      }
+    }
 
-    //   console.log("original data", originalData);
-    //   console.log("thumbnailData", thumbnailData);
-    //   console.log(originalData);
-    //   console.log(thumbnailData);
+    //step 1 - generate form data for original resolution image & compressed image (for thumbnail)
+    this.setState({ statusText: "pinning image files to pinata..." });
+    let originalData = this.createOriginalImageFormData(this.uploadedFiles);
+    let thumbnailData = this.createThumbnailImageFormData(this.uploadedFiles);
 
-    //   //step 2 - pin files to IPFS
-    //   let originalResponse = await this.pinMultipleFilesToIPFS(
-    //     originalData,
-    //     "original_res"
-    //   );
-    //   let thumbnailResponse = await this.pinMultipleFilesToIPFS(
-    //     thumbnailData,
-    //     "thumbnail_res"
-    //   );
+    console.log("original data", originalData);
+    console.log("thumbnailData", thumbnailData);
+    console.log(originalData);
+    console.log(thumbnailData);
 
-    //   console.log("original res", originalResponse);
-    //   console.log("thumbnail res", thumbnailResponse);
+    //step 2 - pin files to IPFS
+    let originalResponse = await this.pinMultipleFilesToIPFS(
+      originalData,
+      "original_res"
+    );
+    let thumbnailResponse = await this.pinMultipleFilesToIPFS(
+      thumbnailData,
+      "thumbnail_res"
+    );
 
-    //   //step 3 - generate metadata json file
-    //   this.setState({ statusText: "pinning metadata to pinata..." });
-    //   let [originalCombinedJson, originalJsonData] = this.createJsonFormData(
-    //     this.uploadedFiles,
-    //     originalResponse.data.IpfsHash
-    //   );
-    //   let [thumbnailCombinedJson, thumbnailJsonData] = this.createJsonFormData(
-    //     this.uploadedFiles,
-    //     thumbnailResponse.data.IpfsHash
-    //   );
+    console.log("original res", originalResponse);
+    console.log("thumbnail res", thumbnailResponse);
 
-    //   console.log("original combined Json", originalCombinedJson);
-    //   console.log("originalJsonData", originalJsonData);
-    //   console.log("thumbnailCombinedJson", thumbnailCombinedJson);
-    //   console.log("thumbnailJsonData", thumbnailJsonData);
+    //step 3 - generate metadata json file
+    this.setState({ statusText: "pinning metadata to pinata..." });
 
-    //   //step 4 - pin json to ipfs
-    //   let combjson_originalResponse = await this.pinJsonToIPFS(
-    //     originalCombinedJson
-    //   );
-    //   let combjson_thumbnailResponse = await this.pinJsonToIPFS(
-    //     thumbnailCombinedJson
-    //   );
+    let [originalCombinedJson, originalJsonData] = this.createJsonFormData(
+      this.uploadedFiles,
+      originalResponse.data.IpfsHash,
+      "original_json"
+    );
+    let [thumbnailCombinedJson, thumbnailJsonData] = this.createJsonFormData(
+      this.uploadedFiles,
+      thumbnailResponse.data.IpfsHash,
+      "thumbnail_json"
+    );
 
-    //   console.log("combined josn_original res", combjson_originalResponse);
-    //   console.log("combined josn_thumbnail res", combjson_thumbnailResponse);
+    console.log("original combined Json", originalCombinedJson);
+    console.log("originalJsonData", originalJsonData);
+    console.log("thumbnailCombinedJson", thumbnailCombinedJson);
+    console.log("thumbnailJsonData", thumbnailJsonData);
 
-    //   let metadata_response = await this.pinMultipleFilesToIPFS(
-    //     originalJsonData,
-    //     "json_metadata"
-    //   );
-    //   console.log("metadata_response", metadata_response);
+    // step 4 - pin json to ipfs
+    let combjson_originalResponse = await this.pinJsonToIPFS(
+      originalCombinedJson,
+      "combined_org_json"
+    );
+    let combjson_thumbnailResponse = await this.pinJsonToIPFS(
+      thumbnailCombinedJson,
+      "combined_thumbnail_json"
+    );
 
-    //   //update contract
-    //   this.setState({ statusText: "updating smart contract..." });
-    //   await this.set_totalandcurrent_supply(
-    //     this.uploadedFiles.length,
-    //     metadata_response.data.IpfsHash,
-    //     combjson_originalResponse,
-    //     combjson_thumbnailResponse
-    //   ).then(() => {
-    //     this.db.contracts.update(this.contractAddress, {
-    //       metahash_exist: true,
-    //     });
-    //     localStorage.setItem("HAS_METAHASH", true);
-    //     this.statusLoading.current.style.display = "none";
-    //     this.statusSuccess.current.style.display = "block";
-    //     this.setState({ statusText: "files uploaded successfully!" });
-    //   });
+    console.log("combined josn_original res", combjson_originalResponse);
+    console.log("combined josn_thumbnail res", combjson_thumbnailResponse);
 
-    //   await sleep(1000);
-    //   this.setState({ statusText: "redirecting to launchpage..." });
+    let metadata_response = await this.pinMultipleFilesToIPFS(
+      originalJsonData,
+      "json_metadata"
+    );
+    console.log("metadata_response", metadata_response);
 
-    //   await sleep(1500);
-    //   this.setState({ redirect: true });
+    //update contract
+    this.setState({ statusText: "updating smart contract..." });
+    await this.set_totalandcurrent_supply(
+      this.uploadedFiles.length,
+      metadata_response.data.IpfsHash,
+      combjson_originalResponse,
+      combjson_thumbnailResponse
+    ).then(() => {
+      this.db.contracts.update(this.contractAddress, {
+        metahash_exist: true,
+      });
+      localStorage.setItem("HAS_METAHASH", true);
+      this.statusLoading.current.style.display = "none";
+      this.statusSuccess.current.style.display = "block";
+      this.setState({ statusText: "files uploaded successfully!" });
+    });
+
+    await sleep(1000);
+    this.setState({ statusText: "redirecting to launchpage..." });
+
+    await sleep(1500);
+    this.setState({ redirect: true });
     // };
+  };
 
-    // // Create Form
-    // createThumbnailImageFormData = (files) => {
-    //   let thumbnailData = new FormData();
-    //   for (var i = 0; i < files.length; i++) {
-    //     console.log("createThumbnailImageFormData", files[i].name);
-    //     //For Compressed File
+  // Create Form
+  createThumbnailImageFormData = (files) => {
+    let thumbnailData = new FormData();
+    for (var i = 0; i < files.length; i++) {
+      console.log("createThumbnailImageFormData", files[i].name);
+      //For Compressed File
 
-    //     let x = new Compressor(files[i].dataFile, {
-    //       quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
-    //       convertSize: Infinity,
-    //       success: (compressedResult) => {
-    //         // compressedResult has the compressed file.
-    //         // Use the compressed file to upload the images to your server.
-    //         console.log(compressedResult);
-    //         thumbnailData.append(
-    //           `file`,
-    //           compressedResult,
-    //           `file/${compressedResult.name}`
-    //         );
-    //       },
-    //     });
-    //   }
-    //   console.log(thumbnailData);
-    //   return thumbnailData;
+      let x = new Compressor(files[i].dataFile, {
+        quality: 0.8, // 0.6 can also be used, but its not recommended to go below.
+        convertSize: Infinity,
+        success: (compressedResult) => {
+          // compressedResult has the compressed file.
+          // Use the compressed file to upload the images to your server.
+          console.log(compressedResult);
+          thumbnailData.append(
+            `file`,
+            compressedResult,
+            `file/${compressedResult.name}`
+          );
+        },
+      });
+    }
+    console.log(thumbnailData);
+    return thumbnailData;
   };
 
   createOriginalImageFormData = (files) => {
@@ -344,9 +367,19 @@ class Dropzone extends Component {
         name: `${files[i].name}`,
       });
 
-      const individualJson = {
-        image: `${ipfsFolderHash}/${this.uploadedFiles[i].name}`,
-      };
+      let individualJson = {};
+      if (this.state.showMetadataSection == true) {
+        console.log("showmetadata", this.uploadedJsonFiles[i]);
+        console.log("showmetadataimage", this.uploadedJsonFiles[i].image);
+        this.uploadedJsonFiles[
+          i
+        ].image = `${ipfsFolderHash}/${this.uploadedJsonFiles[i].image}`;
+        individualJson = this.uploadedJsonFiles[i];
+      } else {
+        individualJson = {
+          image: `${ipfsFolderHash}/${this.uploadedFiles[i].name}`,
+        };
+      }
 
       const jsonFile = new File([JSON.stringify(individualJson)], `${i}.json`, {
         type: "application/json",
@@ -357,10 +390,14 @@ class Dropzone extends Component {
   };
 
   //pinning function
-  pinJsonToIPFS = async (content) => {
+  pinJsonToIPFS = async (content, displayedObjName) => {
     const pinataEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
+    const data = {
+      pinataMetadata: { name: displayedObjName },
+      pinataContent: content,
+    };
     let response = await axios
-      .post(pinataEndpoint, content, {
+      .post(pinataEndpoint, data, {
         headers: {
           pinata_api_key: this.pinataKey,
           pinata_secret_api_key: this.pinataSecret,
@@ -411,13 +448,16 @@ class Dropzone extends Component {
     this.statusSuccess.current.style.display = "none";
     this.statusFail.current.style.display = "none";
     this.statusModal.current.style.display = "none";
+    this.statusLoading.current.style.display = "block";
+    this.setState({ statusTitle: "" });
+    this.setState({ statusText: "" });
   };
 
   render() {
     return (
       <>
         <SimpleGrid columns={1} spacing={"1rem"} mt="1rem">
-          <Box h="60vh" px={[0, 50, 150, 250]}>
+          <Box minHeight="60vh" h="100%" px={[0, 50, 150, 250]} pb="1.5rem">
             <Text layerStyle="section_title">Upload Files</Text>
             <Box
               border="2px solid #949494"
@@ -523,6 +563,7 @@ class Dropzone extends Component {
               borderRadius={"xl"}
               mt="1rem"
               p="2rem"
+              textAlign="right"
               _hover={{ backgroundColor: "#2f3136", cursor: "pointer" }}
               display={this.state.showMetadataSection ? "block" : "none"}
               _hover={
@@ -560,6 +601,45 @@ class Dropzone extends Component {
                 onChange={(e) => this.handleMetadataOnChange(e)}
                 multiple={true}
               ></VisuallyHiddenInput>
+              <SimpleGrid columns={5} spacingX="1rem" spacingY="3rem">
+                {(this.uploadedJsonFiles || []).map((data, i) => (
+                  <Box
+                    h="100px"
+                    w="100px"
+                    m="auto"
+                    bg="#595A5A"
+                    borderRadius="10"
+                    textAlign="right"
+                    position="relative"
+                  >
+                    <DocumentTextIcon
+                      color="white"
+                      style={{ padding: "1rem" }}
+                    ></DocumentTextIcon>
+                    <XCircleIcon
+                      className="remove_image"
+                      onClick={(e) => this.remove_json({ i })}
+                    ></XCircleIcon>
+                    <Text
+                      layerStyle="card_content"
+                      textAlign="center"
+                      color="white"
+                      mt={1}
+                    >
+                      {data.name}
+                    </Text>
+                  </Box>
+                ))}
+              </SimpleGrid>
+              {this.uploadedJsonFiles.length > 0 ? (
+                <Button
+                  mt="10"
+                  onClick={() => this.metadataUploadInput.current.click()}
+                  variant="modal_submit"
+                >
+                  Add Files
+                </Button>
+              ) : null}
             </Box>
             <Button
               variant="modal_submit"
