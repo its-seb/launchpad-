@@ -50,21 +50,21 @@ export default class Usergallery extends Component {
         // this.wallet_address = 'hxdf253be1cf4c4c7ea87ac649ac1694cfd0b072d8';
         this.mintedLink = [];
         this.mintedindex = [];
-        this.gateway = [
-            "astyanax.io",
-            "ipfs.io",
-            "ipfs.infura.io",
-            "infura-ipfs.io",
-            "ipfs.eth.aragon.network",
-            "cloudflare-ipfs.com",
-            "ipfs.fleek.co",
-            "cf-ipfs.com",
-            "gateway.pinata.cloud",
-            "cf-ipfs.com",
-            "astyanax.io",
-            "infura-ipfs.io",
-            "ipfs.kxv.io",
-        ];
+        // this.gateway = [
+        //     "astyanax.io",
+        //     "ipfs.io",
+        //     "ipfs.infura.io",
+        //     "infura-ipfs.io",
+        //     "ipfs.eth.aragon.network",
+        //     "cloudflare-ipfs.com",
+        //     "ipfs.fleek.co",
+        //     "cf-ipfs.com",
+        //     "gateway.pinata.cloud",
+        //     "cf-ipfs.com",
+        //     "astyanax.io",
+        //     "infura-ipfs.io",
+        //     "ipfs.kxv.io",
+        // ];
         // this.gateway = ['astyanax.io', 'ipfs.io', 'ipfs.infura.io', 'infura-ipfs.io', 'ipfs.eth.aragon.network'];
     }
 
