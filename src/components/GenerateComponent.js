@@ -54,6 +54,7 @@ function MergeImages(props) {
     canvas.height = props.height;
 
     const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
 
     Object.values(images).forEach((e, index) => {
       for (let i = 0; i < Object.keys(layers).length; i++) {
