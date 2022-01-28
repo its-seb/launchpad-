@@ -194,6 +194,7 @@ const theme = extendTheme(
           },
         },
       },
+      
       Input: {
         variants: {
           modal_input: {

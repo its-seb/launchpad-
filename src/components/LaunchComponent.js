@@ -385,7 +385,7 @@ export class LaunchComponent extends Component {
         await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
           Swal.fire({
             title: "Success!",
-            text: "You have minted " + quantityToMint + " NFTs from hello4",
+            text: "You have minted " + quantityToMint + " NFTs from" + ${collectionName},
             confirmButtonText: "View Wallet",
             icon: "success",
           }).then((result) => {
