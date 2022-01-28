@@ -48,22 +48,34 @@ export default class Usergallery extends Component {
     // this.wallet_address = 'hxdf253be1cf4c4c7ea87ac649ac1694cfd0b072d8';
     this.mintedLink = [];
     this.mintedindex = [];
+    // this.gateway = [
+    //     "astyanax.io",
+    //     "ipfs.io",
+    //     "ipfs.infura.io",
+    //     "infura-ipfs.io",
+    //     "ipfs.eth.aragon.network",
+    //     "cloudflare-ipfs.com",
+    //     "ipfs.fleek.co",
+    //     "cf-ipfs.com",
+    //     "gateway.pinata.cloud",
+    //     "cf-ipfs.com",
+    //     "astyanax.io",
+    //     "infura-ipfs.io",
+    //     "ipfs.kxv.io",
+    // ];
+    // this.gateway = ['astyanax.io', 'ipfs.io', 'ipfs.infura.io', 'infura-ipfs.io', 'ipfs.eth.aragon.network'];
   }
 
   async componentDidMount() {
     console.log(this.contract_address, this.wallet_address);
-    this.mintedLink = await this.getMintedNFT(
-      this.contract_address,
-      this.wallet_address
-    );
-    console.log(this.mintedLink);
+    await this.getMintedNFT(this.contract_address, this.wallet_address);
 
+    console.log(this.mintedLink);
     for (let mintNFT of this.mintedLink) {
-      console.log("mintNFT", mintNFT);
       this.mintedindex.push(mintNFT.split("/")[1].split(".")[0]);
-      const pinataEndpoint = `https://launchpad.mypinata.cloud/ipfs/${mintNFT}`;
+      const pinataEndpoint3 = `https://gateway.pinata.cloud/ipfs/${mintNFT}`;
       let minted_nft_response = await axios
-        .get(pinataEndpoint)
+        .get(pinataEndpoint3)
         .then((response) => {
           console.log(response);
           this.state.mintedNFT.push(response.data.image);
@@ -73,39 +85,35 @@ export default class Usergallery extends Component {
           console.log(error);
         });
     }
-    console.log("this.mintedIndex", this.mintedindex);
 
-    // console.log(this.mintedLink);
-    // for (let mintNFT of this.mintedLink) {
-    //   this.mintedindex.push(mintNFT.split("/")[1].split(".")[0]);
-    //   const pinataEndpoint3 = `https://launchpad.mypinata.cloud/ipfs/${mintNFT}`;
-    //   let minted_nft_response = await axios
-    //     .get(pinataEndpoint3)
-    //     .then((response) => {
-    //       console.log(response);
-    //       this.state.mintedNFT.push(response.data.image);
-    //       this.state.NFTName.push(response.data.image.split("/")[5]);
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //     });
+    await this.getJSONThumbnailMetahash();
+    const pinataEndpoint4 = `https://gateway.pinata.cloud/ipfs/${this.jsonthumbnailhash}`;
+    let json_upload_response2 = await axios
+      .get(pinataEndpoint4)
+      .then((response) => {
+        console.log(response);
+        this.setState({ thumbnailFiles: response.data.files_link });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    // let rounds = this.state.mintedNFT.length / this.gateway.length;
+    // if (rounds <= 1) {
+    //   this.setState({ gateway: this.gateway });
+    // } else if (rounds > Math.floor(rounds)) {
+    //   this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
+    //   this.setState({ gateway: this.gateway });
+    // } else {
+    //   this.gateway = Array(rounds).fill(this.gateway).flat();
+    //   this.setState({ gateway: this.gateway });
     // }
 
-    // await this.getJSONThumbnailMetahash();
-    // const pinataEndpoint4 = `https://launchpad.mypinata.cloud/ipfs/${this.jsonthumbnailhash}`;
-    // let json_upload_response2 = await axios
-    //   .get(pinataEndpoint4)
-    //   .then((response) => {
-    //     console.log(response);
-    //     this.setState({ thumbnailFiles: response.data.files_link });
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
-    // console.log(this.state.mintedNFT);
-    // console.log(this.state.NFTName);
+    // console.log(this.state.gateway)
+    console.log(this.state.mintedNFT);
+    console.log(this.state.NFTName);
 
-    // console.log(this.mintedLink);
+    console.log(this.mintedLink);
   }
 
   getJSONThumbnailMetahash = async () => {
@@ -129,7 +137,7 @@ export default class Usergallery extends Component {
     return result;
   };
 
-  getMintedNFT = async (contractAddress, walletAddress) => {
+  async getMintedNFT(contractAddress, walletAddress) {
     const callObj = new IconBuilder.CallBuilder()
       .from(null)
       .to(contractAddress)
@@ -143,6 +151,7 @@ export default class Usergallery extends Component {
       .call(callObj)
       .execute()
       .then((response) => {
+        this.mintedLink = response;
         return response;
       })
       .catch((error) => {
@@ -150,7 +159,7 @@ export default class Usergallery extends Component {
         Promise.resolve({ error });
       });
     return result;
-  };
+  }
 
   //modal handler
   handleSettingsModal = () => {
@@ -174,6 +183,7 @@ export default class Usergallery extends Component {
         <div className="row">
           {this.mintedindex.map((data, index) => (
             <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+              {/* <a target="_blank" href={this.state.mintedNFT[index]}> */}
               <a
                 target="_blank"
                 onClick={() =>
@@ -185,6 +195,11 @@ export default class Usergallery extends Component {
                 }
               >
                 <img
+                  // src={
+                  //     "https://" +
+                  //     this.gateway[index] +
+                  //     this.state.thumbnailFiles[data].link.slice(28)
+                  // }
                   src={this.state.mintedNFT[index]}
                   class="w-100 shadow-1-strong rounded"
                 />
