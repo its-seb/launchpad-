@@ -17,9 +17,11 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Stack
+  Stack,
+  Spinner
 } from "@chakra-ui/react";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
+import SuccessComponent from "./SuccessComponent.js";
 import {
   Container,
   Col,
@@ -295,19 +297,21 @@ async function GetMergedImages(props) {
 
         var removedId = 0;
         var stop = false;
-        while (!stop) {
-          for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
-            if (currentImageId === allTotalCombinations[j][i]) {
-              allTotalCombinations.splice(j, 1);
-              removedId++;
-
-              if (removedId === imagesToRemove) {
-                break;
+        if (imagesToRemove !== 0){
+          while (!stop) {
+            for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
+              if (currentImageId === allTotalCombinations[j][i]) {
+                allTotalCombinations.splice(j, 1);
+                removedId++;
+  
+                if (removedId === imagesToRemove) {
+                  break;
+                }
               }
             }
-          }
-          if (removedId === imagesToRemove) {
-            stop = true;
+            if (removedId === imagesToRemove) {
+              stop = true;
+            }
           }
         }
       }
@@ -528,7 +532,7 @@ function getUniqueCount(props) {
 
   console.log(additionalDuplicates);
 
-  return allTotalCombinations.length - additionalDuplicates;
+  return Math.floor((allTotalCombinations.length - additionalDuplicates));
 }
 
 export class GenerateComponent extends Component {
@@ -555,8 +559,13 @@ export class GenerateComponent extends Component {
       showPreview: false,
       uniquecount: 0,
       layersXY: [],
-      generateCount: 0
+      generateCount: 0,
+      generateLoad: false,
+      generateSuccess: false
     };
+
+    this.statusSuccess = React.createRef();
+    this.statusLoading = React.createRef();
   }
 
   componentDidMount() {
@@ -922,9 +931,21 @@ export class GenerateComponent extends Component {
 
   //Generate
   onClickGenerate = async () => {
+    //Initiate loading and generating
+    this.setState({generateLoad:true});
     const files = await this.getAllData();
     const images = await GetMergedImages({ files: files, layers: this.state.layer, count: this.state.generateCount });
-    window.location.assign("/collection");
+
+    //Change loading to success here
+    this.statusLoading.current.style.display = "none";
+    this.statusSuccess.current.style.display = "block";
+    this.setState({
+      generateSuccess:true
+    });
+
+    setTimeout(function (){
+      window.location.assign("/collection");
+    }, 2000);
   }
 
   changeInputState = () => {
@@ -1244,58 +1265,83 @@ export class GenerateComponent extends Component {
         </Grid>
 
         <Modal show={this.state.showPreview} onHide={this.handleClose} >
-          <Modal.Header closeButton>
-            <Modal.Title>Settings</Modal.Title>
+          <Modal.Header style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+            <Modal.Title>
+              {this.state.generateLoad === false ? <span>Settings</span> : <span>Loading</span>}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-              <img id="previewNFT" src={this.state.imagePreview}  style={{display: "block", marginLeft:"auto", marginRight:"auto"}} />
+            {this.state.generateLoad === false ? 
               <Container>
-              {
-                  this.state.layer.map((layer,i) =>{
-                      return (
-                          <Row style={{marginTop:"10px"}}>
-                            <Col xs={6} md={4}>
-                              <FormLabel>{layer.name}</FormLabel>
-                            </Col>
-                            <Col xs={3} md={4}>
-                              <NumberInput defaultValue={layer.xOffset} id={layer.layerid + "x"} onChange={ e => this.handleXY(e, layer.layerid + "x")}>
-                                <NumberInputField/>
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper />
-                                  <NumberDecrementStepper />
-                                </NumberInputStepper>
-                              </NumberInput>
-                            </Col>
-                            <Col xs={3} md={4}>
-                              <NumberInput defaultValue={layer.yOffset} id={layer.layerid + "y"} onChange={ e => this.handleXY(e, layer.layerid + "y")}>
-                                <NumberInputField/>
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper />
-                                  <NumberDecrementStepper />
-                                </NumberInputStepper>
-                              </NumberInput>
-                            </Col>
-                          </Row>
-                      )
-                  })
-              }
-              </Container>
-              <FormControl>
-                <FormLabel>You can generate up to {this.state.uniqueCount} unique images</FormLabel>
-                <NumberInput onChange={this.handleGenerateCount} defaultValue={this.state.generateCount} max={this.state.uniqueCount} min={0}>
-                  <NumberInputField/>
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </FormControl>
+                <img id="previewNFT" src={this.state.imagePreview}  style={{display: "block", marginLeft:"auto", marginRight:"auto"}} />
+                {
+                    this.state.layer.map((layer,i) =>{
+                        return (
+                            <Row style={{marginTop:"10px"}}>
+                              <Col xs={6} md={4}>
+                                <FormLabel>{layer.name}</FormLabel>
+                              </Col>
+                              <Col xs={3} md={4}>
+                                <NumberInput defaultValue={layer.xOffset} id={layer.layerid + "x"} onChange={ e => this.handleXY(e, layer.layerid + "x")}>
+                                  <NumberInputField/>
+                                  <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                  </NumberInputStepper>
+                                </NumberInput>
+                              </Col>
+                              <Col xs={3} md={4}>
+                                <NumberInput defaultValue={layer.yOffset} id={layer.layerid + "y"} onChange={ e => this.handleXY(e, layer.layerid + "y")}>
+                                  <NumberInputField/>
+                                  <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                  </NumberInputStepper>
+                                </NumberInput>
+                              </Col>
+                            </Row>
+                        )
+                    })
+                }
+                <FormControl>
+                  <FormLabel>You can generate up to {this.state.uniqueCount} unique images</FormLabel>
+                  <NumberInput onChange={this.handleGenerateCount} defaultValue={this.state.generateCount} max={this.state.uniqueCount} min={0}>
+                    <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+                </Container>
+                :
+                <Container style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  display: "flex"}}>
+                  <Spinner
+                    variant="loading_spinner"
+                    thickness="4px"
+                    speed="0.65s"
+                    ref={this.statusLoading}
+                  ></Spinner>
+                  <SuccessComponent _ref={this.statusSuccess} _show="none" />
+                  {
+                    // this.state.generateSuccess === true &&
+                    //   <div>Redirecting you to collection...</div>
+                  }
+                </Container>
+            }
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.handleClose}>
+            <Button onClick={this.handleClose} hidden={this.state.generateLoad}>
               Cancel
             </Button>
-            <Button onClick={this.onClickGenerate} variant="dark">
+            <Button onClick={this.onClickGenerate} variant="dark" hidden={this.state.generateLoad}>
               Generate
             </Button>
           </Modal.Footer>
