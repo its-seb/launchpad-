@@ -1,2 +1,9 @@
-/file /file 301
-/launch /launch 301
+/* / 301
+/* /collection 301
+/ /collection 301
+/collection /file 301
+/collection /launch 301
+/launch /collection 301
+/launch /file 301
+/file /launch 301
+/file /collection 301
