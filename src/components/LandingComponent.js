@@ -46,7 +46,7 @@ export class LandingComponent extends Component {
       if (_walletAddress != null) {
         localStorage.setItem("USER_WALLET_ADDRESS", _walletAddress);
         console.log(localStorage.getItem("USER_WALLET_ADDRESS"));
-        window.location.assign("/collection");
+        this.props.setwallet(_walletAddress);
       } else {
         console.log("user cancelled login");
       }

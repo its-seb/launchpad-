@@ -32,6 +32,10 @@ class App extends Component {
     console.log(this.state.user_walletaddress);
   }
 
+  setWalletState = (walletAddress) => {
+    this.setState({ user_walletaddress: walletAddress });
+  };
+
   render() {
     return (
       <>
@@ -57,7 +61,11 @@ class App extends Component {
           this.state.user_contract_address == null ? (
           <Router>
             <Routes>
-              <Route exact element={<LandingComponent />} path="/"></Route>
+              <Route
+                exact
+                element={<LandingComponent setwallet={this.setWalletState} />}
+                path="/"
+              ></Route>
             </Routes>
           </Router>
         ) : (
