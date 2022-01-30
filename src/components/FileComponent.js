@@ -57,7 +57,7 @@ export class FileComponent extends Component {
     //document.getElementById("_pageTitle").innerText = this.props.pageTitle;
     if (
       this.state.walletAddress == null &&
-      localStorage.getItem("USER_WALLET_ADDRESS")
+      localStorage.getItem("USER_WALLET_ADDRESS") == null
     ) {
       alert("Please connect your wallet.");
       return;
