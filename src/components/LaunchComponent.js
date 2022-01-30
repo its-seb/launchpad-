@@ -57,10 +57,6 @@ export class LaunchComponent extends Component {
       showLoadingModal: false,
       statusTitle: "",
       statusText: "",
-
-      showStatusModal: false,
-      statusTitle: "",
-      statusText: "",
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -183,7 +179,7 @@ export class LaunchComponent extends Component {
 
   handleMintPrice = (event) => {
     const re = /^[0-9\b]+$/; //test for regex
-    if (event.target.value === "" || re.test(event.target.value)) {
+    if (event.target.value == "" || re.test(event.target.value)) {
       this.setState({ nftMintPrice: event.target.value });
     }
   };
@@ -383,17 +379,27 @@ export class LaunchComponent extends Component {
         };
 
         await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
-          Swal.fire({
-            title: "Success!",
-            text: "You have minted " + quantityToMint + " NFTs from ${collectionName}",
-            confirmButtonText: "View Wallet",
-            icon: "success",
-          }).then((result) => {
-            window.open(
-              "http://localhost:3000/Usergallery/?collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
-              "_blank"
-            );
-          });
+          console.log(res);
+          if (typeof res != "undefined") {
+            Swal.fire({
+              title: "Success!",
+              text: "You have minted " + quantityToMint + " NFTs from ${collectionName}",
+              confirmButtonText: "View Wallet",
+              icon: "success",
+            }).then((result) => {
+              window.open(
+                "http://localhost:3000/Usergallery/?collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
+                  walletAddress,
+                "_blank"
+              );
+            });
+          } else {
+            Swal.fire({
+              title: "Oops...",
+              text: "User cancelled transaction.",
+              icon: "error",
+            });
+          }
         });
       };
 
@@ -596,8 +602,6 @@ export class LaunchComponent extends Component {
     const imgBlob = URL.createObjectURL(e.target.files[0]); //creating a blob url
     console.log(imgBlob);
 
-    // document.getElementById("dragAndDropPrompt").style.display = "none";
-    // document.getElementById("dragAndDropPreview").style.display = "block";
     this.setState({ isUploaded: true });
     this.setState({ collectionCover: imgBlob });
     this.setState({ collectionCoverFile: e.target.files[0] });

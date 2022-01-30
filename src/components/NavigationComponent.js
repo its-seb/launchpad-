@@ -8,7 +8,6 @@ import {
   Box,
   Flex,
   Avatar,
-  Stack,
   Link,
   Button,
   Menu,
@@ -20,7 +19,6 @@ import ICONexConnection from "./utils/interact.js";
 import { UserIcon } from "@heroicons/react/solid";
 
 export class NavigationComponent extends Component {
-
   connection = new ICONexConnection();
 
   handleWalletEvent = async (event) => {

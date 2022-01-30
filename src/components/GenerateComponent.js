@@ -18,7 +18,7 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   Stack,
-  Spinner
+  Spinner,
 } from "@chakra-ui/react";
 import { AddIcon, CloseIcon } from "@chakra-ui/icons";
 import SuccessComponent from "./SuccessComponent.js";
@@ -29,7 +29,7 @@ import {
   InputGroup,
   SplitButton,
   Modal,
-  Form
+  Form,
 } from "react-bootstrap";
 import Dexie from "dexie";
 import imageStyle from "./TestImage.module.css";
@@ -37,8 +37,8 @@ import SortableComponent from "./LayerDnd";
 import db from "../db.js";
 import { Scrollbar } from "smooth-scrollbar-react";
 import { XCircleIcon, UploadIcon, PencilAltIcon } from "@heroicons/react/solid";
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 // import GenerateNFT from "./GenerateNFT.jsx";
 
 function MergeImages(props) {
@@ -48,7 +48,7 @@ function MergeImages(props) {
   //console.log(props);
 
   const initialize = (images) => {
-    // images are loaded here 
+    // images are loaded here
     const canvas = document.createElement("canvas");
     canvas.width = props.width;
     canvas.height = props.height;
@@ -64,7 +64,17 @@ function MergeImages(props) {
           var hRatio = canvas.width / w;
           var vRatio = canvas.height / h;
           var ratio = Math.min(hRatio, vRatio);
-          ctx.drawImage(e, layers[i].xOffset, layers[i].yOffset, w, h, 0, 0, w * ratio, h * ratio);
+          ctx.drawImage(
+            e,
+            layers[i].xOffset,
+            layers[i].yOffset,
+            w,
+            h,
+            0,
+            0,
+            w * ratio,
+            h * ratio
+          );
         }
       }
     });
@@ -80,23 +90,25 @@ function MergeImages(props) {
     //     //console.log(canvas.href); // this line should be here
     //     result.push(canvas.href);
     // });
-
   };
 
-  const result = Promise.all(Object.keys(props.images).map((e, i) =>
-    new Promise((resolve, reject) => {
-      var imageObj = [];
-      imageObj[i] = new Image();
-      imageObj[i].onload = () => resolve(imageObj[i]);
-      imageObj[i].onerror = reject;
-      imageObj[i].src = props.images[e].image;
-      imageObj[i].alt = props.images[e].id;
-    })
-  )).then(images => {
+  const result = Promise.all(
+    Object.keys(props.images).map(
+      (e, i) =>
+        new Promise((resolve, reject) => {
+          var imageObj = [];
+          imageObj[i] = new Image();
+          imageObj[i].onload = () => resolve(imageObj[i]);
+          imageObj[i].onerror = reject;
+          imageObj[i].src = props.images[e].image;
+          imageObj[i].alt = props.images[e].id;
+        })
+    )
+  ).then((images) => {
     //console.log(images);
     var imgResult = initialize(images);
     console.log(imgResult);
-    return imgResult
+    return imgResult;
   });
 
   //console.log(result);
@@ -113,7 +125,10 @@ function GetImageData(files, imageId) {
       Object.keys(images).map((image) => {
         if (images[image].imageId === imageId) {
           //console.log(images[image].imageData);
-          result.push({ id: images[image].layerId, image: images[image].imageData });
+          result.push({
+            id: images[image].layerId,
+            image: images[image].imageData,
+          });
         }
       });
     }
@@ -139,25 +154,27 @@ function product(left, right, other) {
 function count(animals) {
   return animals.reduce((acc, arr) => {
     for (const item of arr) {
-      acc[item] = acc[item] !== undefined ? acc[item] + 1 : 1
+      acc[item] = acc[item] !== undefined ? acc[item] + 1 : 1;
     }
-    return acc
-  }, {})
+    return acc;
+  }, {});
 }
 
 function shuffle(array) {
-  let currentIndex = array.length, randomIndex;
+  let currentIndex = array.length,
+    randomIndex;
 
   // While there remain elements to shuffle...
   while (currentIndex != 0) {
-
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+      array[randomIndex],
+      array[currentIndex],
+    ];
   }
 
   return array;
@@ -175,13 +192,14 @@ async function GetMergedImages(props) {
     indexes[i] = [];
     var listOfImageIds = [];
 
-    const totalRarity = files[i].totalRarity
+    const totalRarity = files[i].totalRarity;
 
     //check if theres any images in the layer
     if (totalRarity !== 0) {
-
       const layerRarity = files[i].layerRarity;
-      const layersToGenerate = Math.round((layerRarity / 100) * imagesToGenerate);
+      const layersToGenerate = Math.round(
+        (layerRarity / 100) * imagesToGenerate
+      );
       indexes[i]["layerCount"] = layersToGenerate;
 
       var layerCountRemaining = layersToGenerate;
@@ -192,7 +210,9 @@ async function GetMergedImages(props) {
         const imageRarity = files[i].layerImages[image].imageRarity;
         const imageId = files[i].layerImages[image].imageId;
 
-        const imageCount = Math.round((imageRarity / totalRarity) * layersToGenerate);
+        const imageCount = Math.round(
+          (imageRarity / totalRarity) * layersToGenerate
+        );
 
         indexes[i].push({ [imageId]: imageCount });
         layerCountRemaining = layerCountRemaining - imageCount;
@@ -206,14 +226,15 @@ async function GetMergedImages(props) {
         //Overgenerate
         if (layersComputed > indexes[i].layerCount) {
           for (let x = 0; x < layersComputed - layersToGenerate; x++) {
-
             const noOfIds = listOfImageIds.length;
-            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];
 
             for (var image in indexes[i]) {
-              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              const total =
+                indexes[i][image][Object.keys(indexes[i][image])[0]];
               if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
-                indexes[i][image][Object.keys(indexes[i][image])[0]] = total - 1;
+                indexes[i][image][Object.keys(indexes[i][image])[0]] =
+                  total - 1;
                 break;
               }
             }
@@ -221,14 +242,15 @@ async function GetMergedImages(props) {
         } else if (layersComputed < indexes[i].layerCount) {
           //Undergenerate
           for (let x = 0; x < layersToGenerate - layersComputed; x++) {
-
             const noOfIds = listOfImageIds.length;
-            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];
 
             for (var image in indexes[i]) {
-              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              const total =
+                indexes[i][image][Object.keys(indexes[i][image])[0]];
               if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
-                indexes[i][image][Object.keys(indexes[i][image])[0]] = total + 1;
+                indexes[i][image][Object.keys(indexes[i][image])[0]] =
+                  total + 1;
                 break;
               }
             }
@@ -236,7 +258,6 @@ async function GetMergedImages(props) {
         }
       }
       compiledListOfIds.push(listOfImageIds);
-
     } else {
       indexes[i]["layerCount"] = 0;
     }
@@ -255,7 +276,10 @@ async function GetMergedImages(props) {
   //Populate rest of ids with 0
   for (let i = 0; i < indexes.length; i++) {
     console.log(imagesToGenerate);
-    if (indexes[i].layerCount !== imagesToGenerate && indexes[i].layerCount !== 0) {
+    if (
+      indexes[i].layerCount !== imagesToGenerate &&
+      indexes[i].layerCount !== 0
+    ) {
       compiledListOfIds[i] = compiledListOfIds[i].concat(Array(1).fill(0));
     }
   }
@@ -273,7 +297,7 @@ async function GetMergedImages(props) {
   var layerWithLeastCounts = 0;
   var layerCounter = 0;
   for (let i = 0; i < indexes.length; i++) {
-    var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+    var onlyValidValues = indexes[i].filter((v) => v !== "layerCount");
     for (let j = 0; j < onlyValidValues.length; j++) {
       const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
       const currentImageCount = onlyValidValues[j][currentImageId];
@@ -289,22 +313,23 @@ async function GetMergedImages(props) {
       //ImageIds in the current layer
       var imageIds = compiledListOfIds[i];
 
-      var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+      var onlyValidValues = indexes[i].filter((v) => v !== "layerCount");
       //Iterate each layer in indexes to find out the counts
       for (let j = 0; j < onlyValidValues.length; j++) {
         const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
         const currentImageCount = onlyValidValues[j][currentImageId];
-        const imagesToRemove = totalCombinationCount[currentImageId] - currentImageCount;
+        const imagesToRemove =
+          totalCombinationCount[currentImageId] - currentImageCount;
 
         var removedId = 0;
         var stop = false;
-        if (imagesToRemove !== 0){
+        if (imagesToRemove !== 0) {
           while (!stop) {
             for (let j = allTotalCombinations.length - 1; j >= 0; j--) {
               if (currentImageId === allTotalCombinations[j][i]) {
                 allTotalCombinations.splice(j, 1);
                 removedId++;
-  
+
                 if (removedId === imagesToRemove) {
                   break;
                 }
@@ -345,7 +370,7 @@ async function GetMergedImages(props) {
       images: allImages[i],
       height: 100,
       width: 100,
-      layers: props.layers
+      layers: props.layers,
     });
     mergedImages.push(img);
   }
@@ -381,7 +406,10 @@ async function GetMergedImages(props) {
               console.log(layerName);
               obj.attributes[counter].trait_type = layerName;
 
-              const layerValue = images[image].imageName.substr(0, images[image].imageName.lastIndexOf("."));
+              const layerValue = images[image].imageName.substr(
+                0,
+                images[image].imageName.lastIndexOf(".")
+              );
               obj.attributes[counter].value = layerValue;
               counter++;
             }
@@ -398,13 +426,13 @@ async function GetMergedImages(props) {
     obj["properties"]["files"][0].type = "image/png";
     obj.compiler = "Launchpad";
 
-    console.log(JSON.stringify(obj, null, '\t'));
+    console.log(JSON.stringify(obj, null, "\t"));
 
-    metadata.file(no + ".json", JSON.stringify(obj, null, '\t'));
+    metadata.file(no + ".json", JSON.stringify(obj, null, "\t"));
   }
 
   for (let i = 0; i < mergedImages.length; i++) {
-    var idx = mergedImages[i].indexOf('base64,') + 'base64,'.length; // or = 28 if you're sure about the prefix
+    var idx = mergedImages[i].indexOf("base64,") + "base64,".length; // or = 28 if you're sure about the prefix
     var content = mergedImages[i].substring(idx);
     images.file(i + 1 + ".png", content, { base64: true });
   }
@@ -424,7 +452,7 @@ function getUniqueCount(props) {
 
   for (let i = 0; i < noOfLayers; i++) {
     var listOfImageIds = [];
-    const totalRarity = files[i].totalRarity
+    const totalRarity = files[i].totalRarity;
 
     //check if theres any images in the layer
     if (totalRarity !== 0) {
@@ -435,7 +463,6 @@ function getUniqueCount(props) {
       }
 
       compiledListOfIds.push(listOfImageIds);
-
     }
   }
 
@@ -444,13 +471,14 @@ function getUniqueCount(props) {
   var imagesToGenerate = allTotalCombinations.length;
   for (let i = 0; i < noOfLayers; i++) {
     indexes[i] = [];
-    const totalRarity = files[i].totalRarity
+    const totalRarity = files[i].totalRarity;
 
     //check if theres any images in the layer
     if (totalRarity !== 0) {
-
       const layerRarity = files[i].layerRarity;
-      const layersToGenerate = Math.round((layerRarity / 100) * imagesToGenerate);
+      const layersToGenerate = Math.round(
+        (layerRarity / 100) * imagesToGenerate
+      );
       indexes[i]["layerCount"] = layersToGenerate;
 
       var layerCountRemaining = layersToGenerate;
@@ -461,7 +489,9 @@ function getUniqueCount(props) {
         const imageRarity = files[i].layerImages[image].imageRarity;
         const imageId = files[i].layerImages[image].imageId;
 
-        const imageCount = Math.round((imageRarity / totalRarity) * layersToGenerate);
+        const imageCount = Math.round(
+          (imageRarity / totalRarity) * layersToGenerate
+        );
 
         indexes[i].push({ [imageId]: imageCount });
         layerCountRemaining = layerCountRemaining - imageCount;
@@ -473,14 +503,15 @@ function getUniqueCount(props) {
         //Overgenerate
         if (layersComputed > indexes[i].layerCount) {
           for (let x = 0; x < layersComputed - layersToGenerate; x++) {
-
             const noOfIds = listOfImageIds.length;
-            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];
 
             for (var image in indexes[i]) {
-              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              const total =
+                indexes[i][image][Object.keys(indexes[i][image])[0]];
               if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
-                indexes[i][image][Object.keys(indexes[i][image])[0]] = total - 1;
+                indexes[i][image][Object.keys(indexes[i][image])[0]] =
+                  total - 1;
                 break;
               }
             }
@@ -488,14 +519,15 @@ function getUniqueCount(props) {
         } else if (layersComputed < indexes[i].layerCount) {
           //Undergenerate
           for (let x = 0; x < layersToGenerate - layersComputed; x++) {
-
             const noOfIds = listOfImageIds.length;
-            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];;
+            var randomId = listOfImageIds[Math.floor(Math.random() * noOfIds)];
 
             for (var image in indexes[i]) {
-              const total = indexes[i][image][Object.keys(indexes[i][image])[0]];
+              const total =
+                indexes[i][image][Object.keys(indexes[i][image])[0]];
               if (parseInt(Object.keys(indexes[i][image])[0]) === randomId) {
-                indexes[i][image][Object.keys(indexes[i][image])[0]] = total + 1;
+                indexes[i][image][Object.keys(indexes[i][image])[0]] =
+                  total + 1;
                 break;
               }
             }
@@ -521,19 +553,22 @@ function getUniqueCount(props) {
   var additionalDuplicates = 0;
 
   for (let i = 0; i < indexes.length; i++) {
-    var onlyValidValues = indexes[i].filter(v => v !== 'layerCount');
+    var onlyValidValues = indexes[i].filter((v) => v !== "layerCount");
     for (let j = 0; j < onlyValidValues.length; j++) {
       const currentImageId = parseInt(Object.keys(onlyValidValues[j])[0]);
       const currentImageCount = onlyValidValues[j][currentImageId];
       if (currentImageCount > totalCombinations[currentImageId]) {
-        additionalDuplicates = additionalDuplicates + currentImageCount - totalCombinations[currentImageId];
+        additionalDuplicates =
+          additionalDuplicates +
+          currentImageCount -
+          totalCombinations[currentImageId];
       }
     }
   }
 
   console.log(additionalDuplicates);
 
-  return Math.floor((allTotalCombinations.length - additionalDuplicates));
+  return Math.floor(allTotalCombinations.length - additionalDuplicates);
 }
 
 export class GenerateComponent extends Component {
@@ -562,7 +597,7 @@ export class GenerateComponent extends Component {
       layersXY: [],
       generateCount: 0,
       generateLoad: false,
-      generateSuccess: false
+      generateSuccess: false,
     };
 
     this.statusSuccess = React.createRef();
@@ -614,7 +649,6 @@ export class GenerateComponent extends Component {
       console.log(this.state.layer);
       this.getPreviewData(this.state.layer);
     });
-
   };
 
   handleLayerRarityChange = async (event) => {
@@ -880,14 +914,17 @@ export class GenerateComponent extends Component {
       .orderBy("rarity")
       .reverse()
       .toArray()
-      .then(theList => {
+      .then((theList) => {
         console.log("list", theList);
         for (let i = 0; i < Object.keys(this.state.layer).length; i++) {
           var BreakException = {};
           try {
             theList.forEach((image) => {
               if (layers[i].layerid === image.layerid) {
-                files.push({ id: image.layerid, image: URL.createObjectURL(image.image) });
+                files.push({
+                  id: image.layerid,
+                  image: URL.createObjectURL(image.image),
+                });
                 throw BreakException;
               }
             });
@@ -903,63 +940,73 @@ export class GenerateComponent extends Component {
       images: files,
       height: 100,
       width: 100,
-      layers: layers
+      layers: layers,
     });
     console.log("Merged Preview", img);
 
-    this.setState({
-      imagePreview: img
-    }, () => {
-      console.log(this.state.imagePreview);
-    });
-  }
+    this.setState(
+      {
+        imagePreview: img,
+      },
+      () => {
+        console.log(this.state.imagePreview);
+      }
+    );
+  };
 
   //Upon clicking generate images, shows the generating modal
   handleShow = async () => {
     const files = await this.getAllData();
-    const uniqueCount = await getUniqueCount({ files: files, layers: this.state.layer });
+    const uniqueCount = await getUniqueCount({
+      files: files,
+      layers: this.state.layer,
+    });
 
     this.setState({
       showPreview: true,
-      uniqueCount: uniqueCount
+      uniqueCount: uniqueCount,
     });
-  }
+  };
 
   //Closes generating modal
   handleClose = () => {
     this.setState({ showPreview: false });
-  }
+  };
 
   //Generate
   onClickGenerate = async () => {
     //Initiate loading and generating
-    this.setState({generateLoad:true});
+    this.setState({ generateLoad: true });
     const files = await this.getAllData();
-    const images = await GetMergedImages({ files: files, layers: this.state.layer, count: this.state.generateCount });
+    const images = await GetMergedImages({
+      files: files,
+      layers: this.state.layer,
+      count: this.state.generateCount,
+    });
 
     //Change loading to success here
     this.statusLoading.current.style.display = "none";
     this.statusSuccess.current.style.display = "block";
     this.setState({
-      generateSuccess:true
+      generateSuccess: true,
     });
 
-    setTimeout(function (){
+    setTimeout(function () {
       window.location.assign("/collection");
     }, 2000);
-  }
+  };
 
   changeInputState = () => {
     this.layerNameInput.focus();
-  }
+  };
 
   getAllData = async () => {
     var files = new Object();
     await db.layerNames
       .orderBy("index")
       .toArray()
-      .then(theList => {
-        theList.forEach(item => {
+      .then((theList) => {
+        theList.forEach((item) => {
           files[item.index] = new Object();
           files[item.index].layerId = item.id;
           files[item.index].layerName = item.layer;
@@ -973,32 +1020,44 @@ export class GenerateComponent extends Component {
       .orderBy("rarity")
       .reverse()
       .toArray()
-      .then(theList => {
+      .then((theList) => {
         //console.log("list", theList);
         theList.forEach((image, index) => {
           for (let i = 0; i < Object.keys(files).length; i++) {
             if (files[i].layerId === image.layerid) {
-              Object.assign(files[i], { totalRarity: files[i].totalRarity + image.rarity });
+              Object.assign(files[i], {
+                totalRarity: files[i].totalRarity + image.rarity,
+              });
               files[i]["layerImages"][index] = new Object();
-              Object.assign(files[i]["layerImages"][index], { imageId: image.id });
-              Object.assign(files[i]["layerImages"][index], { layerId: image.layerid });
-              Object.assign(files[i]["layerImages"][index], { imageName: image.name });
-              Object.assign(files[i]["layerImages"][index], { imageRarity: image.rarity });
-              Object.assign(files[i]["layerImages"][index], { imageData: URL.createObjectURL(image.image) });
+              Object.assign(files[i]["layerImages"][index], {
+                imageId: image.id,
+              });
+              Object.assign(files[i]["layerImages"][index], {
+                layerId: image.layerid,
+              });
+              Object.assign(files[i]["layerImages"][index], {
+                imageName: image.name,
+              });
+              Object.assign(files[i]["layerImages"][index], {
+                imageRarity: image.rarity,
+              });
+              Object.assign(files[i]["layerImages"][index], {
+                imageData: URL.createObjectURL(image.image),
+              });
             }
           }
         });
       });
 
     return files;
-  }
+  };
 
   //Offest X and Y
-  handleXY = (value,id) => {
+  handleXY = (value, id) => {
     var newLayers = this.state.layer;
-    for (let i =0; i < Object.keys(newLayers).length; i++) {
-      const layerId = parseInt(id.slice(0,-1));
-      const xOrY = id.substring(id.length -1);
+    for (let i = 0; i < Object.keys(newLayers).length; i++) {
+      const layerId = parseInt(id.slice(0, -1));
+      const xOrY = id.substring(id.length - 1);
 
       if (newLayers[i].layerid == layerId) {
         if (xOrY === "x") {
@@ -1009,15 +1068,15 @@ export class GenerateComponent extends Component {
       }
     }
 
-    this.setState({layer: newLayers}, () => {
+    this.setState({ layer: newLayers }, () => {
       this.getPreviewData(this.state.layer);
     });
-  }
+  };
 
   //Handle generateCount
   handleGenerateCount = (value) => {
-    this.setState({generateCount: value});
-  }
+    this.setState({ generateCount: value });
+  };
 
   render() {
     return (
@@ -1103,7 +1162,7 @@ export class GenerateComponent extends Component {
               }}
               h="100%"
             >
-              {Object.keys(this.state.image).length !== 0 ?
+              {Object.keys(this.state.image).length !== 0 ? (
                 <SimpleGrid
                   columns={4}
                   spacingX="40px"
@@ -1147,16 +1206,21 @@ export class GenerateComponent extends Component {
                       </Text>
                     </Box>
                   ))}
-                </SimpleGrid> :
-
-                <Box display="flex" justifyContent="center" alignItems="center" h="100%">
+                </SimpleGrid>
+              ) : (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  h="100%"
+                >
                   <Box textAlign="center">
                     <Icon as={UploadIcon} w={75} h={75} color="gray.200"></Icon>
                     <Text color="#FBFBFB">Drop your images here!</Text>
                     <Text color="#FBFBFB">(image/png, Max size: 10mb)</Text>
                   </Box>
                 </Box>
-              }
+              )}
             </Box>
           </GridItem>
 
@@ -1173,11 +1237,24 @@ export class GenerateComponent extends Component {
               <Text fontWeight="bold" pb={3} color="#FBFBFB" float="left">
                 Image Rarity - {"\u00A0"}
               </Text>
-              <Input fontWeight="bold" variant="unstyled" color="#FED428" w="40%" ref={x => this.layerNameInput = x}
+              <Input
+                fontWeight="bold"
+                variant="unstyled"
+                color="#FED428"
+                w="40%"
+                ref={(x) => (this.layerNameInput = x)}
                 value={this.state.currentLayer}
                 onChange={this.handleLayerNameChange}
               />
-              <Icon as={PencilAltIcon} h={6} w={6} color="gray.200" cursor="pointer" verticalAlign="top" onClick={this.changeInputState} />
+              <Icon
+                as={PencilAltIcon}
+                h={6}
+                w={6}
+                color="gray.200"
+                cursor="pointer"
+                verticalAlign="top"
+                onClick={this.changeInputState}
+              />
             </Box>
 
             {Object.keys(this.state.image).length !== 0 ? (
@@ -1189,7 +1266,6 @@ export class GenerateComponent extends Component {
                   pb="20px"
                   alignItems="center"
                 >
-
                   <Box color="#FBFBFB" key={i}>
                     <span>{data.name}</span>
                   </Box>
@@ -1232,8 +1308,21 @@ export class GenerateComponent extends Component {
 
           {/* Preview card */}
           <GridItem rowSpan={6} colSpan={4} bg="#373737" borderRadius="15">
-            <Box h='87%' display="flex" justifyContent="center" alignItems="center">
-              <Box bg="#595A5A" h="80%" w="80%" borderRadius="15" display="flex" justifyContent="center" alignItems="center">
+            <Box
+              h="87%"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Box
+                bg="#595A5A"
+                h="80%"
+                w="80%"
+                borderRadius="15"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+              >
                 <Img
                   id="previewNFT"
                   src={this.state.imagePreview}
@@ -1244,8 +1333,10 @@ export class GenerateComponent extends Component {
                 />
               </Box>
             </Box>
-            <Box height='13%'>
-              <Text color="#F7F7F7" fontSize={23} fontWeight="550" pl={5}>Preview</Text>
+            <Box height="13%">
+              <Text color="#F7F7F7" fontSize={23} fontWeight="550" pl={5}>
+                Preview
+              </Text>
             </Box>
           </GridItem>
 
@@ -1253,96 +1344,160 @@ export class GenerateComponent extends Component {
           <GridItem rowSpan={6} colSpan={4}>
             <Box h="100%">
               <Box h="85%" overflow="auto">
-                <Text color="#F7F7F7" fontSize={23} fontWeight="550">Project Name</Text>
-                <Input color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" placeholder="Title"></Input>
-                <Text color="#F7F7F7" fontSize={23} fontWeight="550">Description</Text>
-                <Textarea color="#BFBFBF" variant="flushed" mb="20px" focusBorderColor="yellow.500" minHeight="39%" maxHeight="39%" maxLength="250" placeholder="What is your collection about? (250 characters max)"></Textarea>
+                <Text color="#F7F7F7" fontSize={23} fontWeight="550">
+                  Project Name
+                </Text>
+                <Input
+                  color="#BFBFBF"
+                  variant="flushed"
+                  mb="20px"
+                  focusBorderColor="yellow.500"
+                  placeholder="Title"
+                ></Input>
+                <Text color="#F7F7F7" fontSize={23} fontWeight="550">
+                  Description
+                </Text>
+                <Textarea
+                  color="#BFBFBF"
+                  variant="flushed"
+                  mb="20px"
+                  focusBorderColor="yellow.500"
+                  minHeight="39%"
+                  maxHeight="39%"
+                  maxLength="250"
+                  placeholder="What is your collection about? (250 characters max)"
+                ></Textarea>
               </Box>
               <Box h="15%">
-                <Button onClick={this.handleShow} colorScheme="yellow" float="right">Generate Images</Button>
+                <Button
+                  onClick={this.handleShow}
+                  colorScheme="yellow"
+                  float="right"
+                >
+                  Generate Images
+                </Button>
               </Box>
             </Box>
           </GridItem>
         </Grid>
 
-        <Modal show={this.state.showPreview} onHide={this.handleClose} >
-          <Modal.Header style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}>
+        <Modal show={this.state.showPreview} onHide={this.handleClose}>
+          <Modal.Header
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <Modal.Title>
-              {this.state.generateLoad === false ? <span>Settings</span> : <span>Loading</span>}
+              {this.state.generateLoad === false ? (
+                <span>Settings</span>
+              ) : (
+                <span>Loading</span>
+              )}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {this.state.generateLoad === false ? 
+            {this.state.generateLoad === false ? (
               <Container>
-                <img id="previewNFT" src={this.state.imagePreview}  style={{display: "block", marginLeft:"auto", marginRight:"auto"}} />
-                {
-                    this.state.layer.map((layer,i) =>{
-                        return (
-                            <Row style={{marginTop:"10px"}}>
-                              <Col xs={6} md={4}>
-                                <FormLabel>{layer.name}</FormLabel>
-                              </Col>
-                              <Col xs={3} md={4}>
-                                <NumberInput defaultValue={layer.xOffset} id={layer.layerid + "x"} onChange={ e => this.handleXY(e, layer.layerid + "x")}>
-                                  <NumberInputField/>
-                                  <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
-                                  </NumberInputStepper>
-                                </NumberInput>
-                              </Col>
-                              <Col xs={3} md={4}>
-                                <NumberInput defaultValue={layer.yOffset} id={layer.layerid + "y"} onChange={ e => this.handleXY(e, layer.layerid + "y")}>
-                                  <NumberInputField/>
-                                  <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
-                                  </NumberInputStepper>
-                                </NumberInput>
-                              </Col>
-                            </Row>
-                        )
-                    })
-                }
+                <img
+                  id="previewNFT"
+                  src={this.state.imagePreview}
+                  style={{
+                    display: "block",
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                  }}
+                />
+                {this.state.layer.map((layer, i) => {
+                  return (
+                    <Row style={{ marginTop: "10px" }}>
+                      <Col xs={6} md={4}>
+                        <FormLabel>{layer.name}</FormLabel>
+                      </Col>
+                      <Col xs={3} md={4}>
+                        <NumberInput
+                          defaultValue={layer.xOffset}
+                          id={layer.layerid + "x"}
+                          onChange={(e) =>
+                            this.handleXY(e, layer.layerid + "x")
+                          }
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </Col>
+                      <Col xs={3} md={4}>
+                        <NumberInput
+                          defaultValue={layer.yOffset}
+                          id={layer.layerid + "y"}
+                          onChange={(e) =>
+                            this.handleXY(e, layer.layerid + "y")
+                          }
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </Col>
+                    </Row>
+                  );
+                })}
                 <FormControl>
-                  <FormLabel>You can generate up to {this.state.uniqueCount} unique images</FormLabel>
-                  <NumberInput onChange={this.handleGenerateCount} defaultValue={this.state.generateCount} max={this.state.uniqueCount} min={0}>
-                    <NumberInputField/>
+                  <FormLabel>
+                    You can generate up to {this.state.uniqueCount} unique
+                    images
+                  </FormLabel>
+                  <NumberInput
+                    onChange={this.handleGenerateCount}
+                    defaultValue={this.state.generateCount}
+                    max={this.state.uniqueCount}
+                    min={0}
+                  >
+                    <NumberInputField />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
                     </NumberInputStepper>
                   </NumberInput>
                 </FormControl>
-                </Container>
-                :
-                <Container style={{
+              </Container>
+            ) : (
+              <Container
+                style={{
                   alignItems: "center",
                   justifyContent: "center",
-                  display: "flex"}}>
-                  <Spinner
-                    variant="loading_spinner"
-                    thickness="4px"
-                    speed="0.65s"
-                    ref={this.statusLoading}
-                  ></Spinner>
-                  <SuccessComponent _ref={this.statusSuccess} _show="none" />
-                  {
-                    // this.state.generateSuccess === true &&
-                    //   <div>Redirecting you to collection...</div>
-                  }
-                </Container>
-            }
+                  display: "flex",
+                }}
+              >
+                <Spinner
+                  variant="loading_spinner"
+                  thickness="4px"
+                  speed="0.65s"
+                  ref={this.statusLoading}
+                ></Spinner>
+                <SuccessComponent _ref={this.statusSuccess} _show="none" />
+                {
+                  // this.state.generateSuccess === true &&
+                  //   <div>Redirecting you to collection...</div>
+                }
+              </Container>
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.handleClose} hidden={this.state.generateLoad}>
               Cancel
             </Button>
-            <Button onClick={this.onClickGenerate} variant="dark" hidden={this.state.generateLoad}>
+            <Button
+              onClick={this.onClickGenerate}
+              variant="dark"
+              hidden={this.state.generateLoad}
+            >
               Generate
             </Button>
           </Modal.Footer>

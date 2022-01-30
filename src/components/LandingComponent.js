@@ -1,16 +1,11 @@
 import React, { Component } from "react";
 import {
   Image,
-  Grid,
-  GridItem,
   Flex,
   Button,
   Box,
   Text,
-  Select,
   Center,
-  HStack,
-  ButtonGroup,
   SimpleGrid,
   Tabs,
   Tab,
@@ -18,7 +13,6 @@ import {
   TabPanels,
   TabPanel,
 } from "@chakra-ui/react";
-import { Scrollbar } from "smooth-scrollbar-react";
 import ICONexConnection from "./utils/interact.js";
 import book from "../assets/book.png";
 import dice from "../assets/dice.png";
@@ -26,8 +20,6 @@ import gift from "../assets/gift-box.png";
 import scroll from "../assets/scroll.png";
 import wand from "../assets/wand.png";
 import ticket from "../assets/ticket.png";
-import { BsGithub } from "react-icons/bs";
-import { AiOutlineMedium } from "react-icons/ai";
 
 export class LandingComponent extends Component {
   constructor(props) {

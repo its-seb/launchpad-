@@ -140,19 +140,28 @@
         };
 
         await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
-          Swal.fire({
-            title: "Success!",
-            text:
-              "You have minted " + quantityToMint + " NFTs from Hello World",
-            confirmButtonText: "View Wallet",
-            icon: "success",
-          }).then((result) => {
-            window.open(
-              "http://localhost:3000/Usergallery/?collection=cx4e4687cae9666830edbbf22797c7844cc15ee118&title=Hello World&user=" +
-                walletAddress,
-              "_blank"
-            );
-          });
+          console.log(res);
+          if (typeof res != "undefined") {
+            Swal.fire({
+              title: "Success!",
+              text:
+                "You have minted " + quantityToMint + " NFTs from Hello World",
+              confirmButtonText: "View Wallet",
+              icon: "success",
+            }).then((result) => {
+              window.open(
+                "http://localhost:3000/Usergallery/?collection=cx4e4687cae9666830edbbf22797c7844cc15ee118&title=Hello World&user=" +
+                  walletAddress,
+                "_blank"
+              );
+            });
+          } else {
+            Swal.fire({
+              title: "Oops...",
+              text: "User cancelled transaction.",
+              icon: "error",
+            });
+          }
         });
       };
 

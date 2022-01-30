@@ -17,9 +17,8 @@ import {
 } from "@chakra-ui/react";
 import IconService from "icon-sdk-js";
 import "./style.css";
-import bore from "../assets/bore.jpeg";
 const axios = require("axios");
-const { IconConverter, IconBuilder, HttpProvider } = IconService;
+const { IconBuilder } = IconService;
 
 export default class Usergallery extends Component {
   constructor(props) {
@@ -31,6 +30,7 @@ export default class Usergallery extends Component {
       showAdvancedSettings: false,
       modaltitle: "modal title",
       modalpicture: null,
+      imageAttributes: [],
 
       // mintedNFT: ["https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_joolz.png", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Namocchi.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Vyragami.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg"],
       // NFTName: ["peter", "Jane", "Boon Yeow", "Yong JIun", "Sebastian", "Joy"],
@@ -48,6 +48,7 @@ export default class Usergallery extends Component {
     // this.wallet_address = 'hxdf253be1cf4c4c7ea87ac649ac1694cfd0b072d8';
     this.mintedLink = [];
     this.mintedindex = [];
+    this.jsonHash = "";
     // this.gateway = [
     //     "astyanax.io",
     //     "ipfs.io",
@@ -70,7 +71,7 @@ export default class Usergallery extends Component {
     console.log(this.contract_address, this.wallet_address);
     await this.getMintedNFT(this.contract_address, this.wallet_address);
 
-    console.log(this.mintedLink);
+    console.log("this.mintedLink componentdidmount", this.mintedLink);
     for (let mintNFT of this.mintedLink) {
       this.mintedindex.push(mintNFT.split("/")[1].split(".")[0]);
       const pinataEndpoint3 = `https://gateway.pinata.cloud/ipfs/${mintNFT}`;
@@ -97,23 +98,6 @@ export default class Usergallery extends Component {
       .catch((error) => {
         console.log(error);
       });
-
-    // let rounds = this.state.mintedNFT.length / this.gateway.length;
-    // if (rounds <= 1) {
-    //   this.setState({ gateway: this.gateway });
-    // } else if (rounds > Math.floor(rounds)) {
-    //   this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
-    //   this.setState({ gateway: this.gateway });
-    // } else {
-    //   this.gateway = Array(rounds).fill(this.gateway).flat();
-    //   this.setState({ gateway: this.gateway });
-    // }
-
-    // console.log(this.state.gateway)
-    console.log(this.state.mintedNFT);
-    console.log(this.state.NFTName);
-
-    console.log(this.mintedLink);
   }
 
   getJSONThumbnailMetahash = async () => {
@@ -132,6 +116,27 @@ export default class Usergallery extends Component {
       })
       .catch((error) => {
         console.log("getJSONThumbnailMetahash", error);
+        Promise.resolve({ error });
+      });
+    return result;
+  };
+
+  getMetahash = async () => {
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(this.contract_address)
+      .method("getMetahash")
+      .build();
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        console.log("getMetahash", response);
+        return response;
+      })
+      .catch((error) => {
+        console.log("getMetahash", error);
         Promise.resolve({ error });
       });
     return result;
@@ -161,6 +166,19 @@ export default class Usergallery extends Component {
     return result;
   }
 
+  getMetadata = async (idx) => {
+    console.log("getmetadata", this.mintedLink[idx]);
+    let jsonMetadata = await axios
+      .get("https://launchpad.mypinata.cloud/ipfs/" + this.mintedLink[idx])
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    this.setState({ imageAttributes: jsonMetadata.data.attributes });
+  };
+
   //modal handler
   handleSettingsModal = () => {
     this.setState({ showAdvancedSettings: true });
@@ -171,19 +189,19 @@ export default class Usergallery extends Component {
   };
 
   render() {
-    console.log(this.state.thumbnailFiles);
-    console.log(this.mintedindex);
     return (
-      <div id="usergallery">
+      <div id="usergallery" style={{ minHeight: "100vh" }}>
         <h1 className="display-6">
           Your owned NFT from Collection:
           <br />
           {this.contract_name}
         </h1>
-        <div className="row">
+        <div
+          className="row"
+          style={{ paddingLeft: "1rem", paddingRight: "1rem" }}
+        >
           {this.mintedindex.map((data, index) => (
             <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-              {/* <a target="_blank" href={this.state.mintedNFT[index]}> */}
               <a
                 target="_blank"
                 onClick={() =>
@@ -191,6 +209,7 @@ export default class Usergallery extends Component {
                     showAdvancedSettings: true,
                     modaltitle: this.state.thumbnailFiles[data].name,
                     modalpicture: this.state.mintedNFT[index],
+                    metadata: this.getMetadata(index),
                   })
                 }
               >
@@ -218,7 +237,7 @@ export default class Usergallery extends Component {
           <ModalContent>
             <ModalHeader
               borderBottom="2px"
-              borderColor="black.200"
+              borderColor="gray.200"
               textAlign={"center"}
             >
               {this.state.modaltitle}
@@ -231,48 +250,11 @@ export default class Usergallery extends Component {
                     width={"100%"}
                     objectFit="cover"
                     // src={this.state.modalpicture} />
-                    src={bore}
+                    src={this.state.modalpicture}
                   />
-                  <Box marginTop={"10px"} textAlign={"center"}>
-                    <Link
-                      fontSize={"20px"}
-                      marginBottom={"5px"}
-                      color="black"
-                      display={"block"}
-                      _hover={{
-                        background: "white",
-                        color: "#2F4F4F",
-                      }}
-                    >
-                      View on Sejong
-                    </Link>
-                    <Link
-                      fontSize={"20px"}
-                      marginBottom={"5px"}
-                      color="black"
-                      display={"block"}
-                      _hover={{
-                        background: "white",
-                        color: "#2F4F4F",
-                      }}
-                    >
-                      View Metadata
-                    </Link>
-                    <Link
-                      fontSize={"20px"}
-                      marginBottom={"5px"}
-                      color="black"
-                      _hover={{
-                        background: "white",
-                        color: "#2F4F4F",
-                      }}
-                    >
-                      View on IPFS
-                    </Link>
-                  </Box>
                 </Box>
 
-                <Box marginLeft={"40px"}>
+                <Box marginLeft={"40px"} pt="20px">
                   <Box textStyle="h1" marginBottom={"3px"}>
                     Owner
                   </Box>
@@ -296,22 +278,25 @@ export default class Usergallery extends Component {
                   <Box textStyle="h1" marginBottom={"10px"}>
                     Attributes
                   </Box>
-                  <SimpleGrid columns={2} spacing={10}>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
-                    <Box bg="tomato" height="75px"></Box>
+                  <SimpleGrid columns={2} spacingX={5} spacingY={3}>
+                    {this.state.imageAttributes.map((data, i) => (
+                      <Box bg="#202225" borderRadius="0.5rem" p="0.5rem">
+                        <Text
+                          color="white"
+                          textAlign="center"
+                          fontWeight="bold"
+                        >
+                          {data.trait_type}
+                        </Text>
+                        <Text color="white" textAlign="center">
+                          {data.value}
+                        </Text>
+                      </Box>
+                    ))}
                   </SimpleGrid>
                 </Box>
               </Flex>
             </ModalBody>
-            <ModalFooter>
-              <Button onClick={this.hideSettingsModal}>Close</Button>
-            </ModalFooter>
           </ModalContent>
         </Modal>
       </div>
