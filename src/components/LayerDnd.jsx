@@ -56,18 +56,18 @@ class SortableComponent extends Component {
 
         this.layerNamesArray = arrayMoveImmutable(this.layerNamesArray, oldIndex, newIndex)
         this.layerIdArray = arrayMoveImmutable(this.layerIdArray, oldIndex, newIndex)
-        console.log("before", this.state.items)
-        console.log("beforeID", this.state.id)
+        //console.log("before", this.state.items)
+        //console.log("beforeID", this.state.id)
 
         this.setState({
             items: this.layerNamesArray,
             id: this.layerIdArray
         }, async () => {
-            console.log("after", this.state.items);
-            console.log("afterID", this.state.id);
-            console.log("tews", this.layerIdArray);
+            //console.log("after", this.state.items);
+            //console.log("afterID", this.state.id);
+            //console.log("tews", this.layerIdArray);
             this.layerIdArray.unshift(1);
-            console.log("afterUnshift", this.layerIdArray)
+            //console.log("afterUnshift", this.layerIdArray)
 
             // Updating the layers indexes in the db
             for (let i = 0; i < (Object.keys(this.layerIdArray).length); i++) {
@@ -104,9 +104,8 @@ class SortableComponent extends Component {
     // Deletes all the images in the layer
     deleteAllLayerImage = async (layer) => {
         await db.layers.where("layerid").equals(layer.id).delete();
-        await this.props.retrieveLayers();
-        await this.props.viewLayerImages(layer);
-        // console.log("FWEIFMWEIFMWEIFM")
+        await this.props.handleToUpdate();
+        await this.props.viewLayerImages({id: 0, name: "background"});
     }
 
 
@@ -114,7 +113,7 @@ class SortableComponent extends Component {
     deleteLayerButton = async (layer) => {
         // DeleteConfirmation();
         var id = parseInt(layer.id);
-        console.log(layer);
+        //console.log(layer);
         await db.layerNames.where("id").equals(id).delete();
         this.deleteAllLayerImage({ id: id, name: layer.name });
         this.handleClose();

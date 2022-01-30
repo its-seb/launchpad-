@@ -95,7 +95,7 @@ function MergeImages(props) {
   )).then(images => {
     //console.log(images);
     var imgResult = initialize(images);
-    console.log(imgResult);
+    //console.log(imgResult);
     return imgResult
   });
 
@@ -249,24 +249,24 @@ async function GetMergedImages(props) {
     }
   }
 
-  console.log("Indexes", indexes);
+  //console.log("Indexes", indexes);
 
   //Fill compiledListOfIds with 0 if the layer is required to generate lesser than total amt
   //Populate rest of ids with 0
   for (let i = 0; i < indexes.length; i++) {
-    console.log(imagesToGenerate);
+    //console.log(imagesToGenerate);
     if (indexes[i].layerCount !== imagesToGenerate && indexes[i].layerCount !== 0) {
       compiledListOfIds[i] = compiledListOfIds[i].concat(Array(1).fill(0));
     }
   }
 
-  console.log("All Ids", compiledListOfIds);
+  //console.log("All Ids", compiledListOfIds);
 
   const allTotalCombinations = product.apply(null, compiledListOfIds);
-  console.log(allTotalCombinations);
+  //console.log(allTotalCombinations);
 
   const totalCombinationCount = count(allTotalCombinations);
-  console.log(totalCombinationCount);
+  //console.log(totalCombinationCount);
 
   shuffle(allTotalCombinations);
 
@@ -320,9 +320,9 @@ async function GetMergedImages(props) {
     }
   }
 
-  console.log(allTotalCombinations);
+  //console.log(allTotalCombinations);
 
-  console.log(count(allTotalCombinations));
+  //console.log(count(allTotalCombinations));
 
   for (let i = 0; i < allTotalCombinations.length; i++) {
     var images = [];
@@ -336,7 +336,7 @@ async function GetMergedImages(props) {
     allImages.push(images);
   }
 
-  console.log("All Layer Images", allImages);
+  //console.log("All Layer Images", allImages);
 
   //Merge Images
   var mergedImages = [];
@@ -349,7 +349,7 @@ async function GetMergedImages(props) {
     });
     mergedImages.push(img);
   }
-  console.log("Merged Images ", mergedImages);
+  //console.log("Merged Images ", mergedImages);
 
   var zip = new JSZip();
 
@@ -378,7 +378,7 @@ async function GetMergedImages(props) {
           Object.keys(images).map((image) => {
             if (images[image].imageId === imageId) {
               obj.attributes[counter] = new Object();
-              console.log(layerName);
+              //console.log(layerName);
               obj.attributes[counter].trait_type = layerName;
 
               const layerValue = images[image].imageName.substr(0, images[image].imageName.lastIndexOf("."));
@@ -398,7 +398,7 @@ async function GetMergedImages(props) {
     obj["properties"]["files"][0].type = "image/png";
     obj.compiler = "Launchpad";
 
-    console.log(JSON.stringify(obj, null, '\t'));
+    //console.log(JSON.stringify(obj, null, '\t'));
 
     metadata.file(no + ".json", JSON.stringify(obj, null, '\t'));
   }
@@ -514,8 +514,8 @@ function getUniqueCount(props) {
     }
   }
 
-  console.log(indexes);
-  console.log(count(allTotalCombinations));
+  //console.log(indexes);
+  //console.log(count(allTotalCombinations));
 
   const totalCombinations = count(allTotalCombinations);
   var additionalDuplicates = 0;
@@ -531,7 +531,7 @@ function getUniqueCount(props) {
     }
   }
 
-  console.log(additionalDuplicates);
+  //console.log(additionalDuplicates);
 
   return Math.floor((allTotalCombinations.length - additionalDuplicates));
 }
@@ -560,9 +560,12 @@ export class GenerateComponent extends Component {
       showPreview: false,
       uniquecount: 0,
       layersXY: [],
-      generateCount: 0,
+      generateCount: 1,
       generateLoad: false,
-      generateSuccess: false
+      generateSuccess: false,
+      showError: false,
+      errorMessage: "",
+      fileDimension: ""
     };
 
     this.statusSuccess = React.createRef();
@@ -611,7 +614,7 @@ export class GenerateComponent extends Component {
         });
     }
     this.setState({ layer: this.layerName }, () => {
-      console.log(this.state.layer);
+      //console.log(this.state.layer);
       this.getPreviewData(this.state.layer);
     });
 
@@ -631,8 +634,8 @@ export class GenerateComponent extends Component {
     this.setState({
       layer: this.layerName,
       slidingLayerTimeout: setTimeout(function () {
-        console.log("Uploaded rarity changes to db");
-        console.log(event.target.value);
+        //console.log("Uploaded rarity changes to db");
+        //console.log(event.target.value);
         db.layerNames.update(parseInt(event.target.id), {
           rarity: parseFloat(event.target.value),
         });
@@ -672,7 +675,7 @@ export class GenerateComponent extends Component {
       image: this.imageData,
       // sliding: false,
       slidingImageTimeout: setTimeout(function () {
-        console.log("Uploaded rarity changes to db");
+        //console.log("Uploaded rarity changes to db");
         db.layers.update(parseInt(event.target.id), {
           rarity: parseFloat(event.target.value),
         });
@@ -747,7 +750,17 @@ export class GenerateComponent extends Component {
       });
     }
 
-    this.setState({ image: this.imageData }, () => {
+    //Get image size from one of the images
+    if (this.imageData.length !== 0) {
+      var img = this.imageData[0].blob;
+      var imageObj = new Image();
+      imageObj.onload = () => this.setState({fileDimension: imageObj.width + "x" + imageObj.height})
+      imageObj.src = img;
+    }
+
+    this.setState({ 
+      image: this.imageData 
+    }, () => {
       // console.log("image state", this.state.image);
       //console.log("Current Layer", this.state.currentLayer);
     });
@@ -775,14 +788,33 @@ export class GenerateComponent extends Component {
   };
 
   // Run function upon upload
-  handleDropEvent = (event) => {
+  handleDropEvent = async (event) => {
     event.preventDefault();
     const files = event.dataTransfer.files;
     if (this.validateFileExtension(files)) {
-      console.log("allowed");
-      this.addToDatabase(files);
+      if (this.validateFileSize(files)) {
+        var resultCheck = await this.validateFileDimension(files);
+        //console.log(resultCheck);
+        if (resultCheck[0]) {
+          this.addToDatabase(files);
+        } else {
+          this.setState({
+            showError:true,
+            errorMessage: "Please upload images that are " + resultCheck[1] + " in dimension!"
+          });
+        };
+      }
+      else {
+        this.setState({
+          showError:true,
+          errorMessage: "Please upload images less than 10mb!"
+        });
+      }
     } else {
-      console.log("not allowed");
+      this.setState({
+        showError:true,
+        errorMessage: "Please upload files in either .png / .jpg / .jpeg format!"
+      });
     }
   };
 
@@ -790,15 +822,19 @@ export class GenerateComponent extends Component {
     event.preventDefault();
     const files = event.target.files;
     if (this.validateFileExtension(files)) {
-      console.log("allowed");
+      //Allowed files
       this.addToDatabase(files);
     } else {
-      console.log("not allowed");
+      //Not allowed
+      this.setState({
+        showError:true,
+        errorMessage: "Please upload files in either .png / .jpg / .jpeg format!"
+      });
     }
   };
 
   validateFileExtension = (files) => {
-    var allowedTypes = ["jpg", "jpeg", "bmp", "gif", "png", "PNG"];
+    var allowedTypes = ["jpg", "jpeg", "png", "PNG"];
     for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
       if (
         allowedTypes.includes(files[fileIndex].name.split(".").pop()) === false
@@ -808,6 +844,48 @@ export class GenerateComponent extends Component {
     }
     return true;
   };
+
+  validateFileSize = (files) => {
+    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      //Check if image over 10mb
+      if (files[fileIndex].size >= 10485760) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  validateFileDimension = (files) => {
+    var allowedDimension = this.state.fileDimension;
+
+    var result = Promise.all(Object.keys(files).map((e, i) =>
+    new Promise((resolve, reject) => {
+      var imageObj = [];
+      imageObj[i] = new Image();
+      imageObj[i].onload = () => resolve(imageObj[i]);
+      imageObj[i].onerror = reject;
+      imageObj[i].src = URL.createObjectURL(files[e]);
+    })
+    )).then(images => {
+      //console.log(images);
+      for (let i=0; i< images.length; i++){
+        var dimension = images[i].width + "x" + images[i].height;
+
+        if (allowedDimension === "") {
+          allowedDimension = dimension;
+        }
+
+        if (dimension !== allowedDimension) {
+          //console.log(allowedDimension);
+          return [false,allowedDimension];
+        }
+      }
+
+      return [true,allowedDimension];
+    });
+
+    return result;
+  }
 
   handleLayerNameChange = (event) => {
     event.preventDefault();
@@ -843,7 +921,7 @@ export class GenerateComponent extends Component {
 
   // Adding new layers
   addNewLayer = async () => {
-    console.log("adding layer");
+    //console.log("adding layer");
     var count = await db.layerNames.orderBy("id").count();
 
     await db.layerNames.add({
@@ -866,22 +944,22 @@ export class GenerateComponent extends Component {
 
   // For layerdnd.jsx to call
   handleToUpdate = async () => {
-    //this.setState({layer: args});
     await this.retrieveLayers();
+    this.setState({currentLayer: "background", currentLayerId:"0"});
   };
 
   //Preview Images
   getPreviewData = async (layers) => {
     var img = undefined;
     var files = [];
-    console.log("State Layers", layers);
+    //console.log("State Layers", layers);
 
     await db.layers
       .orderBy("rarity")
       .reverse()
       .toArray()
       .then(theList => {
-        console.log("list", theList);
+        //console.log("list", theList);
         for (let i = 0; i < Object.keys(this.state.layer).length; i++) {
           var BreakException = {};
           try {
@@ -897,7 +975,7 @@ export class GenerateComponent extends Component {
         }
       });
 
-    console.log("files", files);
+    //console.log("files", files);
 
     img = await MergeImages({
       images: files,
@@ -905,23 +983,37 @@ export class GenerateComponent extends Component {
       width: 100,
       layers: layers
     });
-    console.log("Merged Preview", img);
+    //console.log("Merged Preview", img);
 
     this.setState({
       imagePreview: img
     }, () => {
-      console.log(this.state.imagePreview);
+      //console.log(this.state.imagePreview);
     });
   }
 
   //Upon clicking generate images, shows the generating modal
   handleShow = async () => {
-    const files = await this.getAllData();
-    const uniqueCount = await getUniqueCount({ files: files, layers: this.state.layer });
+    try {
+      const files = await this.getAllData();
+      const uniqueCount = await getUniqueCount({ files: files, layers: this.state.layer });
+      this.setState({
+        showPreview: true,
+        uniqueCount: uniqueCount
+      });
+    }
+    catch(err) {
+      this.setState({
+        showError: true,
+        errorMessage: "Please upload more images and layers to continue!"
+      });
+    }
+  }
 
+  handleErrorClose = () => {
     this.setState({
-      showPreview: true,
-      uniqueCount: uniqueCount
+      showError: false,
+      errorMessage: ""
     });
   }
 
@@ -935,7 +1027,7 @@ export class GenerateComponent extends Component {
     //Initiate loading and generating
     this.setState({generateLoad:true});
     const files = await this.getAllData();
-    const images = await GetMergedImages({ files: files, layers: this.state.layer, count: this.state.generateCount });
+    await GetMergedImages({ files: files, layers: this.state.layer, count: this.state.generateCount });
 
     //Change loading to success here
     this.statusLoading.current.style.display = "none";
@@ -1310,7 +1402,7 @@ export class GenerateComponent extends Component {
                 }
                 <FormControl>
                   <FormLabel>You can generate up to {this.state.uniqueCount} unique images</FormLabel>
-                  <NumberInput onChange={this.handleGenerateCount} defaultValue={this.state.generateCount} max={this.state.uniqueCount} min={0}>
+                  <NumberInput onChange={this.handleGenerateCount} defaultValue={this.state.generateCount} max={this.state.uniqueCount} min={1}>
                     <NumberInputField/>
                     <NumberInputStepper>
                       <NumberIncrementStepper />
@@ -1342,8 +1434,26 @@ export class GenerateComponent extends Component {
             <Button onClick={this.handleClose} hidden={this.state.generateLoad}>
               Cancel
             </Button>
-            <Button onClick={this.onClickGenerate} variant="dark" hidden={this.state.generateLoad}>
+            <Button onClick={() => this.onClickGenerate()} variant="dark" hidden={this.state.generateLoad}>
               Generate
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={this.state.showError} onHide={this.handleErrorClose}>
+          <Modal.Header style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+            <Modal.Title>Oops...</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {this.state.errorMessage}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.handleErrorClose}>
+              Back
             </Button>
           </Modal.Footer>
         </Modal>
