@@ -18,7 +18,6 @@ import {
 } from "@chakra-ui/react";
 import IconService from "icon-sdk-js";
 import Dexie from "dexie";
-import Swal from "sweetalert2";
 import FailureComponent from "./FailureComponent.js";
 import SuccessComponent from "./SuccessComponent.js";
 import { fetchContractContent } from "./utils/fetchContractContent.js";

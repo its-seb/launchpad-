@@ -30,8 +30,8 @@ export class FileComponent extends Component {
       pinataKey: null,
       pinataSecret: null,
       hasMetahash: localStorage.getItem("HAS_METAHASH"),
-      walletAddress: localStorage.getItem("USER_WALLET_ADDRESS"),
-      contractAddress: localStorage.getItem("SELECTED_CONTRACT_ADDRESS"),
+      walletAddress: null,
+      contractAddress: null,
       redirect: false,
     };
 
@@ -55,11 +55,17 @@ export class FileComponent extends Component {
 
   async componentDidMount() {
     //document.getElementById("_pageTitle").innerText = this.props.pageTitle;
-    if (this.state.walletAddress == null) {
+    if (
+      this.state.walletAddress == null &&
+      localStorage.getItem("USER_WALLET_ADDRESS") == null
+    ) {
       alert("Please connect your wallet.");
       return;
     }
-    if (this.state.contractAddress == null) {
+    if (
+      this.state.contractAddress == null &&
+      localStorage.getItem("SELECTED_CONTRACT_ADDRESS") == null
+    ) {
       alert("you need to select a contract to view files");
       return;
     }
@@ -67,14 +73,16 @@ export class FileComponent extends Component {
     //check if user has configured pinata cloud api
     this.state.pinataKey = localStorage.getItem("PINATA_KEY");
     this.state.pinataSecret = localStorage.getItem("PINATA_SECRET");
-    if (this.state.pinataKey == null || this.state.pinataSecret == null) {
-      this.showPinataModal(); //configure to continue
-    }
+    this.state.walletAddress = localStorage.getItem("USER_WALLET_ADDRESS");
+    this.state.contractAddress = localStorage.getItem(
+      "SELECTED_CONTRACT_ADDRESS"
+    );
+
+    // if (this.state.pinataKey == null || this.state.pinataSecret == null) {
+    //   this.showPinataModal(); //configure to continue
+    // }
 
     console.log("filecomponent", this.state.hasMetahash);
-    //this.db.contracts.update(this.contractAddress, { metahash_exist: true }); //update metahash_exists
-    //check if the adddress has file
-    //set isactive to true
   }
 
   componentWillReceiveProps() {

@@ -4,23 +4,7 @@ import IconService from "icon-sdk-js";
 // import "./global.css";
 // import "./style.css";
 import React, { Component } from "react";
-import {
-  Image,
-  Grid,
-  GridItem,
-  Flex,
-  Button,
-  Box,
-  Text,
-  Select,
-  Center,
-  HStack,
-  ButtonGroup,
-  SimpleGrid,
-  Link,
-} from "@chakra-ui/react";
-import { Scrollbar } from "smooth-scrollbar-react";
-import ICONexConnection from "./utils/interact.js";
+import { Image, Box, Text, SimpleGrid, Link } from "@chakra-ui/react";
 const axios = require("axios");
 const { IconBuilder } = IconService;
 
@@ -105,6 +89,7 @@ class Gallery extends Component {
       .catch((error) => {
         console.log(error);
       });
+    console.log(this.state.uploadedFiles);
 
     if (this.state.uploadedFiles[0].name.endsWith(".gif")) {
       this.setState({ thumbnailFiles: this.state.uploadedFiles });

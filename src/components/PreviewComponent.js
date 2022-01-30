@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { Button, Card } from "react-bootstrap";
-
+import { Button } from "react-bootstrap";
 import { Box, Text, Input, Image } from "@chakra-ui/react";
 import "./style.css";
 

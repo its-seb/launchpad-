@@ -1,8 +1,24 @@
 import React, { Component } from "react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  Image,
+  Box,
+  Flex,
+  Text,
+  SimpleGrid,
+  Link,
+} from "@chakra-ui/react";
 import IconService from "icon-sdk-js";
 import "./style.css";
 const axios = require("axios");
-const { IconConverter, IconBuilder, HttpProvider } = IconService;
+const { IconBuilder } = IconService;
 
 export default class Usergallery extends Component {
   constructor(props) {
@@ -11,6 +27,10 @@ export default class Usergallery extends Component {
       mintedNFT: [],
       NFTName: [],
       thumbnailFiles: [],
+      showAdvancedSettings: false,
+      modaltitle: "modal title",
+      modalpicture: null,
+      imageAttributes: [],
 
       // mintedNFT: ["https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_joolz.png", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Namocchi.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_Vyragami.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg", "https://gateway.pinata.cloud/ipfs/QmTAy5v9hwDL1zKrwQy2TGXv3y4xDA2qk6zNQLspyoDsDt/bg_saphrinna.jpeg"],
       // NFTName: ["peter", "Jane", "Boon Yeow", "Yong JIun", "Sebastian", "Joy"],
@@ -28,21 +48,22 @@ export default class Usergallery extends Component {
     // this.wallet_address = 'hxdf253be1cf4c4c7ea87ac649ac1694cfd0b072d8';
     this.mintedLink = [];
     this.mintedindex = [];
-    this.gateway = [
-      "astyanax.io",
-      "ipfs.io",
-      "ipfs.infura.io",
-      "infura-ipfs.io",
-      "ipfs.eth.aragon.network",
-      "cloudflare-ipfs.com",
-      "ipfs.fleek.co",
-      "cf-ipfs.com",
-      "gateway.pinata.cloud",
-      "cf-ipfs.com",
-      "astyanax.io",
-      "infura-ipfs.io",
-      "ipfs.kxv.io",
-    ];
+    this.jsonHash = "";
+    // this.gateway = [
+    //     "astyanax.io",
+    //     "ipfs.io",
+    //     "ipfs.infura.io",
+    //     "infura-ipfs.io",
+    //     "ipfs.eth.aragon.network",
+    //     "cloudflare-ipfs.com",
+    //     "ipfs.fleek.co",
+    //     "cf-ipfs.com",
+    //     "gateway.pinata.cloud",
+    //     "cf-ipfs.com",
+    //     "astyanax.io",
+    //     "infura-ipfs.io",
+    //     "ipfs.kxv.io",
+    // ];
     // this.gateway = ['astyanax.io', 'ipfs.io', 'ipfs.infura.io', 'infura-ipfs.io', 'ipfs.eth.aragon.network'];
   }
 
@@ -50,7 +71,7 @@ export default class Usergallery extends Component {
     console.log(this.contract_address, this.wallet_address);
     await this.getMintedNFT(this.contract_address, this.wallet_address);
 
-    console.log(this.mintedLink);
+    console.log("this.mintedLink componentdidmount", this.mintedLink);
     for (let mintNFT of this.mintedLink) {
       this.mintedindex.push(mintNFT.split("/")[1].split(".")[0]);
       const pinataEndpoint3 = `https://gateway.pinata.cloud/ipfs/${mintNFT}`;
@@ -77,23 +98,6 @@ export default class Usergallery extends Component {
       .catch((error) => {
         console.log(error);
       });
-
-    // let rounds = this.state.mintedNFT.length / this.gateway.length;
-    // if (rounds <= 1) {
-    //   this.setState({ gateway: this.gateway });
-    // } else if (rounds > Math.floor(rounds)) {
-    //   this.gateway = Array(Math.ceil(rounds)).fill(this.gateway).flat();
-    //   this.setState({ gateway: this.gateway });
-    // } else {
-    //   this.gateway = Array(rounds).fill(this.gateway).flat();
-    //   this.setState({ gateway: this.gateway });
-    // }
-
-    // console.log(this.state.gateway)
-    console.log(this.state.mintedNFT);
-    console.log(this.state.NFTName);
-
-    console.log(this.mintedLink);
   }
 
   getJSONThumbnailMetahash = async () => {
@@ -112,6 +116,27 @@ export default class Usergallery extends Component {
       })
       .catch((error) => {
         console.log("getJSONThumbnailMetahash", error);
+        Promise.resolve({ error });
+      });
+    return result;
+  };
+
+  getMetahash = async () => {
+    const callObj = new IconBuilder.CallBuilder()
+      .from(null)
+      .to(this.contract_address)
+      .method("getMetahash")
+      .build();
+
+    let result = await this.iconService
+      .call(callObj)
+      .execute()
+      .then((response) => {
+        console.log("getMetahash", response);
+        return response;
+      })
+      .catch((error) => {
+        console.log("getMetahash", error);
         Promise.resolve({ error });
       });
     return result;
@@ -141,26 +166,59 @@ export default class Usergallery extends Component {
     return result;
   }
 
+  getMetadata = async (idx) => {
+    console.log("getmetadata", this.mintedLink[idx]);
+    let jsonMetadata = await axios
+      .get("https://launchpad.mypinata.cloud/ipfs/" + this.mintedLink[idx])
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    this.setState({ imageAttributes: jsonMetadata.data.attributes });
+  };
+
+  //modal handler
+  handleSettingsModal = () => {
+    this.setState({ showAdvancedSettings: true });
+  };
+
+  hideSettingsModal = () => {
+    this.setState({ showAdvancedSettings: false });
+  };
+
   render() {
-    console.log(this.state.thumbnailFiles);
-    console.log(this.mintedindex);
     return (
-      <div id="usergallery">
+      <div id="usergallery" style={{ minHeight: "100vh" }}>
         <h1 className="display-6">
           Your owned NFT from Collection:
           <br />
           {this.contract_name}
         </h1>
-        <div className="row">
+        <div
+          className="row"
+          style={{ paddingLeft: "1rem", paddingRight: "1rem" }}
+        >
           {this.mintedindex.map((data, index) => (
             <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-              <a target="_blank" href={this.state.mintedNFT[index]}>
+              <a
+                target="_blank"
+                onClick={() =>
+                  this.setState({
+                    showAdvancedSettings: true,
+                    modaltitle: this.state.thumbnailFiles[data].name,
+                    modalpicture: this.state.mintedNFT[index],
+                    metadata: this.getMetadata(index),
+                  })
+                }
+              >
                 <img
-                  //   src={
+                  // src={
                   //     "https://" +
                   //     this.gateway[index] +
                   //     this.state.thumbnailFiles[data].link.slice(28)
-                  //   }
+                  // }
                   src={this.state.mintedNFT[index]}
                   class="w-100 shadow-1-strong rounded"
                 />
@@ -169,6 +227,78 @@ export default class Usergallery extends Component {
             </div>
           ))}
         </div>
+        <Modal
+          closeOnOverlayClick={false}
+          isOpen={this.state.showAdvancedSettings}
+          onClose={this.hideSettingsModal}
+          size={"full"}
+        >
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader
+              borderBottom="2px"
+              borderColor="gray.200"
+              textAlign={"center"}
+            >
+              {this.state.modaltitle}
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody marginLeft={"100px"} marginRight={"100px"}>
+              <Flex>
+                <Box boxSize="xl">
+                  <Image
+                    width={"100%"}
+                    objectFit="cover"
+                    // src={this.state.modalpicture} />
+                    src={this.state.modalpicture}
+                  />
+                </Box>
+
+                <Box marginLeft={"40px"} pt="20px">
+                  <Box textStyle="h1" marginBottom={"3px"}>
+                    Owner
+                  </Box>
+                  <Text
+                    fontSize={"25px"}
+                    color={"#2F4F4F"}
+                    marginBottom={"8px"}
+                  >
+                    {this.wallet_address}
+                  </Text>
+                  <Box textStyle="h1" marginBottom={"3px"}>
+                    Contract
+                  </Box>
+                  <Text
+                    fontSize={"25px"}
+                    color={"#2F4F4F"}
+                    marginBottom={"8px"}
+                  >
+                    {this.contract_address}
+                  </Text>
+                  <Box textStyle="h1" marginBottom={"10px"}>
+                    Attributes
+                  </Box>
+                  <SimpleGrid columns={2} spacingX={5} spacingY={3}>
+                    {this.state.imageAttributes.map((data, i) => (
+                      <Box bg="#202225" borderRadius="0.5rem" p="0.5rem">
+                        <Text
+                          color="white"
+                          textAlign="center"
+                          fontWeight="bold"
+                        >
+                          {data.trait_type}
+                        </Text>
+                        <Text color="white" textAlign="center">
+                          {data.value}
+                        </Text>
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                </Box>
+              </Flex>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       </div>
     );
   }

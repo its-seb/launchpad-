@@ -57,10 +57,6 @@ export class LaunchComponent extends Component {
       showLoadingModal: false,
       statusTitle: "",
       statusText: "",
-
-      showStatusModal: false,
-      statusTitle: "",
-      statusText: "",
     };
     const provider = new IconService.HttpProvider(
       "https://sejong.net.solidwallet.io/api/v3"
@@ -183,7 +179,7 @@ export class LaunchComponent extends Component {
 
   handleMintPrice = (event) => {
     const re = /^[0-9\b]+$/; //test for regex
-    if (event.target.value === "" || re.test(event.target.value)) {
+    if (event.target.value == "" || re.test(event.target.value)) {
       this.setState({ nftMintPrice: event.target.value });
     }
   };
@@ -208,7 +204,7 @@ export class LaunchComponent extends Component {
     // document.getElementById("dragAndDropPrompt").style.display = "block";
     // document.getElementById("dragAndDropPreview").style.display = "none";
     this.setState({ collectionCover: "" });
-    this.setState({ isUploaded: false })
+    this.setState({ isUploaded: false });
   };
 
   handleDefaults = (event) => {
@@ -383,17 +379,26 @@ export class LaunchComponent extends Component {
         };
 
         await ICONexRequest("REQUEST_JSON-RPC", payload).then((res) => {
-          Swal.fire({
-            title: "Success!",
-            text: "You have minted " + quantityToMint + " NFTs from hello4",
-            confirmButtonText: "View Wallet",
-            icon: "success",
-          }).then((result) => {
-            window.open(
-              "http://localhost:3000/Usergallery/?collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
-              "_blank"
-            );
-          });
+          console.log(res);
+          if (typeof res != "undefined") {
+            Swal.fire({
+              title: "Success!",
+              text: "You have minted " + quantityToMint + " NFTs from ${collectionName}",
+              confirmButtonText: "View Wallet",
+              icon: "success",
+            }).then((result) => {
+              window.open(
+                "https://goofy-neumann-fd67a4.netlify.app/Usergallery/?collection=${this.contractAddress}&title=${collectionName}&user=" + walletAddress,
+                "_blank"
+              );
+            });
+          } else {
+            Swal.fire({
+              title: "Oops...",
+              text: "User cancelled transaction.",
+              icon: "error",
+            });
+          }
         });
       };
 
@@ -544,7 +549,6 @@ export class LaunchComponent extends Component {
     this.statusModal.current.style.zIndex = "1000000";
     this.statusModal.current.style.display = "block";
 
-
     //get launch date time
     let timestamp =
       this.state.selectedDate == null
@@ -597,8 +601,6 @@ export class LaunchComponent extends Component {
     const imgBlob = URL.createObjectURL(e.target.files[0]); //creating a blob url
     console.log(imgBlob);
 
-    // document.getElementById("dragAndDropPrompt").style.display = "none";
-    // document.getElementById("dragAndDropPreview").style.display = "block";
     this.setState({ isUploaded: true });
     this.setState({ collectionCover: imgBlob });
     this.setState({ collectionCoverFile: e.target.files[0] });
@@ -608,6 +610,9 @@ export class LaunchComponent extends Component {
     this.statusSuccess.current.style.display = "none";
     this.statusFail.current.style.display = "none";
     this.statusModal.current.style.display = "none";
+    this.statusLoading.current.style.display = "block";
+    this.setState({ statusTitle: "" });
+    this.setState({ statusText: "" });
   };
 
   render() {
@@ -801,8 +806,6 @@ export class LaunchComponent extends Component {
                 >
                   Save
                 </Button>
-
-
               </ModalFooter>
             </ModalContent>
           </Modal>
@@ -833,7 +836,6 @@ export class LaunchComponent extends Component {
             </Box>
           </Box>
 
-
           <Box
             id="statusModal"
             layerStyle="modal_container"
@@ -845,7 +847,6 @@ export class LaunchComponent extends Component {
                 right={3}
                 top={3}
                 onClick={this.closeStatusModal}
-
               />
               <Spinner
                 variant="loading_spinner"

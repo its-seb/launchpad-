@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { ArrowRightIcon, PlusIcon } from "@heroicons/react/solid";
 import {
   BrowserRouter as Router,
   Route,

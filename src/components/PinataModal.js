@@ -6,7 +6,6 @@ import {
   ModalHeader,
   ModalFooter,
   ModalBody,
-  ModalCloseButton,
   Input,
   Button,
   FormControl,
@@ -96,6 +95,9 @@ class PinataModal extends Component {
     this.statusSuccess.current.style.display = "none";
     this.statusFail.current.style.display = "none";
     this.statusModal.current.style.display = "none";
+    this.statusLoading.current.style.display = "block";
+    this.setState({ statusTitle: "" });
+    this.setState({ statusText: "" });
   };
 
   render() {
@@ -119,6 +121,7 @@ class PinataModal extends Component {
                   focusBorderColor="#4c4c4c"
                   borderColor="#4c4c4c"
                   placeholder="API Key"
+                  defaultValue="27a26cd9694149aa15a0"
                 />
               </FormControl>
 
@@ -129,6 +132,7 @@ class PinataModal extends Component {
                   focusBorderColor="#4c4c4c"
                   placeholder="API Secret"
                   borderColor="#4c4c4c"
+                  defaultValue="9f405490db4a07e109492baadb518328dfdb1ae91f67824de531c9054b8a670a"
                 />
               </FormControl>
             </ModalBody>
