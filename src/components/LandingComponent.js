@@ -26,6 +26,12 @@ export class LandingComponent extends Component {
     super(props);
     this.state = { featureone: true, featuretwo: false };
     this.handleClick = this.handleClick.bind(this);
+
+    localStorage.setItem("PINATA_KEY", "29ae6a7b4f6d178f6b95");
+    localStorage.setItem(
+      "PINATA_SECRET",
+      "902cc14598c68935df1b1490ac239ccfbe57e6e2d1065df316ee8d0b52fd6608"
+    );
   }
   connection = new ICONexConnection();
 
