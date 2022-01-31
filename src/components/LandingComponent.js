@@ -124,7 +124,7 @@ export class LandingComponent extends Component {
                 background="gray.200"
                 _hover={{ bg: "gray.300" }}
                 as="a"
-                href="https://github.com/boonyeow/launchpad-nusfintech"
+                href="https://github.com/boonyeow/launchpad"
                 target="_blank"
               >
                 Github
@@ -137,7 +137,7 @@ export class LandingComponent extends Component {
                 background="gray.200"
                 _hover={{ bg: "gray.300" }}
                 as="a"
-                href="https://www.youtube.com/embed/AKQmBX1JLU4"
+                href="https://youtu.be/M_h2eWVOAEw"
                 target="_blank"
               >
                 Demo
