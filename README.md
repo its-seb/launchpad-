@@ -65,7 +65,7 @@ To generate the images, we have uploaded a set of sample layers that you can wor
 
 ##### Testnet Faucet - (https://faucet.ibriz.ai/)
 
-## Accomplishments that we're proud of
+## Footnote
 We started this project in December during our winter break with zero knowledge on development in ReactJS and smart contract as well as deployment to production server. We're proud to have delivered a functional and hopefully a user-friendly product for the hackathon. Apart from this, we also got to learn more about the painpoints from the artists' perspective as they enter the NFT space. Our focus, from start to end, had always been user-first to make the experience as seamless as possible to lower the technical barriers to entry for artists and creators. So in that aspect, we're also proud of our user interface which was the result of countless iterations to improve the user flow. 
 Nonetheless, it was an extremely enriching and fruitful experience for us. Thank you for this opportunity! :)
 
