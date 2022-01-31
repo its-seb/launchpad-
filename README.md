@@ -16,7 +16,7 @@ Launchpad is a no-code solution for algorithmic artwork generation, smart contra
 - While developers do offer services to artists, these are temporary solutions that may not be calibrated to long-term continuity plans
 
 ## Proposed Solution
-### Video Demo 
+### Video Demo - https://youtu.be/M_h2eWVOAEw
 
 #### 1. Artwork Generation
 - Import layers of images
