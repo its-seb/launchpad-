@@ -1,70 +1,93 @@
-# Getting Started with Create React App
+# Launchpad
+Launchpad is a no-code solution for algorithmic artwork generation, smart contract deployment and distribution of NFTs. 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+##### Live Website: https://goofy-neumann-fd67a4.netlify.app/
 
-## Available Scripts
+### Problems faced by artists / Inspiration
+#### 1. Lack of technical knowledge
+- Artists have ready-designed artworks and wish to enter the NFT scene, however, existing marketplaces do not support mass uploading
+- Lack technical expertise to customize and deploy their own smart contract
+- As such, they miss out on opportunity to monetize and promote their creations
+#### 2. Cost & risk associated with outsourcing
+- Creators may not have the resources to hire dedicated developers to work on their project
+- Not every developers are good actors (counterparty risk), outsourcing work fundamentally relies on trust
+#### 3. Time consuming & inefficient process
+- Creators may not have time to pickup coding & relevant skills to launch their projects
+- While developers do offer services to artists, these are temporary solutions that may not be calibrated to long-term continuity plans
 
-In the project directory, you can run:
+## Proposed Solution
+### Video Demo 
 
-### `yarn start`
+#### 1. Artwork Generation
+- Import layers of images
+- Configure rarity of each images and merge them
+- Generate merged images and metadata 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+#### 2. Collection Dispenser
+- Deploy custom IRC-31 contract
+- Upload images and metadata to IPFS via Pinata Cloud
+- Generate minting dApp and configure launch time / minting whitelist
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### User Flow
+![image](https://user-images.githubusercontent.com/9499796/151764300-592fb0d2-bfac-4e76-965a-875a925bc104.png)
 
-### `yarn test`
+## Solution Architecture
+![image](https://user-images.githubusercontent.com/9499796/151760000-ebfbbe44-6e97-463b-8e8e-13addd2d7a8d.png)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Local Deployment
+#### Pre-requisites
+1. ICONex Wallet (https://chrome.google.com/webstore/detail/iconex/flpiciilemghbmfalicajoolhkkenfel?hl=en)
+2. NodeJS
 
-### `yarn build`
+#### Test Guide
+1. Clone and unzip repository to a folder
+2. Open CLI and ```cd``` to package directory
+3. Run ```npm install``` to install dependencies 
+4. Run ```npm start``` to start local server
+5. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To generate the images, we have uploaded a set of sample layers that you can work with under ```./samples/ directory```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Limitations
+- Artwork generation only supports static images
+- Unable to link multiple collections under one parent contract
+- Lack integration with Craft Marketplace (only artist-to-user sales available for now)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Roadmap
+- [ ] Migration to Java SCORE
+- [ ] Integration with Craft Marketplace for secondary sales
+- [ ] Supporting different types of NFTs (e.g., Music, Event Tickets, In-game assets)
 
-### `yarn eject`
+## Resources
+##### Medium - (https://medium.com/@justin.mok.2020/launchpad-the-go-to-nft-minting-solution-e5b0b686ad02)
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+##### Slides - (https://docs.google.com/presentation/d/1is7rN8gtYgGrecR8nc653bLBN8FT0caA5buM4SZBkRE/edit#slide=id.p1)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+##### Testnet Faucet - (https://faucet.ibriz.ai/)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Accomplishments that we're proud of
+We started this project in December during our winter break with zero knowledge on development in ReactJS and smart contract as well as deployment to production server. We're proud to have delivered a functional and hopefully a user-friendly product for the hackathon. Apart from this, we also got to learn more about the painpoints from the artists' perspective as they enter the NFT space. Our focus, from start to end, had always been user-first to make the experience as seamless as possible to lower the technical barriers to entry for artists and creators. So in that aspect, we're also proud of our user interface which was the result of countless iterations to improve the user flow. 
+Nonetheless, it was an extremely enriching and fruitful experience for us. Thank you for this opportunity! :)
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Team
+Hey there! We're a group of students from Singapore Management University!
 
-## Learn More
+#### BY
+* Email: bytan.2021@scis.smu.edu.sg
+* LinkedIn: https://www.linkedin.com/in/tanboonyeow/
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+#### JR
+* Email: jinrui.seah.2021@economics.smu.edu.sg
+* Linkedin: https://www.linkedin.com/in/seah-jin-rui/
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Justin
+* Email: justin.mok.2020@business.smu.edu.sg
+* Linkedin: https://www.linkedin.com/in/justinmok1998/
 
-### Code Splitting
+#### Sebastian
+* Email: cpong.2021@scis.smu.edu.sg
+* Linkedin: https://www.linkedin.com/in/sebastian-ong98/
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+#### Yong Jiun
+* Email: yjlew.2020@scis.smu.edu.sg
+* LinkedIn: https://www.linkedin.com/in/yongjiun/
