@@ -2,6 +2,7 @@
 Launchpad is a no-code solution for algorithmic artwork generation, smart contract deployment and distribution of NFTs. 
 
 ##### Live Website: https://goofy-neumann-fd67a4.netlify.app/
+##### Testnet: Sejong
 
 ### Problems faced by artists / Inspiration
 #### 1. Lack of technical knowledge
@@ -17,6 +18,7 @@ Launchpad is a no-code solution for algorithmic artwork generation, smart contra
 
 ## Proposed Solution
 ### Video Demo - https://youtu.be/M_h2eWVOAEw
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/M_h2eWVOAEw/0.jpg)](http://www.youtube.com/watch?v=M_h2eWVOAEw "Launchpad - Devera Blockathon")
 
 #### 1. Artwork Generation
 - Import layers of images
@@ -46,7 +48,9 @@ Launchpad is a no-code solution for algorithmic artwork generation, smart contra
 4. Run ```npm start``` to start local server
 5. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-To generate the images, we have uploaded a set of sample layers that you can work with under ```./samples/ directory```
+Notes:
+- To generate the images, we have uploaded a set of sample layers that you can work with under ```./samples/ directory```
+- Contracts are deployed on Sejong Testnet, please make sure you have sufficient ICX when creating collections
 
 ## Limitations
 - Artwork generation only supports static images
