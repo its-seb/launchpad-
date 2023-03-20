@@ -3,6 +3,7 @@ Launchpad is a no-code solution for algorithmic artwork generation, smart contra
 
 ##### Live Website: https://goofy-neumann-fd67a4.netlify.app/
 ##### Testnet: Sejong
+### Do note that ICON Python execution engine has deprecated and the website is no longer functional
 
 ### Problems faced by artists / Inspiration
 #### 1. Lack of technical knowledge
