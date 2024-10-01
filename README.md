@@ -92,7 +92,7 @@ Hey there! We're a group of students from Singapore Management University!
 
 #### Sebastian
 * Email: cpong.2021@scis.smu.edu.sg
-* Linkedin: https://www.linkedin.com/in/sebastian-ong98/
+* Linkedin: https://www.linkedin.com/in/sebastian-ong/
 
 #### Yong Jiun
 * Email: yjlew.2020@scis.smu.edu.sg
